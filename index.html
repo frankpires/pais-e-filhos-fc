@@ -195,7 +195,7 @@ body {
   border: 1.5px solid transparent;
 }
 .su-player:active{ background: var(--green-lit); }
-.su-player .pai-tag{
+.su-player .adulto-tag{
   font-size:0.58rem; font-weight:800; letter-spacing:.6px;
   background:var(--amber); color:var(--green);
   border-radius:4px; padding:2px 5px;
@@ -394,6 +394,26 @@ body {
 .config-strip input[type=number]:focus { outline: none; border-color: var(--green); }
 
 /* ── RESULTADOS SCREEN ── */
+  margin-top: 2px;
+  width: 100%;
+  background: none;
+  border: 1.5px solid #ddd;
+  color: var(--ink-soft);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  min-height: 38px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-reset:active{ border-color: var(--red); color: var(--red); }
+
+/* ── RESULTADOS SCREEN ── */
 .results-list { list-style: none; flex: 1; overflow-y: auto; }
 .result-item {
   padding: 14px 16px;
@@ -560,6 +580,7 @@ body {
     <div class="config-strip">
       <label>Jogadores/time <input type="number" id="teamSize" min="1" max="15" value="5"></label>
       <label>Adultos/time (meta) <input type="number" id="targetAdults" min="0" max="15" value="2"></label>
+      <button class="btn-reset" id="resetBtn">🗑 Limpar fila e quadra</button>
     </div>
   </div>
 
@@ -781,7 +802,7 @@ function openPlayerSheet(which, idx){
     swapSelection=null; saveState(); render(); closeSheet(); return;
   }
 
-  const title=`${player.name}${player.adult?' · <span style="font-size:.7rem;font-weight:700;background:var(--amber);color:#1a3a2a;border-radius:3px;padding:1px 6px;vertical-align:middle">PAI</span>':''}`;
+  const title=`${player.name}${player.adult?' · <span style="font-size:.7rem;font-weight:700;background:var(--amber);color:#1a3a2a;border-radius:3px;padding:1px 6px;vertical-align:middle">ADULTO</span>':''}`;
   openSheet(title, body=>{
     // ── Tab switcher ──
     const tabs=document.createElement('div');
@@ -819,7 +840,7 @@ function openPlayerSheet(which, idx){
       state.queue.forEach((qp,qi)=>{
         const opt=document.createElement('button');
         opt.className='sheet-option';
-        opt.innerHTML=`<span class="opt-icon">${qp.adult?'🟡':'⚪'}</span><span class="opt-text">${qp.name}<span class="opt-sub">${qp.adult?'Pai — ':'Criança — '}posição ${qi+1} na fila</span></span>`;
+        opt.innerHTML=`<span class="opt-icon">${qp.adult?'🟡':'⚪'}</span><span class="opt-text">${qp.name}<span class="opt-sub">${qp.adult?'Adulto — ':'Criança — '}posição ${qi+1} na fila</span></span>`;
         opt.addEventListener('click',()=>{ substitutePlayer(which,idx,qi); closeSheet(); });
         paneSubstitute.appendChild(opt);
       });
@@ -836,7 +857,7 @@ function openPlayerSheet(which, idx){
       otherTeam.forEach((op,oi)=>{
         const opt=document.createElement('button');
         opt.className='sheet-option';
-        opt.innerHTML=`<span class="opt-icon">${op.adult?'🟡':'⚪'}</span><span class="opt-text">${op.name}<span class="opt-sub">${op.adult?'Pai':'Criança'} · Time ${otherWhich}</span></span>`;
+        opt.innerHTML=`<span class="opt-icon">${op.adult?'🟡':'⚪'}</span><span class="opt-text">${op.name}<span class="opt-sub">${op.adult?'Adulto':'Criança'} · Time ${otherWhich}</span></span>`;
         opt.addEventListener('click',()=>{
           const tA=which==='A'?state.courtA:state.courtB;
           const tB=otherWhich==='A'?state.courtA:state.courtB;
@@ -899,7 +920,7 @@ function renderCourt(ts, target){
         const row=document.createElement('div');
         row.className='su-player';
         row.innerHTML=`
-          ${player.adult?'<span class="pai-tag">Pai</span>':''}
+          ${player.adult?'<span class="adulto-tag">Adulto</span>':''}
           <span class="pname">${player.name}</span>
           <span class="ptap">›</span>`;
         row.addEventListener('click',()=>openPlayerSheet(which,idx));
@@ -1023,6 +1044,35 @@ document.getElementById('teamSize').addEventListener('change',e=>{
 document.getElementById('targetAdults').addEventListener('change',e=>{
   state.targetAdults=Math.max(0,parseInt(e.target.value)||0);
   saveState(); render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  openSheet('Limpar fila e quadra?', body => {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'padding:4px 20px 16px;font-size:.88rem;color:#666;line-height:1.5';
+    msg.textContent = 'Remove todos os jogadores da fila e os times em quadra. O histórico de resultados é mantido.';
+    body.appendChild(msg);
+
+    const confirm = document.createElement('button');
+    confirm.className = 'sheet-option';
+    confirm.style.cssText = 'color:var(--red);font-weight:700';
+    confirm.innerHTML = '<span class="opt-icon">🗑</span><span class="opt-text">Sim, limpar fila e quadra</span>';
+    confirm.addEventListener('click', () => {
+      state.queue   = [];
+      state.courtA  = [];
+      state.courtB  = [];
+      saveState();
+      render();
+      closeSheet();
+    });
+    body.appendChild(confirm);
+
+    const cancel = document.createElement('button');
+    cancel.className = 'sheet-option cancel';
+    cancel.innerHTML = '<span class="opt-icon">✕</span><span class="opt-text">Cancelar</span>';
+    cancel.addEventListener('click', closeSheet);
+    body.appendChild(cancel);
+  });
 });
 
 loadState();
