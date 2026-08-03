@@ -17,6 +17,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-database-compat.js"></script>
 <style>
   :root{
     --board: #123524;
@@ -520,7 +522,7 @@
         <ul class="results-list" id="resultsList"></ul>
       </div>
     </div>
-    <div class="footer-note">Dados salvos e visíveis para quem abrir este app · toque leve, sem app de verdade por trás — é a prancheta digital do grupo</div>
+    <div class="footer-note" id="syncStatus">Dados salvos e visíveis para quem abrir este app · toque leve, sem app de verdade por trás — é a prancheta digital do grupo</div>
   </div>
 
 <script>
@@ -580,36 +582,47 @@ function toggleSwapSelection(which, idx){
   render();
 }
 
-async function loadState(){
-  try{
-    const res = await window.storage.get(STORAGE_KEY, true);
-    if(res && res.value){
-      const parsed = JSON.parse(res.value);
-      state = Object.assign(state, parsed);
-      if(state.targetAdults === undefined && parsed.maxAdults !== undefined){
-        state.targetAdults = parsed.maxAdults;
+// Configuração do projeto Firebase (Realtime Database).
+// Preencha com as chaves do SEU projeto — veja instruções em firebase-setup.md.
+const firebaseConfig = {
+  apiKey: "AIzaSyA8jlZnR_TrqfRTyqjdnmDkDyg4k3VyMjw",
+  authDomain: "pais-e-filhos-fc-d663b.firebaseapp.com",
+  databaseURL: "https://pais-e-filhos-fc-d663b-default-rtdb.firebaseio.com",
+  projectId: "pais-e-filhos-fc-d663b",
+  storageBucket: "pais-e-filhos-fc-d663b.firebasestorage.app",
+  messagingSenderId: "537156301341",
+  appId: "1:537156301341:web:3a64761730573ecb890cf4"
+};
+firebase.initializeApp(firebaseConfig);
+const stateRef = firebase.database().ref(STORAGE_KEY);
+let firebaseWriteFailed = false;
+
+function loadState(){
+  // Escuta o banco compartilhado em tempo real: qualquer alteração feita
+  // em outro celular chega aqui automaticamente, sem precisar recarregar.
+  stateRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if(data){
+      state = Object.assign(state, data);
+      if(state.targetAdults === undefined && data.maxAdults !== undefined){
+        state.targetAdults = data.maxAdults;
       }
     }
-  }catch(e){
-    console.log('Sem estado salvo ainda, começando do zero.');
-  }
-  render();
+    firebaseWriteFailed = false;
+    render();
+  }, (e) => {
+    console.warn('Não foi possível conectar ao banco compartilhado. Verifique firebaseConfig e as regras do Realtime Database.', e);
+    firebaseWriteFailed = true;
+    render();
+  });
 }
 
-async function saveState(isRetry){
-  try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify(state), true);
-  }catch(e){
-    // A tela já foi atualizada normalmente — isso é só uma falha ao
-    // sincronizar com o armazenamento compartilhado. Tenta de novo uma
-    // vez antes de desistir silenciosamente, sem travar o app.
-    if(!isRetry){
-      console.warn('Falha ao sincronizar, tentando novamente em instantes:', e);
-      setTimeout(() => saveState(true), 1500);
-    } else {
-      console.warn('Não foi possível sincronizar agora. A fila continua funcionando neste aparelho.', e);
-    }
-  }
+function saveState(){
+  stateRef.set(state).catch((e) => {
+    console.warn('Falha ao sincronizar com o banco compartilhado:', e);
+    firebaseWriteFailed = true;
+    render();
+  });
 }
 
 function teamSize(){ return Math.max(1, parseInt(state.teamSize) || 1); }
@@ -651,6 +664,15 @@ function canFormNTeams(queueArray, ts, target, n){
 }
 
 function render(){
+  const syncStatus = document.getElementById('syncStatus');
+  if(firebaseConfig.apiKey.startsWith('COLE_AQUI')){
+    syncStatus.textContent = '⚠️ Sincronização não configurada — preencha firebaseConfig no index.html (veja firebase-setup.md).';
+  } else if(firebaseWriteFailed){
+    syncStatus.textContent = '⚠️ Sem conexão com o banco compartilhado agora — as mudanças ficam só neste aparelho até reconectar.';
+  } else {
+    syncStatus.textContent = 'Dados salvos e visíveis para quem abrir este app · toque leve, sem app de verdade por trás — é a prancheta digital do grupo';
+  }
+
   const ts = teamSize();
   const target = targetAdults();
   document.getElementById('teamSize').value = state.teamSize;
