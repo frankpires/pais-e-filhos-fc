@@ -1,8 +1,0 @@
-{
-  "name": "pais-e-filhos-fc",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "@upstash/redis": "^1.38.1"
-  }
-}
