@@ -1534,6 +1534,13 @@ document.getElementById('winB').addEventListener('click', e => {
 
 
 loadState();
+
+// Registra Service Worker para PWA (funciona quando hospedado no Vercel)
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
