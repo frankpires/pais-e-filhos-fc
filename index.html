@@ -1502,6 +1502,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     body.appendChild(cancel);
   });
 });
+document.getElementById('addChildBtn').addEventListener('click',()=>handleAdd(false));
 document.getElementById('addAdultBtn').addEventListener('click',()=>handleAdd(true));
 document.getElementById('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleAdd(false); } });
 
