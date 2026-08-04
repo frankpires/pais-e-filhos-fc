@@ -17,6 +17,7 @@
 <style>
 /* ── RESET & TOKENS ── */
 *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+div, span, ul, li { outline: none; }
 html { overscroll-behavior: none; height: 100%; }
 :root {
   --green:    #1a3a2a;
@@ -97,14 +98,53 @@ body {
   line-height: 1.3;
 }
 
+/* ── TIMER NA QUADRA (entre times e botões de ação) ── */
+.court-timer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px 10px;
+  flex-shrink: 0;
+  background: var(--green);
+}
+.court-timer-display{
+  font-family: 'Bebas Neue', cursive;
+  font-size: 4rem;
+  line-height: 1;
+  letter-spacing: 4px;
+  color: var(--white);
+  transition: color 0.3s;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.court-timer-display.urgent{ color: var(--red); }
+.court-timer-controls{
+  display: flex;
+  gap: 8px;
+}
+.court-timer-btn{
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  padding: 6px 16px;
+  cursor: pointer;
+  min-height: 36px;
+  letter-spacing: 0.3px;
+}
+.court-timer-btn:active{ background: rgba(255,255,255,0.18); }
+.court-timer-btn.running{ border-color: var(--red); color: var(--red); }
+
 /* ── SCREENS ── */
 .screen {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   display: none;
   flex-direction: column;
+  min-height: 0;
 }
 .screen.active { display: flex; }
 
@@ -141,6 +181,14 @@ body {
 .tab-btn.active { color: var(--amber); }
 
 /* ── SCOREBOARD UNIFICADO ── */
+.court-block{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--green);
+  overflow: hidden;
+  min-height: 0;
+}
 .scoreboard-unified{
   flex: 1;
   overflow-y: auto;
@@ -148,9 +196,15 @@ body {
   background: var(--green);
   display: flex;
   gap: 2px;
-  padding: 12px 12px 0;
-  align-items: flex-start;
+  padding: 10px 10px 0;
+  align-items: stretch;
   min-height: 0;
+}
+.su-team{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .su-empty-court{
   flex: 1;
@@ -188,11 +242,12 @@ body {
   align-items: center;
   gap: 8px;
   background: var(--green-mid);
-  border-radius: 8px;
-  padding: 11px 10px;
+  border-radius: 6px;
+  padding: 8px 10px;
   cursor: pointer;
   transition: background 0.12s;
   border: 1.5px solid transparent;
+  flex: 1;
 }
 .su-player:active{ background: var(--green-lit); }
 .su-player .adulto-tag{
@@ -201,7 +256,7 @@ body {
   border-radius:4px; padding:2px 5px;
   flex-shrink:0; text-transform:uppercase; line-height:1.4;
 }
-.su-player .pname{ flex:1; color:var(--white); font-size:0.88rem; font-weight:500; line-height:1.2; }
+.su-player .pname{ flex:1; color:var(--white); font-size:0.85rem; font-weight:500; line-height:1.2; }
 .su-player .ptap{ color:rgba(255,255,255,0.25); font-size:0.8rem; }
 .su-empty{
   background: var(--green-mid);
@@ -212,6 +267,7 @@ body {
   font-style: italic;
   text-align: center;
 }
+/* ── VS divider between teams (timer moved to header) ── */
 .su-vs{
   color: rgba(255,255,255,0.2);
   font-family: 'Bebas Neue', cursive;
@@ -220,12 +276,27 @@ body {
   flex-shrink: 0;
   align-self: flex-start;
 }
-.su-spacer{ height: 12px; }
+
+/* Pulsing alert overlay when time is up */
+@keyframes pulse-red{
+  0%,100%{ opacity:0; }
+  50%{ opacity:0.18; }
+}
+.timer-alert-overlay{
+  position: fixed; inset: 0;
+  background: var(--red);
+  pointer-events: none;
+  z-index: 200;
+  animation: pulse-red 0.8s ease-in-out infinite;
+  display: none;
+}
+.timer-alert-overlay.active{ display: block; }
+.su-spacer{ height: 6px; }
 
 /* ── COURT ACTIONS (fixed below scoreboard) ── */
 .court-actions {
   background: var(--green);
-  padding: 0 16px 16px;
+  padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -248,49 +319,62 @@ body {
   gap: 6px;
   min-height: 48px;
   padding: 0 16px;
-  transition: filter 0.15s, transform 0.1s;
+  transition: filter 0.08s, transform 0.08s, background 0.08s;
   letter-spacing: 0.2px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
-.btn:active { transform: scale(0.97); filter: brightness(0.9); }
+.btn:active {
+  transform: scale(0.93);
+  filter: brightness(0.75);
+}
 .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; filter: none; }
 .btn-win { flex: 1; background: #2d6638; color: var(--white); }
 .btn-start { background: var(--amber); color: var(--green); width: 100%; }
 .btn-tie  { background: rgba(255,255,255,0.12); color: var(--white); border: 1px solid rgba(255,255,255,0.2); width: 100%; }
 .btn-danger { background: var(--red); color: var(--white); }
 
-/* ── COURT HINT ── */
-.court-hint {
-  background: var(--green);
-  padding: 0 16px 12px;
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.5);
-  text-align: center;
-  flex-shrink: 0;
-  min-height: 0;
+@keyframes btn-confirm {
+  0%   { transform: scale(0.93); filter: brightness(0.75); }
+  40%  { transform: scale(1.04); filter: brightness(1.25); }
+  100% { transform: scale(1);    filter: brightness(1); }
+}
+.btn-confirming {
+  animation: btn-confirm 0.3s ease-out forwards;
 }
 
-/* ── PLAYER CARDS (lista de times em quadra, edição) ── */
+/* ── COURT HINT ── */
 
 /* ── FILA SCREEN ── */
-.queue-screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.add-player-bar {
+/* ── FILA META ── */
+.fila-meta {
+  padding: 5px 16px;
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
   background: var(--white);
   border-bottom: 1px solid var(--line);
-  padding: 12px 16px;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── FILA ADD BAR ── */
+.fila-add-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 12px 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
 }
-.add-player-bar input {
+.fila-add-bar input {
   width: 100%;
-  height: 46px;
-  border: 1.5px solid #ccc;
+  height: 44px;
+  border: 1.5px solid #e0e0e0;
   border-radius: 10px;
   padding: 0 14px;
   font-size: 16px;
@@ -299,45 +383,148 @@ body {
   color: var(--ink);
   transition: border-color 0.15s;
 }
-.add-player-bar input:focus { outline: none; border-color: var(--green); }
-.add-type-btns { display: flex; gap: 8px; }
-.btn-child { flex: 1; background: #2d6638; color: var(--white); font-size: 0.85rem; min-height: 44px; }
-.btn-adult { flex: 1; background: var(--amber); color: var(--green); font-size: 0.85rem; min-height: 44px; }
+.fila-add-bar input:focus { outline: none; border-color: var(--green); }
+.fila-add-btns {
+  display: flex;
+  gap: 8px;
+}
+.fila-add-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  height: 40px;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 0.08s, transform 0.08s;
+}
+.fila-add-btn:active { transform: scale(0.95); filter: brightness(0.82); }
+.fila-add-child { background: #2d6638; color: var(--white); }
+.fila-add-adult { background: var(--amber); color: var(--green); }
 
-.queue-meta {
-  padding: 10px 16px 6px;
-  font-size: 0.72rem;
-  color: var(--ink-soft);
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+/* ── HEADER RIGHT (status + config btn) ── */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-config-btn {
+  border: none;
+  background: rgba(255,255,255,0.12);
+  color: var(--white);
+  border-radius: 8px;
+  width: 34px; height: 34px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.header-config-btn:active { background: rgba(255,255,255,0.25); }
+
+/* ── CONFIG SHEET ── */
+.config-sheet {
+  position: fixed;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--white);
+  border-radius: 18px 18px 0 0;
+  padding: 12px 0 calc(20px + env(safe-area-inset-bottom));
+  z-index: 200;
+}
+.config-sheet-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ink);
+  padding: 4px 20px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.config-sheet-body {
+  padding: 8px 0;
+}
+.config-sheet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.config-sheet-label {
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+.config-sheet-stepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.config-sheet-stepper button {
+  border: none;
+  background: var(--cement);
+  color: var(--ink);
+  border-radius: 50%;
+  width: 34px; height: 34px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.config-sheet-stepper button:active { background: #ccc; }
+.config-sheet-stepper span {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.6rem;
+  color: var(--green);
+  min-width: 32px;
+  text-align: center;
+}
+.config-sheet-divider {
+  height: 8px;
+  background: var(--cement);
+  margin: 8px 0;
+}
+.config-sheet-reset {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 14px 20px;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  color: var(--red);
+  font-weight: 600;
+  cursor: pointer;
 }
 .queue-list {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   list-style: none;
+  background: var(--white);
 }
 .queue-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 13px 16px;
+  padding: 0 16px;
   background: var(--white);
   border-bottom: 1px solid var(--line);
+  min-height: 52px;
 }
 .queue-num {
   font-family: 'Bebas Neue', cursive;
   font-size: 1rem;
   color: var(--ink-soft);
-  width: 22px;
+  width: 20px;
   text-align: center;
   flex-shrink: 0;
 }
-.queue-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
+.queue-name { flex: 1; font-weight: 500; font-size: 0.88rem; }
 .adult-badge {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   background: var(--amber);
@@ -348,8 +535,8 @@ body {
 }
 .remove-btn {
   border: none; background: none;
-  color: #bbb;
-  font-size: 1.1rem;
+  color: #ccc;
+  font-size: 1rem;
   width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; border-radius: 8px;
@@ -367,79 +554,104 @@ body {
 .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
 
 /* ── CONFIG strip ── */
-.config-strip {
-  background: var(--white);
-  border-top: 1px solid var(--line);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  flex-shrink: 0;
-  font-size: 0.8rem;
-  color: var(--ink-soft);
-}
-.config-strip label { display: flex; align-items: center; gap: 6px; }
-.config-strip input[type=number] {
-  width: 48px;
-  height: 36px;
-  border: 1.5px solid #ccc;
-  border-radius: 8px;
-  text-align: center;
-  font-family: 'Bebas Neue', cursive;
-  font-size: 1.1rem;
-  color: var(--green);
-  background: var(--chalk);
-}
-.config-strip input[type=number]:focus { outline: none; border-color: var(--green); }
-
-/* ── RESULTADOS SCREEN ── */
-  margin-top: 2px;
-  width: 100%;
+.btn-reset {
+  margin-left: auto;
   background: none;
   border: 1.5px solid #ddd;
   color: var(--ink-soft);
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 0.78rem;
-  min-height: 38px;
+  font-size: 0.75rem;
+  height: 36px;
+  padding: 0 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 5px;
+  white-space: nowrap;
   transition: border-color 0.15s, color 0.15s;
 }
 .btn-reset:active{ border-color: var(--red); color: var(--red); }
 
 /* ── RESULTADOS SCREEN ── */
-.results-list { list-style: none; flex: 1; overflow-y: auto; }
-.result-item {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--line);
-  background: var(--white);
+.results-list {
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--green);
+  padding: 12px;
+  display: block;
+  min-height: 0;
 }
-.result-item + .result-item { margin-top: 0; }
-.result-header {
+.results-list li + li {
+  margin-top: 8px;
+}
+.result-item {
+  background: var(--green-mid);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.result-item-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.15);
 }
 .result-badge {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  border-radius: 5px;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  border-radius: 4px;
   padding: 2px 8px;
-  text-transform: uppercase;
 }
-.result-badge.win { background: #dcfce7; color: #166534; }
-.result-badge.tie { background: #fef3c7; color: #92400e; }
-.result-time { font-size: 0.72rem; color: var(--ink-soft); margin-left: auto; }
-.result-names { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.5; }
-.result-names b { color: var(--ink); font-weight: 600; }
+.result-badge.win {
+  background: var(--amber);
+  color: var(--green);
+}
+.result-badge.tie {
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+}
+.result-time {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-weight: 600;
+}
+.result-teams {
+  display: flex;
+  gap: 1px;
+  padding: 0 0 0;
+}
+.result-team {
+  flex: 1;
+  padding: 8px 12px;
+}
+.result-team.winner {
+  background: rgba(255,255,255,0.06);
+}
+.result-team-label {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 0.68rem;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 3px;
+}
+.result-team.winner .result-team-label {
+  color: var(--amber);
+}
+.result-players {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+}
+.result-team.winner .result-players {
+  color: var(--white);
+  font-weight: 500;
+}
 
 
 /* ── BOTTOM SHEET ── */
@@ -543,14 +755,20 @@ body {
   <!-- HEADER -->
   <header class="app-header">
     <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC</div>
-    <div class="header-status" id="headerStatus"></div>
+    <div class="header-right">
+      <div class="header-status" id="headerStatus"></div>
+      <button class="header-config-btn" id="headerConfigBtn" title="Configurações">⚙</button>
+    </div>
   </header>
 
   <!-- TELA 1: EM QUADRA -->
   <div class="screen active" id="screenQuadra">
 
-    <!-- Times em quadra: scoreboard unificado com jogadores tocáveis -->
-    <div class="scoreboard-unified" id="scoreboardUnified"></div>
+    <!-- Bloco verde: times + timer -->
+    <div class="court-block">
+      <div class="scoreboard-unified" id="scoreboardUnified"></div>
+      <div class="court-timer" id="courtTimer" style="display:none"></div>
+    </div>
 
     <!-- Botões de resultado -->
     <div class="court-actions">
@@ -561,33 +779,70 @@ body {
       <button class="btn btn-start" id="startBtn">Iniciar partida</button>
       <button class="btn btn-tie"  id="tieBtn">Empate — tira os dois</button>
     </div>
-    <div class="court-hint" id="courtHint"></div>
   </div>
 
   <!-- TELA 2: FILA -->
-  <div class="screen" id="screenFila">
-    <div class="queue-screen">
-      <div class="add-player-bar">
-        <input type="text" id="nameInput" placeholder="Nome do jogador" autocomplete="off" enterkeyhint="done">
-        <div class="add-type-btns">
-          <button class="btn btn-child" id="addChildBtn">+ Criança</button>
-          <button class="btn btn-adult" id="addAdultBtn">+ Adulto</button>
-        </div>
+  <div class="screen" id="screenFila" style="background:var(--white)">
+    <!-- Campo de nome + botões compactos -->
+    <div class="fila-add-bar">
+      <input type="text" id="nameInput" placeholder="Nome do jogador" autocomplete="off" enterkeyhint="done">
+      <div class="fila-add-btns">
+        <button class="fila-add-btn fila-add-child" id="addChildBtn">+ Criança</button>
+        <button class="fila-add-btn fila-add-adult" id="addAdultBtn">+ Adulto</button>
       </div>
-      <div class="queue-meta" id="queueMeta"></div>
-      <ul class="queue-list" id="queueList"></ul>
     </div>
-    <div class="config-strip">
-      <label>Jogadores/time <input type="number" id="teamSize" min="1" max="15" value="5"></label>
-      <label>Adultos/time (meta) <input type="number" id="targetAdults" min="0" max="15" value="2"></label>
-      <button class="btn-reset" id="resetBtn">🗑 Limpar fila e quadra</button>
-    </div>
+    <!-- Meta info + lista -->
+    <div class="fila-meta" id="queueMeta"></div>
+    <ul class="queue-list" id="queueList"></ul>
+    <!-- Config inputs (hidden, driven by header sheet) -->
+    <input type="number" id="teamSize" min="1" max="15" value="5" style="display:none">
+    <input type="number" id="targetAdults" min="0" max="15" value="2" style="display:none">
+    <input type="number" id="matchDuration" min="1" max="60" value="10" style="display:none">
+    <button id="resetBtn" style="display:none"></button>
   </div>
 
   <!-- TELA 3: RESULTADOS -->
   <div class="screen" id="screenResultados">
     <ul class="results-list" id="resultsList"></ul>
   </div>
+
+  <!-- CONFIG SHEET -->
+  <div class="sheet-backdrop" id="configSheetBackdrop" style="display:none" onclick="closeConfigSheet()"></div>
+  <div class="config-sheet" id="configSheet" style="display:none">
+    <div class="sheet-handle"></div>
+    <div class="config-sheet-title">Configurações</div>
+    <div class="config-sheet-body">
+      <div class="config-sheet-row">
+        <label class="config-sheet-label">Jogadores por time</label>
+        <div class="config-sheet-stepper">
+          <button onclick="stepConfig('teamSizeSheet',-1)">−</button>
+          <span id="teamSizeSheet">5</span>
+          <button onclick="stepConfig('teamSizeSheet',1)">+</button>
+        </div>
+      </div>
+      <div class="config-sheet-row">
+        <label class="config-sheet-label">Adultos por time (meta)</label>
+        <div class="config-sheet-stepper">
+          <button onclick="stepConfig('targetAdultsSheet',-1)">−</button>
+          <span id="targetAdultsSheet">2</span>
+          <button onclick="stepConfig('targetAdultsSheet',1)">+</button>
+        </div>
+      </div>
+      <div class="config-sheet-row">
+        <label class="config-sheet-label">Tempo de jogo (minutos)</label>
+        <div class="config-sheet-stepper">
+          <button onclick="stepConfig('matchDurationSheet',-1)">−</button>
+          <span id="matchDurationSheet">10</span>
+          <button onclick="stepConfig('matchDurationSheet',1)">+</button>
+        </div>
+      </div>
+      <div class="config-sheet-divider"></div>
+      <button class="config-sheet-reset" id="resetBtn">🗑 Limpar fila e quadra</button>
+    </div>
+  </div>
+
+  <!-- TIMER ALERT OVERLAY -->
+  <div class="timer-alert-overlay" id="timerAlertOverlay"></div>
 
   <!-- BOTTOM SHEET (player actions) -->
   <div class="sheet-backdrop" id="sheetBackdrop" style="display:none"></div>
@@ -628,7 +883,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
    ESTADO & FIREBASE
 ═══════════════════════════════════════════ */
 let state = {
-  teamSize: 5, targetAdults: 2,
+  teamSize: 5, targetAdults: 2, matchDuration: 10,
   queue: [], courtA: [], courtB: [],
   history: []
 };
@@ -636,15 +891,149 @@ let swapSelection      = null;
 let substituteOpenFor  = null;
 let _fbReady           = false;
 
+/* ── TIMER (sincronizado via Firebase) ──────────────────────────
+   O estado do timer fica em state.timer e é salvo no Firebase.
+   Cada celular calcula o tempo restante localmente a cada segundo
+   a partir do timestamp de início — sem gravar no Firebase por tick.
+   ─────────────────────────────────────────────────────────────── */
+let timerInterval = null;
+let audioCtx      = null;
+let _lastAlerted  = false; // evita disparar alerta múltiplas vezes
+
+// state.timer = {
+//   running: bool,
+//   startedAt: ms timestamp (quando ▶ foi pressionado),
+//   secondsLeft: segundos restantes no momento em que foi pausado/criado,
+//   finished: bool
+// }
+
+function matchDuration(){ return Math.max(1, parseInt(state.matchDuration)||10); }
+
+function timerState(){ return state.timer || { running:false, startedAt:null, secondsLeft: matchDuration()*60, finished:false }; }
+
+function timerSecondsLeft(){
+  const t = timerState();
+  if(t.running && t.startedAt){
+    const elapsed = Math.floor((Date.now() - t.startedAt) / 1000);
+    return Math.max(0, t.secondsLeft - elapsed);
+  }
+  return t.secondsLeft ?? matchDuration()*60;
+}
+
+function timerStart(){
+  if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  const remaining = timerSecondsLeft();
+  state.timer = { running:true, startedAt:Date.now(), secondsLeft:remaining, finished:false };
+  _lastAlerted = false;
+  document.getElementById('timerAlertOverlay').classList.remove('active');
+  saveState();
+  timerTickLocal();
+}
+
+function timerPause(){
+  const remaining = timerSecondsLeft();
+  state.timer = { running:false, startedAt:null, secondsLeft:remaining, finished:false };
+  saveState();
+  clearInterval(timerInterval); timerInterval=null;
+  renderTimerBlock();
+}
+
+function timerReset(){
+  clearInterval(timerInterval); timerInterval=null;
+  state.timer = { running:false, startedAt:null, secondsLeft:matchDuration()*60, finished:false };
+  _lastAlerted = false;
+  document.getElementById('timerAlertOverlay').classList.remove('active');
+  saveState();
+  renderTimerBlock();
+}
+
+function timerTickLocal(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    const t = timerState();
+    if(!t.running){ clearInterval(timerInterval); return; }
+    const left = timerSecondsLeft();
+    renderTimerBlock();
+    if(left === 0 && !_lastAlerted){
+      _lastAlerted = true;
+      state.timer = { running:false, startedAt:null, secondsLeft:0, finished:true };
+      saveState();
+      timerTimeUp();
+      clearInterval(timerInterval);
+    }
+  }, 500); // 500ms para maior precisão
+}
+
+function timerTimeUp(){
+  document.getElementById('timerAlertOverlay').classList.add('active');
+  if(navigator.vibrate) navigator.vibrate([400,100,400,100,800]);
+  if(audioCtx){
+    try{
+      [0, 0.5, 1.0].forEach(offset => {
+        const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value=880;
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime+offset);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+offset+0.4);
+        osc.start(audioCtx.currentTime+offset);
+        osc.stop(audioCtx.currentTime+offset+0.4);
+      });
+    }catch(e){}
+  }
+  renderTimerBlock();
+  setTimeout(()=>{ document.getElementById('timerAlertOverlay').classList.remove('active'); }, 5000);
+}
+
+function timerFmt(sec){
+  const m=Math.floor(sec/60), s=sec%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function renderTimerBlock(){
+  const el=document.getElementById('courtTimer');
+  if(!el) return;
+  const t=timerState();
+  const left=timerSecondsLeft();
+  const urgent=(left<=60&&left>0)||t.finished;
+  const hasMatch=state.courtA.length>0||state.courtB.length>0;
+
+  if(!hasMatch){ el.style.display='none'; return; }
+  el.style.display='flex';
+
+  el.innerHTML=`
+    <div class="court-timer-display${urgent?' urgent':''}">${timerFmt(left)}</div>
+    <div class="court-timer-controls">
+      <button class="court-timer-btn${t.running?' running':''}">${t.running?'⏸ Pausar':'▶ Iniciar'}</button>
+      <button class="court-timer-btn reset-btn">↺ Reiniciar</button>
+    </div>`;
+  el.querySelector('.court-timer-btn:not(.reset-btn)').onclick=t.running?timerPause:timerStart;
+  el.querySelector('.reset-btn').onclick=timerReset;
+}
+
+// Quando Firebase atualiza o estado (outro celular pressionou ▶ ou ⏸),
+// reage localmente: inicia ou para o tick sem gravar de volta no Firebase
+function syncTimerFromRemote(){
+  const t=timerState();
+  clearInterval(timerInterval); timerInterval=null;
+  _lastAlerted=false;
+  document.getElementById('timerAlertOverlay').classList.remove('active');
+  if(t.running){ timerTickLocal(); }
+  renderTimerBlock();
+}
+
 function loadState(){
-  render(); // mostra a UI imediatamente; Firebase atualiza quando conectar
+  render();
   const tryListen = () => {
     if(typeof window._fbListen !== 'function'){ setTimeout(tryListen, 50); return; }
     window._fbListen((remote) => {
+      const wasRunning = timerState().running;
       state = Object.assign(state, remote);
       if(state.targetAdults === undefined && remote.maxAdults !== undefined)
         state.targetAdults = remote.maxAdults;
       _fbReady = true;
+      // Se o estado do timer mudou remotamente, sincroniza o tick local
+      const nowRunning = timerState().running;
+      if(wasRunning !== nowRunning || remote.timer) syncTimerFromRemote();
       render();
     });
   };
@@ -708,7 +1097,9 @@ function winTeam(which){
   const loserKey=which==='A'?'courtB':'courtA', winnerKey=which==='A'?'courtA':'courtB';
   const loser=state[loserKey]; if(!loser.length) return;
   addHistoryEntry({type:'win',time:Date.now(),winner:which,winnerNames:state[winnerKey].map(p=>p.name),loserNames:loser.map(p=>p.name)});
-  state.queue.push(...loser); state[loserKey]=[]; tryFillSlots(); saveState(); render();
+  state.queue.push(...loser); state[loserKey]=[]; tryFillSlots();
+  timerReset();
+  saveState(); render();
 }
 
 function tie(){
@@ -717,7 +1108,9 @@ function tie(){
   if(state.queue.length<2*ts) return;
   addHistoryEntry({type:'empate',time:Date.now(),teamANames:state.courtA.map(p=>p.name),teamBNames:state.courtB.map(p=>p.name)});
   state.queue.push(...state.courtA,...state.courtB); state.courtA=[]; state.courtB=[];
-  tryFillSlots(); saveState(); render();
+  tryFillSlots();
+  timerReset();
+  saveState(); render();
 }
 
 function addToQueue(name, adult){ state.queue.push({name,adult:!!adult}); saveState(); render(); }
@@ -753,9 +1146,16 @@ function toggleSwapSelection(which,idx){
 ═══════════════════════════════════════════ */
 function render(){
   const ts=teamSize(), target=targetAdults();
-  document.getElementById('teamSize').value=state.teamSize;
-  document.getElementById('targetAdults').value=state.targetAdults;
+  // Sync hidden inputs (used by legacy render code)
+  const tsEl=document.getElementById('teamSize'); if(tsEl) tsEl.value=state.teamSize;
+  const taEl=document.getElementById('targetAdults'); if(taEl) taEl.value=state.targetAdults;
+  const mdEl=document.getElementById('matchDuration'); if(mdEl) mdEl.value=state.matchDuration||10;
+  // Sync sheet steppers if open
+  const tss=document.getElementById('teamSizeSheet'); if(tss) tss.textContent=state.teamSize||5;
+  const tas=document.getElementById('targetAdultsSheet'); if(tas) tas.textContent=state.targetAdults||2;
+  const mds=document.getElementById('matchDurationSheet'); if(mds) mds.textContent=state.matchDuration||10;
   renderCourt(ts, target);
+  renderTimerBlock();
   renderQueue(ts, target);
   renderResults();
   renderHeader(ts);
@@ -763,10 +1163,12 @@ function render(){
 
 function renderHeader(ts){
   const el=document.getElementById('headerStatus');
+  if(!el) return;
   const waiting=Math.floor(state.queue.length/ts);
-  const inA=state.courtA.length, inB=state.courtB.length;
-  if(inA||inB) el.innerHTML=`Em jogo: ${inA}×${inB}<br>${waiting} time(s) na fila`;
-  else el.textContent='Nenhum jogo em andamento';
+  if(state.courtA.length||state.courtB.length)
+    el.textContent=`${waiting} time(s) na fila`;
+  else
+    el.textContent='';
 }
 
 /* ═══════════════════════════════════════════
@@ -896,11 +1298,6 @@ function renderCourt(ts, target){
   document.getElementById('winB').disabled=state.courtB.length===0;
   document.getElementById('tieBtn').disabled=!(bothFull&&enoughTie);
 
-  const hint=document.getElementById('courtHint');
-  if(bothFull&&!enoughTie) hint.textContent='Empate só tira os dois quando há 2 times completos esperando';
-  else if(bothFull&&enoughTie) hint.textContent='Empate agora tira os dois times de quadra';
-  else hint.textContent='';
-
   const makeTeamCol=(which, team)=>{
     const col=document.createElement('div');
     col.className='su-team';
@@ -982,27 +1379,51 @@ function renderResults(){
   list.innerHTML='';
   const history=state.history||[];
   if(history.length===0){
-    list.innerHTML='<li class="empty-state"><div class="icon">📊</div>Nenhuma partida registrada ainda.</li>';
+    const empty=document.createElement('li');
+    empty.className='empty-state';
+    empty.style.cssText='color:rgba(255,255,255,0.35)';
+    empty.innerHTML='<div class="icon">📊</div>Nenhuma partida registrada ainda.';
+    list.appendChild(empty);
     return;
   }
   history.slice().reverse().forEach(entry=>{
     const li=document.createElement('li');
     li.className='result-item';
     const time=new Date(entry.time).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
     if(entry.type==='win'){
+      const loserSide = entry.winner==='A' ? 'B' : 'A';
       li.innerHTML=`
-        <div class="result-header">
-          <span class="result-badge win">Vitória</span>
+        <div class="result-item-header">
+          <span class="result-badge win">🏆 Vitória — Time ${entry.winner}</span>
           <span class="result-time">${time}</span>
         </div>
-        <div class="result-names"><b>Time ${entry.winner}:</b> ${entry.winnerNames.join(', ')}<br><span>Saiu: ${entry.loserNames.join(', ')}</span></div>`;
+        <div class="result-teams">
+          <div class="result-team winner">
+            <div class="result-team-label">Time ${entry.winner} · Vencedor</div>
+            <div class="result-players">${entry.winnerNames.join('<br>')}</div>
+          </div>
+          <div class="result-team">
+            <div class="result-team-label">Time ${loserSide} · Saiu</div>
+            <div class="result-players">${entry.loserNames.join('<br>')}</div>
+          </div>
+        </div>`;
     } else {
       li.innerHTML=`
-        <div class="result-header">
-          <span class="result-badge tie">Empate</span>
+        <div class="result-item-header">
+          <span class="result-badge tie">Empate — os dois saíram</span>
           <span class="result-time">${time}</span>
         </div>
-        <div class="result-names">A: ${entry.teamANames.join(', ')}<br>B: ${entry.teamBNames.join(', ')}</div>`;
+        <div class="result-teams">
+          <div class="result-team">
+            <div class="result-team-label">Time A</div>
+            <div class="result-players">${entry.teamANames.join('<br>')}</div>
+          </div>
+          <div class="result-team">
+            <div class="result-team-label">Time B</div>
+            <div class="result-players">${entry.teamBNames.join('<br>')}</div>
+          </div>
+        </div>`;
     }
     list.appendChild(li);
   });
@@ -1028,45 +1449,52 @@ function handleAdd(adult){
   const name=input.value.trim();
   if(name){ addToQueue(name,adult); input.value=''; input.focus(); }
 }
-document.getElementById('addChildBtn').addEventListener('click',()=>handleAdd(false));
-document.getElementById('addAdultBtn').addEventListener('click',()=>handleAdd(true));
-document.getElementById('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleAdd(false); } });
-
-document.getElementById('startBtn').addEventListener('click',()=>{ tryFillSlots(); saveState(); render(); });
-document.getElementById('tieBtn').addEventListener('click',tie);
-document.getElementById('winA').addEventListener('click',()=>winTeam('A'));
-document.getElementById('winB').addEventListener('click',()=>winTeam('B'));
-
-document.getElementById('teamSize').addEventListener('change',e=>{
-  state.teamSize=Math.max(1,parseInt(e.target.value)||1);
-  syncCourtSizes(); saveState(); render();
-});
-document.getElementById('targetAdults').addEventListener('change',e=>{
-  state.targetAdults=Math.max(0,parseInt(e.target.value)||0);
+/* ── CONFIG SHEET ── */
+function openConfigSheet(){
+  // Sync sheet values from state
+  document.getElementById('teamSizeSheet').textContent = state.teamSize||5;
+  document.getElementById('targetAdultsSheet').textContent = state.targetAdults||2;
+  document.getElementById('matchDurationSheet').textContent = state.matchDuration||10;
+  document.getElementById('configSheet').style.display='block';
+  document.getElementById('configSheetBackdrop').style.display='block';
+}
+function closeConfigSheet(){
+  document.getElementById('configSheet').style.display='none';
+  document.getElementById('configSheetBackdrop').style.display='none';
+}
+function stepConfig(id, delta){
+  const el=document.getElementById(id);
+  const limits={teamSizeSheet:[1,15],targetAdultsSheet:[0,15],matchDurationSheet:[1,60]};
+  const [min,max]=limits[id];
+  const val=Math.min(max,Math.max(min,(parseInt(el.textContent)||0)+delta));
+  el.textContent=val;
+  // Apply to state immediately
+  if(id==='teamSizeSheet'){ state.teamSize=val; syncCourtSizesToTeamSize(); }
+  if(id==='targetAdultsSheet'){ state.targetAdults=val; }
+  if(id==='matchDurationSheet'){ state.matchDuration=val; if(!timerState().running){ state.timer={...timerState(),secondsLeft:val*60}; } }
   saveState(); render();
-});
+}
+document.getElementById('headerConfigBtn').addEventListener('click', openConfigSheet);
 
+// Config toggle (legacy — no longer used but keep for safety)
+// document.getElementById('configToggle')...
+
+// Reset button (now in config sheet)
 document.getElementById('resetBtn').addEventListener('click', () => {
   openSheet('Limpar fila e quadra?', body => {
     const msg = document.createElement('div');
     msg.style.cssText = 'padding:4px 20px 16px;font-size:.88rem;color:#666;line-height:1.5';
     msg.textContent = 'Remove todos os jogadores da fila e os times em quadra. O histórico de resultados é mantido.';
     body.appendChild(msg);
-
     const confirm = document.createElement('button');
     confirm.className = 'sheet-option';
     confirm.style.cssText = 'color:var(--red);font-weight:700';
     confirm.innerHTML = '<span class="opt-icon">🗑</span><span class="opt-text">Sim, limpar fila e quadra</span>';
     confirm.addEventListener('click', () => {
-      state.queue   = [];
-      state.courtA  = [];
-      state.courtB  = [];
-      saveState();
-      render();
-      closeSheet();
+      state.queue=[]; state.courtA=[]; state.courtB=[];
+      saveState(); render(); closeSheet(); closeConfigSheet();
     });
     body.appendChild(confirm);
-
     const cancel = document.createElement('button');
     cancel.className = 'sheet-option cancel';
     cancel.innerHTML = '<span class="opt-icon">✕</span><span class="opt-text">Cancelar</span>';
@@ -1074,6 +1502,35 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     body.appendChild(cancel);
   });
 });
+document.getElementById('addAdultBtn').addEventListener('click',()=>handleAdd(true));
+document.getElementById('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleAdd(false); } });
+
+/* ── FEEDBACK TÁTIL E VISUAL ── */
+function confirmFeedback(btn, action){
+  // Vibração curta de confirmação
+  if(navigator.vibrate) navigator.vibrate(60);
+  // Animação de confirmação no botão
+  btn.classList.remove('btn-confirming');
+  void btn.offsetWidth; // reflow para reiniciar animação
+  btn.classList.add('btn-confirming');
+  btn.addEventListener('animationend', () => btn.classList.remove('btn-confirming'), { once: true });
+  // Executa a ação depois de um tick (deixa o visual aparecer antes)
+  setTimeout(action, 80);
+}
+
+document.getElementById('startBtn').addEventListener('click', e => {
+  confirmFeedback(e.currentTarget, () => { tryFillSlots(); timerReset(); saveState(); render(); });
+});
+document.getElementById('tieBtn').addEventListener('click', e => {
+  confirmFeedback(e.currentTarget, tie);
+});
+document.getElementById('winA').addEventListener('click', e => {
+  confirmFeedback(e.currentTarget, () => winTeam('A'));
+});
+document.getElementById('winB').addEventListener('click', e => {
+  confirmFeedback(e.currentTarget, () => winTeam('B'));
+});
+
 
 loadState();
 </script>
