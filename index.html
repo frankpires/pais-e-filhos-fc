@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pais & Filhos FC</title>
-<meta name="theme-color" content="#1a3a2a">
+<meta name="theme-color" content="#1c1c2e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,18 +20,21 @@
 div, span, ul, li { outline: none; }
 html { overscroll-behavior: none; height: 100%; }
 :root {
-  --green:    #1a3a2a;
-  --green-mid:#24512e;
-  --green-lit:#2d6638;
-  --amber:    #f59e0b;
-  --amber-dim:#b97d09;
+  --green:    #1c2b1e;
+  --green-mid:#243324;
+  --green-lit:#2e4a30;
+  --amber:    #e8a020;
+  --amber-dim:#b57b18;
+  --bg:       #f0ede8;
+  --card:     #ffffff;
   --cement:   #e8e4dc;
   --chalk:    #f5f2ea;
   --white:    #ffffff;
-  --red:      #dc2626;
-  --ink:      #111;
-  --ink-soft: #555;
-  --line:     rgba(0,0,0,0.10);
+  --red:      #d94040;
+  --ink:      #1a1a1a;
+  --ink-soft: #6b6b6b;
+  --line:     rgba(0,0,0,0.08);
+  --shadow:   0 2px 12px rgba(0,0,0,0.08);
   --tab-h:    64px;
   --header-h: 56px;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -39,7 +42,7 @@ html { overscroll-behavior: none; height: 100%; }
 }
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: var(--cement);
+  background: var(--bg);
   color: var(--ink);
   height: 100%;
   overscroll-behavior: none;
@@ -54,89 +57,109 @@ body {
   max-width: 480px;
   margin: 0 auto;
   position: relative;
-  background: var(--cement);
+  background: var(--bg);
   box-shadow: 0 0 40px rgba(0,0,0,.15);
 }
 
 /* ── HEADER ── */
 .app-header {
-  background: var(--green);
-  color: var(--white);
+  background: var(--bg);
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(var(--safe-top) + 10px) 16px 10px;
+  padding: calc(var(--safe-top) + 12px) 20px 10px;
   min-height: calc(var(--header-h) + var(--safe-top));
   flex-shrink: 0;
   position: relative;
   z-index: 10;
+  border-bottom: 1px solid var(--line);
 }
 .app-title {
   font-family: 'Bebas Neue', cursive;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   letter-spacing: 1px;
   line-height: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
   flex-shrink: 0;
+  color: var(--ink);
 }
 .app-title .amp {
   font-family: Georgia, serif;
   font-style: italic;
   color: var(--amber);
-  font-size: 1.1em;
 }
+.header-left { display:flex; flex-direction:column; gap:3px; }
 .header-status {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  opacity: 0.75;
-  text-transform: uppercase;
-  text-align: right;
-  line-height: 1.3;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+}
+.sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #4caf7d;
+  flex-shrink: 0;
 }
 
 /* ── TIMER NA QUADRA (entre times e botões de ação) ── */
 .court-timer{
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 10px 16px 10px;
+  gap: 16px;
+  padding: 16px 20px;
   flex-shrink: 0;
-  background: var(--green);
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  margin: 12px 16px 0;
 }
 .court-timer-display{
   font-family: 'Bebas Neue', cursive;
-  font-size: 4rem;
+  font-size: 3.4rem;
   line-height: 1;
-  letter-spacing: 4px;
-  color: var(--white);
+  letter-spacing: 3px;
+  color: var(--ink);
   transition: color 0.3s;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  flex: 1;
 }
 .court-timer-display.urgent{ color: var(--red); }
 .court-timer-controls{
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 .court-timer-btn{
-  border: 1.5px solid rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.8);
-  border-radius: 8px;
-  font-size: 0.78rem;
+  border: none;
+  background: var(--green);
+  color: var(--white);
+  border-radius: 100px;
+  font-size: 0.85rem;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  padding: 6px 16px;
+  padding: 0 20px;
   cursor: pointer;
-  min-height: 36px;
-  letter-spacing: 0.3px;
+  min-height: 44px;
+  letter-spacing: 0.2px;
+  display: flex; align-items: center; gap: 8px;
 }
-.court-timer-btn:active{ background: rgba(255,255,255,0.18); }
-.court-timer-btn.running{ border-color: var(--red); color: var(--red); }
+.court-timer-btn:active{ filter: brightness(0.85); }
+.court-timer-btn.running{ background: #f0ede8; color: var(--red); border: 1.5px solid var(--red); }
+.court-timer-btn.reset-btn{
+  background: var(--bg);
+  color: var(--ink-soft);
+  width: 44px; padding: 0;
+  justify-content: center;
+  font-size: 1rem;
+  border-radius: 50%;
+}
 
 /* ── SCREENS ── */
 .screen {
@@ -145,14 +168,15 @@ body {
   display: none;
   flex-direction: column;
   min-height: 0;
+  background: var(--bg);
 }
 .screen.active { display: flex; }
 
 /* ── BOTTOM TAB BAR ── */
 .tab-bar {
   display: flex;
-  background: var(--green);
-  border-top: 2px solid var(--green-mid);
+  background: var(--card);
+  border-top: 1px solid var(--line);
   padding-bottom: var(--safe-bot);
   flex-shrink: 0;
   z-index: 10;
@@ -167,25 +191,34 @@ body {
   padding: 10px 0 8px;
   border: none;
   background: none;
-  color: rgba(255,255,255,0.45);
+  color: var(--ink-soft);
   font-family: 'Inter', sans-serif;
   font-size: 0.65rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  letter-spacing: 0.3px;
   cursor: pointer;
   transition: color 0.15s;
   min-height: var(--tab-h);
+  -webkit-tap-highlight-color: transparent;
 }
-.tab-btn .tab-icon { font-size: 1.35rem; line-height: 1; }
+.tab-btn .tab-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  width: 40px; height: 32px;
+  border-radius: 100px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.tab-btn .tab-icon svg { width: 22px; height: 22px; display: block; }
 .tab-btn.active { color: var(--amber); }
+.tab-btn.active .tab-icon { background: rgba(232,160,32,0.12); }
 
 /* ── SCOREBOARD UNIFICADO ── */
 .court-block{
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--green);
+  background: var(--bg);
   overflow: hidden;
   min-height: 0;
 }
@@ -193,18 +226,12 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--green);
+  background: transparent;
   display: flex;
-  gap: 2px;
-  padding: 10px 10px 0;
+  gap: 10px;
+  padding: 12px 16px 0;
   align-items: stretch;
   min-height: 0;
-}
-.su-team{
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 .su-empty-court{
   flex: 1;
@@ -213,7 +240,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 40px 24px;
-  color: rgba(255,255,255,0.3);
+  color: var(--ink-soft);
   text-align: center;
   font-size: 0.88rem;
   line-height: 1.6;
@@ -224,57 +251,61 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  padding: 14px 12px;
+  gap: 0;
 }
 .su-header{
-  font-family: 'Bebas Neue', cursive;
-  font-size: 0.75rem;
-  letter-spacing: 2px;
-  color: rgba(255,255,255,0.5);
-  padding: 4px 2px 6px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--ink);
+  padding: 0 2px 8px;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
 }
-.su-header .adult-info{ font-family:'Inter',sans-serif; font-size:0.65rem; color:var(--amber); font-weight:700; letter-spacing:0; }
+.su-header .adult-info{ font-family:'Inter',sans-serif; font-size:0.72rem; color:var(--ink-soft); font-weight:600; letter-spacing:0; }
 .su-player{
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--green-mid);
-  border-radius: 6px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 7px 2px;
   cursor: pointer;
-  transition: background 0.12s;
-  border: 1.5px solid transparent;
+  border-bottom: 1px solid var(--line);
   flex: 1;
+  min-height: 0;
 }
-.su-player:active{ background: var(--green-lit); }
+.su-player:last-of-type{ border-bottom: none; }
+.su-player:active{ background: var(--chalk); border-radius: 6px; }
 .su-player .adulto-tag{
-  font-size:0.58rem; font-weight:800; letter-spacing:.6px;
-  background:var(--amber); color:var(--green);
-  border-radius:4px; padding:2px 5px;
+  font-size:0.52rem; font-weight:800; letter-spacing:.5px;
+  background:var(--amber); color:#fff;
+  border-radius:3px; padding:2px 4px;
   flex-shrink:0; text-transform:uppercase; line-height:1.4;
 }
-.su-player .pname{ flex:1; color:var(--white); font-size:0.85rem; font-weight:500; line-height:1.2; }
-.su-player .ptap{ color:rgba(255,255,255,0.25); font-size:0.8rem; }
+.su-player .pname{ flex:1; color:var(--ink); font-size:0.82rem; font-weight:500; line-height:1.2; }
+.su-player .ptap{ color:#ccc; font-size:0.75rem; }
 .su-empty{
-  background: var(--green-mid);
-  border-radius: 8px;
-  padding: 16px 10px;
-  color: rgba(255,255,255,0.3);
+  flex:1;
+  display:flex; align-items:center; justify-content:center;
+  color: var(--ink-soft);
   font-size: 0.78rem;
   font-style: italic;
   text-align: center;
+  padding: 20px 8px;
 }
-/* ── VS divider between teams (timer moved to header) ── */
+/* ── VS divider between teams ── */
 .su-vs{
-  color: rgba(255,255,255,0.2);
+  color: var(--line);
   font-family: 'Bebas Neue', cursive;
-  font-size: 1.1rem;
-  padding: 28px 4px 0;
+  font-size: 1rem;
   flex-shrink: 0;
-  align-self: flex-start;
+  align-self: center;
 }
 
 /* Pulsing alert overlay when time is up */
@@ -295,8 +326,8 @@ body {
 
 /* ── COURT ACTIONS (fixed below scoreboard) ── */
 .court-actions {
-  background: var(--green);
-  padding: 12px 16px 16px;
+  background: var(--bg);
+  padding: 10px 16px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -308,7 +339,7 @@ body {
 }
 .btn {
   border: none;
-  border-radius: 10px;
+  border-radius: 100px;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 0.9rem;
@@ -329,9 +360,9 @@ body {
   filter: brightness(0.75);
 }
 .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; filter: none; }
-.btn-win { flex: 1; background: #2d6638; color: var(--white); }
-.btn-start { background: var(--amber); color: var(--green); width: 100%; }
-.btn-tie  { background: rgba(255,255,255,0.12); color: var(--white); border: 1px solid rgba(255,255,255,0.2); width: 100%; }
+.btn-win { flex: 1; background: var(--green); color: var(--white); border-radius: 100px !important; }
+.btn-start { background: var(--amber); color: #fff; width: 100%; border-radius: 100px !important; }
+.btn-tie  { background: var(--card); color: var(--ink-soft); border: none; width: 100%; border-radius: 100px !important; box-shadow: var(--shadow); }
 .btn-danger { background: var(--red); color: var(--white); }
 
 @keyframes btn-confirm {
@@ -346,6 +377,200 @@ body {
 /* ── COURT HINT ── */
 
 /* ── FILA SCREEN ── */
+/* ── FILA TOGGLE ── */
+.fila-toggle-bar {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
+  flex-shrink: 0;
+}
+.fila-toggle-btn {
+  flex: 1;
+  border: none;
+  background: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  padding: 12px 8px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.fila-toggle-btn.active {
+  color: var(--green);
+  border-bottom-color: var(--green);
+}
+
+/* ── MEMBROS LIST ── */
+.membros-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--bg);
+  min-height: 0;
+  padding: 8px 16px 4px;
+}
+.membro-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  min-height: 52px;
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  margin-bottom: 8px;
+  padding: 0 14px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.membro-item:active { filter: brightness(0.97); }
+.membro-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.membro-item.presente .membro-check {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--white);
+}
+.membro-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.membro-item.presente .membro-name { color: var(--ink); }
+.membro-item:not(.presente) .membro-name { color: var(--ink-soft); }
+.membro-badge-tipo {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  border-radius: 4px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.membro-badge-tipo.adulto { background: var(--amber); color: var(--green); }
+.membro-badge-tipo.crianca { background: #e8f5e9; color: #3a3a5c; }
+.membro-edit {
+  border: none; background: none;
+  color: #bbb; font-size: 1rem;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 8px; flex-shrink: 0;
+}
+.membro-edit:active { color: var(--amber); background: #fffbeb; }
+.membro-delete {
+  border: none; background: none;
+  color: #ddd; font-size: 1rem;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 8px; flex-shrink: 0;
+}
+.membro-delete:active { color: var(--red); background: #fee2e2; }
+
+/* ── MEMBROS FOOTER ── */
+.membros-sheet-add {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.membros-sheet-add input {
+  flex: 1;
+  height: 38px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  background: var(--chalk);
+  color: var(--ink);
+  min-width: 0;
+}
+.membros-sheet-add input:focus { outline: none; border-color: var(--green); }
+.membros-sheet-add .fila-add-btn {
+  height: 38px;
+  font-size: 0.72rem;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+.membros-sheet-list {
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--chalk);
+}
+.membros-sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+.membros-sheet-item:last-child { border-bottom: none; }
+.membros-sheet-item .membro-name { flex: 1; font-weight: 500; }
+.membros-sheet-empty {
+  padding: 14px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.membros-footer {
+  flex-shrink: 0;
+  background: var(--bg);
+  padding: 10px 16px;
+}
+.membro-item-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  min-height: 52px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.membro-item-add:active { background: var(--chalk); }
+.membro-item-add-icon {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1.5px dashed #ccc;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  color: #bbb;
+}
+.btn-confirmar {
+  width: 100%;
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: 100px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  height: 46px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 0.08s, transform 0.08s;
+}
+.btn-confirmar:active { transform: scale(0.97); filter: brightness(0.85); }
+.btn-confirmar:disabled { opacity: 0.4; }
+
 /* ── FILA META ── */
 .fila-meta {
   padding: 5px 16px;
@@ -354,8 +579,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.3px;
   flex-shrink: 0;
-  background: var(--white);
-  border-bottom: 1px solid var(--line);
+  background: var(--bg);
   outline: none;
   user-select: none;
   -webkit-user-select: none;
@@ -363,8 +587,8 @@ body {
 
 /* ── FILA ADD BAR ── */
 .fila-add-bar {
-  background: var(--white);
-  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  border-bottom: none;
   padding: 10px 12px 8px;
   display: flex;
   flex-direction: column;
@@ -374,16 +598,17 @@ body {
 .fila-add-bar input {
   width: 100%;
   height: 44px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 0 14px;
+  border: none;
+  border-radius: 100px;
+  padding: 0 18px;
   font-size: 16px;
   font-family: 'Inter', sans-serif;
-  background: var(--chalk);
+  background: var(--card);
   color: var(--ink);
-  transition: border-color 0.15s;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
 }
-.fila-add-bar input:focus { outline: none; border-color: var(--green); }
+.fila-add-bar input:focus { outline: none; box-shadow: 0 0 0 2px var(--green); }
 .fila-add-btns {
   display: flex;
   gap: 8px;
@@ -391,7 +616,7 @@ body {
 .fila-add-btn {
   flex: 1;
   border: none;
-  border-radius: 10px;
+  border-radius: 100px;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
@@ -401,7 +626,7 @@ body {
   transition: filter 0.08s, transform 0.08s;
 }
 .fila-add-btn:active { transform: scale(0.95); filter: brightness(0.82); }
-.fila-add-child { background: #2d6638; color: var(--white); }
+.fila-add-child { background: #3a3a5c; color: var(--white); }
 .fila-add-adult { background: var(--amber); color: var(--green); }
 
 /* ── HEADER RIGHT (status + config btn) ── */
@@ -412,17 +637,21 @@ body {
 }
 .header-config-btn {
   border: none;
-  background: rgba(255,255,255,0.12);
-  color: var(--white);
-  border-radius: 8px;
-  width: 34px; height: 34px;
+  background: var(--card);
+  color: var(--ink-soft);
+  border-radius: 50%;
+  width: 40px; height: 40px;
   font-size: 1rem;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
+  box-shadow: var(--shadow);
 }
-.header-config-btn:active { background: rgba(255,255,255,0.25); }
+.header-config-btn:active { background: #e8e8e8; }
+.header-config-btn svg { width: 18px; height: 18px; stroke-width: 1.75; }
+.btn svg { width: 16px; height: 16px; stroke-width: 2; }
+.membro-edit svg, .membro-delete svg, .remove-btn svg { width: 15px; height: 15px; stroke-width: 2; }
 
 /* ── CONFIG SHEET ── */
 .config-sheet {
@@ -463,7 +692,7 @@ body {
 }
 .config-sheet-stepper button {
   border: none;
-  background: var(--cement);
+  background: var(--bg);
   color: var(--ink);
   border-radius: 50%;
   width: 34px; height: 34px;
@@ -483,7 +712,7 @@ body {
 }
 .config-sheet-divider {
   height: 8px;
-  background: var(--cement);
+  background: var(--bg);
   margin: 8px 0;
 }
 .config-sheet-reset {
@@ -503,26 +732,31 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   list-style: none;
-  background: var(--white);
+  background: var(--bg);
+  padding: 8px 16px 4px;
 }
 .queue-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 16px;
-  background: var(--white);
-  border-bottom: 1px solid var(--line);
+  padding: 0 14px;
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
   min-height: 52px;
+  margin-bottom: 8px;
 }
 .queue-num {
   font-family: 'Bebas Neue', cursive;
-  font-size: 1rem;
-  color: var(--ink-soft);
-  width: 20px;
-  text-align: center;
+  font-size: 0.85rem;
+  color: var(--white);
+  background: var(--green);
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.queue-name { flex: 1; font-weight: 500; font-size: 0.88rem; }
+.queue-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
 .adult-badge {
   font-size: 0.58rem;
   font-weight: 700;
@@ -537,9 +771,9 @@ body {
   border: none; background: none;
   color: #ccc;
   font-size: 1rem;
-  width: 44px; height: 44px;
+  width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; border-radius: 8px;
+  cursor: pointer; border-radius: 50%;
   flex-shrink: 0;
 }
 .remove-btn:active { background: #fee2e2; color: var(--red); }
@@ -551,7 +785,8 @@ body {
   font-size: 0.88rem;
   line-height: 1.6;
 }
-.empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; display:flex; justify-content:center; }
+.empty-state .icon svg { width: 52px; height: 52px; opacity: 0.3; }
 
 /* ── CONFIG strip ── */
 .btn-reset {
@@ -580,8 +815,8 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--green);
-  padding: 12px;
+  background: var(--bg);
+  padding: 12px 16px;
   display: block;
   min-height: 0;
 }
@@ -589,67 +824,68 @@ body {
   margin-top: 8px;
 }
 .result-item {
-  background: var(--green-mid);
-  border-radius: 10px;
+  background: var(--card);
+  border-radius: 16px;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 .result-item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: rgba(0,0,0,0.15);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
 }
 .result-badge {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 0.85rem;
-  letter-spacing: 1.5px;
-  border-radius: 4px;
-  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 100px;
+  padding: 3px 10px;
 }
 .result-badge.win {
-  background: var(--amber);
-  color: var(--green);
+  background: #e8f5e9;
+  color: #2e7d32;
 }
 .result-badge.tie {
-  background: rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7);
+  background: var(--chalk);
+  color: var(--ink-soft);
 }
 .result-time {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.4);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-weight: 600;
+  color: var(--ink-soft);
+  font-weight: 500;
 }
 .result-teams {
   display: flex;
-  gap: 1px;
-  padding: 0 0 0;
 }
 .result-team {
   flex: 1;
-  padding: 8px 12px;
+  padding: 10px 14px;
+}
+.result-team + .result-team {
+  border-left: 1px solid var(--line);
 }
 .result-team.winner {
-  background: rgba(255,255,255,0.06);
+  background: #f8fff8;
 }
 .result-team-label {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 0.68rem;
-  letter-spacing: 1.5px;
-  color: rgba(255,255,255,0.4);
-  margin-bottom: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
 }
 .result-team.winner .result-team-label {
-  color: var(--amber);
+  color: #2e7d32;
 }
 .result-players {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.75);
+  color: var(--ink-soft);
   line-height: 1.5;
 }
 .result-team.winner .result-players {
-  color: var(--white);
+  color: var(--ink);
   font-weight: 500;
 }
 
@@ -746,7 +982,13 @@ body {
 .modal-body { font-size: 0.88rem; color: var(--ink-soft); margin-bottom: 20px; line-height: 1.5; }
 .modal-actions { display: flex; gap: 10px; }
 .modal-actions .btn { flex: 1; }
-.btn-secondary { background: var(--cement); color: var(--ink); }
+.btn-secondary { background: var(--bg); color: var(--ink); }
+
+.btn svg, .court-timer-btn svg { vertical-align: middle; display: inline-block; position: relative; top: -1px; }
+.membro-edit svg, .membro-delete svg, .remove-btn svg { display: block; }
+.membro-item-add-icon svg { display: block; }
+.opt-icon svg { display: inline-block; vertical-align: middle; }
+.membro-check svg { display: inline-block; vertical-align: middle; }
 </style>
 </head>
 <body>
@@ -754,11 +996,14 @@ body {
 
   <!-- HEADER -->
   <header class="app-header">
-    <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC</div>
-    <div class="header-right">
-      <div class="header-status" id="headerStatus"></div>
-      <button class="header-config-btn" id="headerConfigBtn" title="Configurações">⚙</button>
+    <div class="header-left">
+      <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC</div>
+      <div class="header-status" id="headerStatus">
+        <span class="sync-dot"></span>
+        <span id="headerStatusText">0 na fila</span>
+      </div>
     </div>
+    <button class="header-config-btn" id="headerConfigBtn" title="Configurações"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
   </header>
 
   <!-- TELA 1: EM QUADRA -->
@@ -766,15 +1011,15 @@ body {
 
     <!-- Bloco verde: times + timer -->
     <div class="court-block">
-      <div class="scoreboard-unified" id="scoreboardUnified"></div>
       <div class="court-timer" id="courtTimer" style="display:none"></div>
+      <div class="scoreboard-unified" id="scoreboardUnified"></div>
     </div>
 
     <!-- Botões de resultado -->
     <div class="court-actions">
       <div class="win-row">
-        <button class="btn btn-win" id="winA">🏆 Time A venceu</button>
-        <button class="btn btn-win" id="winB">🏆 Time B venceu</button>
+        <button class="btn btn-win" id="winA"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Time A venceu</button>
+        <button class="btn btn-win" id="winB"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Time B venceu</button>
       </div>
       <button class="btn btn-start" id="startBtn">Iniciar partida</button>
       <button class="btn btn-tie"  id="tieBtn">Empate — tira os dois</button>
@@ -782,19 +1027,35 @@ body {
   </div>
 
   <!-- TELA 2: FILA -->
-  <div class="screen" id="screenFila" style="background:var(--white)">
-    <!-- Campo de nome + botões compactos -->
-    <div class="fila-add-bar">
-      <input type="text" id="nameInput" placeholder="Nome do jogador" autocomplete="off" enterkeyhint="done">
-      <div class="fila-add-btns">
-        <button class="fila-add-btn fila-add-child" id="addChildBtn">+ Criança</button>
-        <button class="fila-add-btn fila-add-adult" id="addAdultBtn">+ Adulto</button>
+  <div class="screen" id="screenFila" style="background:var(--bg)">
+
+    <!-- Toggle Membros / Fila -->
+    <div class="fila-toggle-bar">
+      <button class="fila-toggle-btn active" id="toggleMembros"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Membros</button>
+      <button class="fila-toggle-btn" id="toggleFila"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="1.75"><path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg> Fila</button>
+    </div>
+
+    <!-- VIEW: MEMBROS DO GRUPO -->
+    <div id="viewMembros" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+      <ul class="membros-list" id="membrosList"></ul>
+      <div class="membros-footer">
+        <button class="btn-confirmar" id="confirmarPresencaBtn">
+          Confirmar presença e ir para a fila →
+        </button>
       </div>
     </div>
-    <!-- Meta info + lista -->
-    <div class="fila-meta" id="queueMeta"></div>
-    <ul class="queue-list" id="queueList"></ul>
-    <!-- Config inputs (hidden, driven by header sheet) -->
+
+    <!-- VIEW: FILA (convidados + manual) -->
+    <div id="viewFilaContent" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div class="fila-meta" id="queueMeta"></div>
+      <ul class="queue-list" id="queueList"></ul>
+      <!-- inputs ocultos mantidos para compatibilidade com handleAdd -->
+      <input type="text" id="nameInput" style="display:none" autocomplete="off">
+      <button id="addChildBtn" style="display:none"></button>
+      <button id="addAdultBtn" style="display:none"></button>
+    </div>
+
+    <!-- Config inputs (hidden) -->
     <input type="number" id="teamSize" min="1" max="15" value="5" style="display:none">
     <input type="number" id="targetAdults" min="0" max="15" value="2" style="display:none">
     <input type="number" id="matchDuration" min="1" max="60" value="10" style="display:none">
@@ -802,8 +1063,8 @@ body {
   </div>
 
   <!-- TELA 3: RESULTADOS -->
-  <div class="screen" id="screenResultados">
-    <ul class="results-list" id="resultsList"></ul>
+  <div class="screen" id="screenHistorico">
+    <ul class="results-list" id="historicoList"></ul>
   </div>
 
   <!-- CONFIG SHEET -->
@@ -837,7 +1098,7 @@ body {
         </div>
       </div>
       <div class="config-sheet-divider"></div>
-      <button class="config-sheet-reset" id="resetBtn">🗑 Limpar fila e quadra</button>
+      <button class="config-sheet-reset" id="resetBtn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Limpar fila e quadra</button>
     </div>
   </div>
 
@@ -855,13 +1116,13 @@ body {
   <!-- BOTTOM TAB BAR -->
   <nav class="tab-bar">
     <button class="tab-btn active" data-screen="screenQuadra" id="tabQuadra">
-      <span class="tab-icon">⚽</span>Em Quadra
+      <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11.1 7.1a16.55 16.55 0 0 1 10.9 4"/><path d="M12 12a12.6 12.6 0 0 1-8.7 5"/><path d="M16.8 13.6a16.55 16.55 0 0 1-9 7.5"/><path d="M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10"/><path d="M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5"/><circle cx="12" cy="12" r="10"/></svg></span>Em Quadra
     </button>
     <button class="tab-btn" data-screen="screenFila" id="tabFila">
-      <span class="tab-icon">👥</span>Fila
+      <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></span>Fila
     </button>
-    <button class="tab-btn" data-screen="screenResultados" id="tabResultados">
-      <span class="tab-icon">📊</span>Resultados
+    <button class="tab-btn" data-screen="screenHistorico" id="tabHistorico">
+      <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>Histórico
     </button>
   </nav>
 </div>
@@ -885,11 +1146,13 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 let state = {
   teamSize: 5, targetAdults: 2, matchDuration: 10,
   queue: [], courtA: [], courtB: [],
-  history: []
+  history: [],
+  membros: []  // [{id, name, adult}] — cadastro permanente do grupo
 };
 let swapSelection      = null;
 let substituteOpenFor  = null;
-let _fbReady           = false;
+let _fbReady            = false;
+let _localChangePending = false;
 
 /* ── TIMER (sincronizado via Firebase) ──────────────────────────
    O estado do timer fica em state.timer e é salvo no Firebase.
@@ -1000,11 +1263,12 @@ function renderTimerBlock(){
   if(!hasMatch){ el.style.display='none'; return; }
   el.style.display='flex';
 
+  const startLabel = t.running ? '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/><rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/></svg> Pausar' : '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><polygon points=\"6 3 20 12 6 21 6 3\"/></svg> Iniciar';
   el.innerHTML=`
     <div class="court-timer-display${urgent?' urgent':''}">${timerFmt(left)}</div>
     <div class="court-timer-controls">
-      <button class="court-timer-btn${t.running?' running':''}">${t.running?'⏸ Pausar':'▶ Iniciar'}</button>
-      <button class="court-timer-btn reset-btn">↺ Reiniciar</button>
+      <button class="court-timer-btn${t.running?' running':''}">${startLabel}</button>
+      <button class="court-timer-btn reset-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
     </div>`;
   el.querySelector('.court-timer-btn:not(.reset-btn)').onclick=t.running?timerPause:timerStart;
   el.querySelector('.reset-btn').onclick=timerReset;
@@ -1026,6 +1290,9 @@ function loadState(){
   const tryListen = () => {
     if(typeof window._fbListen !== 'function'){ setTimeout(tryListen, 50); return; }
     window._fbListen((remote) => {
+      // Ignora atualizações do Firebase enquanto há uma mudança local em andamento
+      // (evita que o Firebase sobrescreva o estado antes de ele ser salvo)
+      if(_localChangePending) return;
       const wasRunning = timerState().running;
       state = Object.assign(state, remote);
       if(state.targetAdults === undefined && remote.maxAdults !== undefined)
@@ -1041,11 +1308,14 @@ function loadState(){
 }
 
 function saveState(isRetry){
+  _localChangePending = true;
   if(typeof window._fbSave !== 'function'){ setTimeout(() => saveState(false), 100); return; }
-  window._fbSave(state).catch(e => {
-    if(!isRetry){ console.warn('Retry save:', e); setTimeout(() => saveState(true), 1500); }
-    else console.warn('Sync failed:', e);
-  });
+  window._fbSave(state)
+    .then(() => { setTimeout(() => { _localChangePending = false; }, 1000); })
+    .catch(e => {
+      if(!isRetry){ console.warn('Retry save:', e); setTimeout(() => saveState(true), 1500); }
+      else { _localChangePending = false; console.warn('Sync failed:', e); }
+    });
 }
 
 /* ═══════════════════════════════════════════
@@ -1097,7 +1367,13 @@ function winTeam(which){
   const loserKey=which==='A'?'courtB':'courtA', winnerKey=which==='A'?'courtA':'courtB';
   const loser=state[loserKey]; if(!loser.length) return;
   addHistoryEntry({type:'win',time:Date.now(),winner:which,winnerNames:state[winnerKey].map(p=>p.name),loserNames:loser.map(p=>p.name)});
-  state.queue.push(...loser); state[loserKey]=[]; tryFillSlots();
+  const queueBefore = state.queue.length; // jogadores na fila antes dos perdedores entrarem
+  state.queue.push(...loser);
+  state[loserKey]=[];
+  // Só preenche a vaga automaticamente se havia jogadores suficientes
+  // na fila ANTES dos perdedores — senão seria o mesmo time voltando
+  const ts = teamSize();
+  if(queueBefore >= ts) tryFillSlots();
   timerReset();
   saveState(); render();
 }
@@ -1107,7 +1383,8 @@ function tie(){
   if(!state.courtA.length||!state.courtB.length) return;
   if(state.queue.length<2*ts) return;
   addHistoryEntry({type:'empate',time:Date.now(),teamANames:state.courtA.map(p=>p.name),teamBNames:state.courtB.map(p=>p.name)});
-  state.queue.push(...state.courtA,...state.courtB); state.courtA=[]; state.courtB=[];
+  state.queue.push(...state.courtA,...state.courtB);
+  state.courtA=[]; state.courtB=[];
   tryFillSlots();
   timerReset();
   saveState(); render();
@@ -1146,6 +1423,7 @@ function toggleSwapSelection(which,idx){
 ═══════════════════════════════════════════ */
 function render(){
   const ts=teamSize(), target=targetAdults();
+  // lucide icons re-initialized after render (see bottom)
   // Sync hidden inputs (used by legacy render code)
   const tsEl=document.getElementById('teamSize'); if(tsEl) tsEl.value=state.teamSize;
   const taEl=document.getElementById('targetAdults'); if(taEl) taEl.value=state.targetAdults;
@@ -1154,21 +1432,21 @@ function render(){
   const tss=document.getElementById('teamSizeSheet'); if(tss) tss.textContent=state.teamSize||5;
   const tas=document.getElementById('targetAdultsSheet'); if(tas) tas.textContent=state.targetAdults||2;
   const mds=document.getElementById('matchDurationSheet'); if(mds) mds.textContent=state.matchDuration||10;
+  if(!state.membros) state.membros=[];
+  renderMembros();
   renderCourt(ts, target);
   renderTimerBlock();
   renderQueue(ts, target);
   renderResults();
   renderHeader(ts);
+  
 }
 
 function renderHeader(ts){
-  const el=document.getElementById('headerStatus');
+  const el=document.getElementById('headerStatusText');
   if(!el) return;
-  const waiting=Math.floor(state.queue.length/ts);
-  if(state.courtA.length||state.courtB.length)
-    el.textContent=`${waiting} time(s) na fila`;
-  else
-    el.textContent='';
+  const waiting=state.queue.length;
+  el.textContent=`${waiting} na fila`;
 }
 
 /* ═══════════════════════════════════════════
@@ -1204,7 +1482,7 @@ function openPlayerSheet(which, idx){
     swapSelection=null; saveState(); render(); closeSheet(); return;
   }
 
-  const title=`${player.name}${player.adult?' · <span style="font-size:.7rem;font-weight:700;background:var(--amber);color:#1a3a2a;border-radius:3px;padding:1px 6px;vertical-align:middle">ADULTO</span>':''}`;
+  const title=`${player.name}${player.adult?' · <span style="font-size:.7rem;font-weight:700;background:var(--amber);color:#1c1c2e;border-radius:3px;padding:1px 6px;vertical-align:middle">ADULTO</span>':''}`;
   openSheet(title, body=>{
     // ── Tab switcher ──
     const tabs=document.createElement('div');
@@ -1236,13 +1514,13 @@ function openPlayerSheet(which, idx){
       const empty=document.createElement('div');
       empty.className='sheet-option';
       empty.style.cssText='color:#aaa;cursor:default';
-      empty.innerHTML='<span class="opt-icon">👥</span><span class="opt-text">Fila vazia<span class="opt-sub">Adicione jogadores na aba Fila</span></span>';
+      empty.innerHTML='<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"1.75\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg></span><span class="opt-text">Fila vazia<span class="opt-sub">Adicione jogadores na aba Fila</span></span>';
       paneSubstitute.appendChild(empty);
     } else {
       state.queue.forEach((qp,qi)=>{
         const opt=document.createElement('button');
         opt.className='sheet-option';
-        opt.innerHTML=`<span class="opt-icon">${qp.adult?'🟡':'⚪'}</span><span class="opt-text">${qp.name}<span class="opt-sub">${qp.adult?'Adulto — ':'Criança — '}posição ${qi+1} na fila</span></span>`;
+        opt.innerHTML=`<span class="opt-icon">${qp.adult?'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"0\"><circle cx=\"12\" cy=\"12\" r=\"6\" fill=\"currentColor\"/></svg>':'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"6\"/></svg>'}</span><span class="opt-text">${qp.name}<span class="opt-sub">${qp.adult?'Adulto — ':'Criança — '}posição ${qi+1} na fila</span></span>`;
         opt.addEventListener('click',()=>{ substitutePlayer(which,idx,qi); closeSheet(); });
         paneSubstitute.appendChild(opt);
       });
@@ -1253,13 +1531,13 @@ function openPlayerSheet(which, idx){
       const empty=document.createElement('div');
       empty.className='sheet-option';
       empty.style.cssText='color:#aaa;cursor:default';
-      empty.innerHTML=`<span class="opt-icon">👥</span><span class="opt-text">Time ${otherWhich} vazio</span>`;
+      empty.innerHTML=`<span class="opt-icon"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' width='14' height='14' stroke-width='1.75'><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="opt-text">Time ${otherWhich} vazio</span>`;
       paneSwap.appendChild(empty);
     } else {
       otherTeam.forEach((op,oi)=>{
         const opt=document.createElement('button');
         opt.className='sheet-option';
-        opt.innerHTML=`<span class="opt-icon">${op.adult?'🟡':'⚪'}</span><span class="opt-text">${op.name}<span class="opt-sub">${op.adult?'Adulto':'Criança'} · Time ${otherWhich}</span></span>`;
+        opt.innerHTML=`<span class="opt-icon">${op.adult?'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"0\"><circle cx=\"12\" cy=\"12\" r=\"6\" fill=\"currentColor\"/></svg>':'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"6\"/></svg>'}</span><span class="opt-text">${op.name}<span class="opt-sub">${op.adult?'Adulto':'Criança'} · Time ${otherWhich}</span></span>`;
         opt.addEventListener('click',()=>{
           const tA=which==='A'?state.courtA:state.courtB;
           const tB=otherWhich==='A'?state.courtA:state.courtB;
@@ -1276,7 +1554,7 @@ function openPlayerSheet(which, idx){
     // ── Cancelar ──
     const cancel=document.createElement('button');
     cancel.className='sheet-option cancel';
-    cancel.innerHTML='<span class="opt-icon">✕</span><span class="opt-text">Cancelar</span>';
+    cancel.innerHTML='<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></span><span class="opt-text">Cancelar</span>';
     cancel.addEventListener('click', closeSheet);
     body.appendChild(cancel);
   });
@@ -1293,7 +1571,7 @@ function renderCourt(ts, target){
 
   const startBtn=document.getElementById('startBtn');
   startBtn.disabled=!canStart;
-  startBtn.textContent=emptySlots===2?'⚽ Iniciar partida':'⚽ Preencher vaga';
+  startBtn.innerHTML=emptySlots===2?'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"15\" height=\"15\" stroke-width=\"1.75\"><path d=\"M11.1 7.1a16.55 16.55 0 0 1 10.9 4\"/><path d=\"M12 12a12.6 12.6 0 0 1-8.7 5\"/><path d=\"M16.8 13.6a16.55 16.55 0 0 1-9 7.5\"/><path d=\"M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10\"/><path d=\"M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg> Iniciar partida':'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"15\" height=\"15\" stroke-width=\"1.75\"><path d=\"M11.1 7.1a16.55 16.55 0 0 1 10.9 4\"/><path d=\"M12 12a12.6 12.6 0 0 1-8.7 5\"/><path d=\"M16.8 13.6a16.55 16.55 0 0 1-9 7.5\"/><path d=\"M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10\"/><path d=\"M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg> Preencher vaga';
   document.getElementById('winA').disabled=state.courtA.length===0;
   document.getElementById('winB').disabled=state.courtB.length===0;
   document.getElementById('tieBtn').disabled=!(bothFull&&enoughTie);
@@ -1333,7 +1611,7 @@ function renderCourt(ts, target){
   if(state.courtA.length===0 && state.courtB.length===0){
     const empty=document.createElement('div');
     empty.className='su-empty-court';
-    empty.innerHTML='<div class="icon">⚽</div>Nenhum time em quadra.<br>Adicione jogadores na aba Fila<br>e toque em <b>Iniciar partida</b>.';
+    empty.innerHTML='<div class="icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"48\" height=\"48\" stroke-width=\"1.5\"><path d=\"M11.1 7.1a16.55 16.55 0 0 1 10.9 4\"/><path d=\"M12 12a12.6 12.6 0 0 1-8.7 5\"/><path d=\"M16.8 13.6a16.55 16.55 0 0 1-9 7.5\"/><path d=\"M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10\"/><path d=\"M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg></div>Nenhum time em quadra.<br>Adicione jogadores na aba Fila<br>e toque em <b>Iniciar partida</b>.';
     container.appendChild(empty);
   } else {
     container.appendChild(makeTeamCol('A', state.courtA));
@@ -1346,6 +1624,46 @@ function renderCourt(ts, target){
 
 function renderCourtEdit(){} // mantido para não quebrar chamadas antigas
 
+function abrirAddConvidado(){
+  openSheet('Adicionar convidado', body => {
+    body.style.cssText = 'padding:16px 20px;display:flex;flex-direction:column;gap:12px';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Nome do convidado';
+    input.autocomplete = 'off';
+    input.style.cssText = 'width:100%;height:48px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:16px;font-family:Inter,sans-serif;background:var(--chalk);color:var(--ink);outline:none';
+    input.addEventListener('focus', () => input.style.borderColor = 'var(--green)');
+    input.addEventListener('blur', () => input.style.borderColor = '#ddd');
+    body.appendChild(input);
+    const btns = document.createElement('div');
+    btns.style.cssText = 'display:flex;gap:8px';
+    const addBtn = (label, adult) => {
+      const b = document.createElement('button');
+      b.className = `fila-add-btn ${adult ? 'fila-add-adult' : 'fila-add-child'}`;
+      b.style.cssText = 'flex:1;height:48px;font-size:.9rem';
+      b.textContent = label;
+      b.addEventListener('click', () => {
+        const name = input.value.trim();
+        if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
+        addToQueue(name, adult); saveState(); render();
+        input.value = ''; input.style.borderColor = '#ddd'; input.focus();
+        b.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg> ' + label;
+        setTimeout(() => b.textContent = label, 1000);
+      });
+      return b;
+    };
+    btns.appendChild(addBtn('+ Criança', false));
+    btns.appendChild(addBtn('+ Adulto', true));
+    body.appendChild(btns);
+    const cancel = document.createElement('button');
+    cancel.className = 'sheet-option cancel';
+    cancel.innerHTML = '<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></span><span class="opt-text">Fechar</span>';
+    cancel.addEventListener('click', closeSheet);
+    body.appendChild(cancel);
+    setTimeout(() => input.focus(), 100);
+  });
+}
+
 function renderQueue(ts, target){
   const list=document.getElementById('queueList');
   const meta=document.getElementById('queueMeta');
@@ -1354,13 +1672,6 @@ function renderQueue(ts, target){
   const teams=Math.floor(state.queue.length/ts);
   meta.textContent=`${state.queue.length} jogador(es) · ${adults} adulto(s) · ${teams} time(s) completo(s)`;
 
-  if(state.queue.length===0){
-    const empty=document.createElement('li');
-    empty.className='empty-state';
-    empty.innerHTML='<div class="icon">👥</div>Nenhum jogador na fila.<br>Adicione pelo campo acima.';
-    list.appendChild(empty);
-    return;
-  }
   state.queue.forEach((player,i)=>{
     const li=document.createElement('li');
     li.className='queue-item';
@@ -1368,34 +1679,42 @@ function renderQueue(ts, target){
       <span class="queue-num">${i+1}</span>
       <span class="queue-name">${player.name}</span>
       ${player.adult?'<span class="adult-badge">ADULTO</span>':''}
-      <button class="remove-btn" title="Remover">✕</button>`;
+      <button class="remove-btn" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
     li.querySelector('.remove-btn').addEventListener('click',()=>removeFromQueue(i));
     list.appendChild(li);
   });
+
+  // "+ Adicionar convidado" como última linha da lista
+  const addLi=document.createElement('li');
+  addLi.className='membro-item-add';
+  addLi.innerHTML=`<span class="membro-item-add-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"11\" height=\"11\" stroke-width=\"2.5\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></span><span>Adicionar convidado</span>`;
+  addLi.addEventListener('click', abrirAddConvidado);
+  list.appendChild(addLi);
 }
 
 function renderResults(){
-  const list=document.getElementById('resultsList');
+  const list=document.getElementById('historicoList');
   list.innerHTML='';
   const history=state.history||[];
   if(history.length===0){
     const empty=document.createElement('li');
     empty.className='empty-state';
     empty.style.cssText='color:rgba(255,255,255,0.35)';
-    empty.innerHTML='<div class="icon">📊</div>Nenhuma partida registrada ainda.';
+    empty.innerHTML='<div class="icon">' + '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.35"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>' + '</div>Nenhuma partida registrada ainda.';
     list.appendChild(empty);
     return;
   }
   history.slice().reverse().forEach(entry=>{
     const li=document.createElement('li');
     li.className='result-item';
-    const time=new Date(entry.time).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const dt = new Date(entry.time);
+    const time = dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 
     if(entry.type==='win'){
       const loserSide = entry.winner==='A' ? 'B' : 'A';
       li.innerHTML=`
         <div class="result-item-header">
-          <span class="result-badge win">🏆 Vitória — Time ${entry.winner}</span>
+          <span class="result-badge win"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2\"><path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\"/><path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\"/><path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\"/><path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\"/></svg> Vitória — Time ${entry.winner}</span>
           <span class="result-time">${time}</span>
         </div>
         <div class="result-teams">
@@ -1451,7 +1770,6 @@ function handleAdd(adult){
 }
 /* ── CONFIG SHEET ── */
 function openConfigSheet(){
-  // Sync sheet values from state
   document.getElementById('teamSizeSheet').textContent = state.teamSize||5;
   document.getElementById('targetAdultsSheet').textContent = state.targetAdults||2;
   document.getElementById('matchDurationSheet').textContent = state.matchDuration||10;
@@ -1489,7 +1807,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     const confirm = document.createElement('button');
     confirm.className = 'sheet-option';
     confirm.style.cssText = 'color:var(--red);font-weight:700';
-    confirm.innerHTML = '<span class="opt-icon">🗑</span><span class="opt-text">Sim, limpar fila e quadra</span>';
+    confirm.innerHTML = '<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><path d=\"M3 6h18\"/><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\"/><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\"/></svg></span><span class="opt-text">Sim, limpar fila e quadra</span>';
     confirm.addEventListener('click', () => {
       state.queue=[]; state.courtA=[]; state.courtB=[];
       saveState(); render(); closeSheet(); closeConfigSheet();
@@ -1497,7 +1815,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     body.appendChild(confirm);
     const cancel = document.createElement('button');
     cancel.className = 'sheet-option cancel';
-    cancel.innerHTML = '<span class="opt-icon">✕</span><span class="opt-text">Cancelar</span>';
+    cancel.innerHTML = '<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></span><span class="opt-text">Cancelar</span>';
     cancel.addEventListener('click', closeSheet);
     body.appendChild(cancel);
   });
@@ -1533,7 +1851,244 @@ document.getElementById('winB').addEventListener('click', e => {
 });
 
 
+/* ═══════════════════════════════════════════
+   MEMBROS DO GRUPO
+═══════════════════════════════════════════ */
+// presença marcada localmente (não persiste — só vale no dia)
+let presencasMarcadas = new Set();
+
+function addMembro(name, adult){
+  if(!name.trim()) return;
+  if(!state.membros) state.membros = [];
+  const id = Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  state.membros.push({ id, name: name.trim(), adult: !!adult });
+  saveState();
+  renderMembros();
+}
+
+function removeMembro(id){
+  state.membros = (state.membros||[]).filter(m => m.id !== id);
+  presencasMarcadas.delete(id);
+  saveState();
+  renderMembros();
+}
+
+function togglePresenca(id){
+  if(presencasMarcadas.has(id)) presencasMarcadas.delete(id);
+  else presencasMarcadas.add(id);
+  renderMembros();
+}
+
+function confirmarPresenca(){
+  const membros = state.membros || [];
+  // Membros confirmados formam o início da fila
+  // Mantém a ordem do cadastro
+  const confirmados = membros.filter(m => presencasMarcadas.has(m.id));
+  if(!confirmados.length) return;
+
+  // Remove membros confirmados que já estejam na fila (evita duplicata)
+  const nomesJaNaFila = new Set(state.queue.map(p => p.name.toLowerCase()));
+  const novos = confirmados.filter(m => !nomesJaNaFila.has(m.name.toLowerCase()));
+
+  // Insere os confirmados no INÍCIO da fila (antes dos convidados)
+  state.queue = [
+    ...novos.map(m => ({ name: m.name, adult: m.adult })),
+    ...state.queue
+  ];
+
+  presencasMarcadas.clear();
+  saveState();
+  render();
+  // Muda para a view da fila para mostrar o resultado
+  switchFilaView('fila');
+}
+
+function renderMembros(){
+  const list = document.getElementById('membrosList');
+  const membros = state.membros || [];
+  list.innerHTML = '';
+
+  if(membros.length === 0){
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.innerHTML = '<div class="icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"48\" height=\"48\" stroke-width=\"1.5\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg></div>Nenhum membro cadastrado.<br>Toque abaixo para adicionar o primeiro.';
+    list.appendChild(empty);
+  } else {
+    membros.forEach(m => {
+      const li = document.createElement('li');
+      li.className = 'membro-item' + (presencasMarcadas.has(m.id) ? ' presente' : '');
+      li.innerHTML = `
+        <div class="membro-check">${presencasMarcadas.has(m.id) ? '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg>' : ''}</div>
+        <span class="membro-name">${m.name}</span>
+        <span class="membro-badge-tipo ${m.adult?'adulto':'crianca'}">${m.adult?'Adulto':'Criança'}</span>
+        <button class="membro-edit" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
+        <button class="membro-delete" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
+      li.querySelector('.membro-check').addEventListener('click', () => togglePresenca(m.id));
+      li.querySelector('.membro-name').addEventListener('click', () => togglePresenca(m.id));
+      li.querySelector('.membro-badge-tipo').addEventListener('click', () => togglePresenca(m.id));
+      li.querySelector('.membro-edit').addEventListener('click', (e) => {
+        e.stopPropagation();
+        editarMembro(m.id);
+      });
+      li.querySelector('.membro-delete').addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeMembro(m.id);
+      });
+      list.appendChild(li);
+    });
+  }
+
+  // "+ Adicionar membro" como última linha da lista — rola junto com o conteúdo,
+  // não ocupa espaço fixo entre a lista e o botão de confirmar presença
+  const addLi = document.createElement('li');
+  addLi.className = 'membro-item-add';
+  addLi.innerHTML = `<span class="membro-item-add-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"11\" height=\"11\" stroke-width=\"2.5\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></span><span>Adicionar membro</span>`;
+  addLi.addEventListener('click', abrirAddMembro);
+  list.appendChild(addLi);
+
+  const confirmarBtn = document.getElementById('confirmarPresencaBtn');
+  const count = presencasMarcadas.size;
+  confirmarBtn.textContent = count > 0
+    ? `Confirmar ${count} presente(s) e entrar na fila →`
+    : 'Marque os presentes acima';
+  confirmarBtn.disabled = count === 0;
+}
+
+/* ── TOGGLE entre views da aba Fila ── */
+function switchFilaView(view){
+  const isMembros = view === 'membros';
+  document.getElementById('viewMembros').style.display = isMembros ? 'flex' : 'none';
+  document.getElementById('viewFilaContent').style.display = isMembros ? 'none' : 'flex';
+  document.getElementById('toggleMembros').classList.toggle('active', isMembros);
+  document.getElementById('toggleFila').classList.toggle('active', !isMembros);
+  if(!isMembros) renderQueue(teamSize(), targetAdults());
+}
+
+document.getElementById('toggleMembros').addEventListener('click', () => switchFilaView('membros'));
+document.getElementById('toggleFila').addEventListener('click', () => switchFilaView('fila'));
+
+// Adicionar membro
+function editarMembro(id){
+  const m = (state.membros||[]).find(x => x.id === id);
+  if(!m) return;
+
+  openSheet(`Editar membro`, body => {
+    body.style.cssText = 'padding:16px 20px;display:flex;flex-direction:column;gap:12px';
+
+    // Nome
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = m.name;
+    input.style.cssText = 'width:100%;height:48px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:16px;font-family:Inter,sans-serif;background:var(--chalk);color:var(--ink);outline:none';
+    input.addEventListener('focus', () => input.style.borderColor = 'var(--green)');
+    input.addEventListener('blur',  () => input.style.borderColor = '#ddd');
+    body.appendChild(input);
+
+    // Tipo: Criança / Adulto toggle
+    let isAdult = m.adult;
+    const typeRow = document.createElement('div');
+    typeRow.style.cssText = 'display:flex;gap:8px';
+
+    const mkTypeBtn = (label, adult) => {
+      const b = document.createElement('button');
+      b.className = `fila-add-btn ${adult ? 'fila-add-adult' : 'fila-add-child'}`;
+      b.style.cssText = `flex:1;height:44px;font-size:.88rem;opacity:${isAdult===adult?'1':'0.4'}`;
+      b.textContent = label;
+      b.addEventListener('click', () => {
+        isAdult = adult;
+        typeRow.querySelectorAll('button').forEach(x => x.style.opacity = '0.4');
+        b.style.opacity = '1';
+      });
+      return b;
+    };
+    typeRow.appendChild(mkTypeBtn('Criança', false));
+    typeRow.appendChild(mkTypeBtn('Adulto', true));
+    body.appendChild(typeRow);
+
+    // Salvar
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-confirmar';
+    saveBtn.style.cssText = 'margin-top:4px';
+    saveBtn.textContent = 'Salvar';
+    saveBtn.addEventListener('click', () => {
+      const name = input.value.trim();
+      if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
+      m.name = name;
+      m.adult = isAdult;
+      saveState();
+      renderMembros();
+      closeSheet();
+    });
+    body.appendChild(saveBtn);
+
+    const cancel = document.createElement('button');
+    cancel.className = 'sheet-option cancel';
+    cancel.innerHTML = '<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></span><span class="opt-text">Cancelar</span>';
+    cancel.addEventListener('click', closeSheet);
+    body.appendChild(cancel);
+
+    setTimeout(() => input.focus(), 100);
+  });
+}
+
+
+function abrirAddMembro(){
+  openSheet('Adicionar membro', body => {
+    body.style.cssText = 'padding:16px 20px;display:flex;flex-direction:column;gap:12px';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Nome do membro';
+    input.autocomplete = 'off';
+    input.style.cssText = 'width:100%;height:48px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:16px;font-family:Inter,sans-serif;background:var(--chalk);color:var(--ink);outline:none';
+    input.addEventListener('focus', () => input.style.borderColor = 'var(--green)');
+    input.addEventListener('blur', () => input.style.borderColor = '#ddd');
+    body.appendChild(input);
+
+    const btns = document.createElement('div');
+    btns.style.cssText = 'display:flex;gap:8px';
+
+    const addBtn = (label, adult) => {
+      const b = document.createElement('button');
+      b.className = `fila-add-btn ${adult ? 'fila-add-adult' : 'fila-add-child'}`;
+      b.style.cssText = 'flex:1;height:48px;font-size:.9rem';
+      b.textContent = label;
+      b.addEventListener('click', () => {
+        const name = input.value.trim();
+        if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
+        addMembro(name, adult);
+        input.value = '';
+        input.style.borderColor = '#ddd';
+        input.focus();
+        renderMembros();
+        // Show a brief confirmation and keep sheet open for adding more
+        b.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg> ' + label;
+        setTimeout(() => b.textContent = label, 1000);
+      });
+      return b;
+    };
+
+    btns.appendChild(addBtn('+ Criança', false));
+    btns.appendChild(addBtn('+ Adulto', true));
+    body.appendChild(btns);
+
+    const cancel = document.createElement('button');
+    cancel.className = 'sheet-option cancel';
+    cancel.innerHTML = '<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></span><span class="opt-text">Fechar</span>';
+    cancel.addEventListener('click', closeSheet);
+    body.appendChild(cancel);
+
+    // Focus input after sheet renders
+    setTimeout(() => input.focus(), 100);
+  });
+}
+
+
+document.getElementById('confirmarPresencaBtn').addEventListener('click', confirmarPresenca);
+
 loadState();
+// Garante UI inicial mesmo sem Firebase (ex: primeira vez, offline)
+setTimeout(() => { render();  }, 150);
 
 // Registra Service Worker para PWA (funciona quando hospedado no Vercel)
 if('serviceWorker' in navigator){
