@@ -507,12 +507,10 @@ body {
 .membro-badge-tipo.crianca { background: #e8f5e9; color: #3a3a5c; }
 /* ── SWIPE-TO-REVEAL ACTIONS ── */
 .membro-swipe-wrap {
-  display: grid;
-  grid-template-columns: 1fr;
+  position: relative;
   border-radius: 14px;
   margin-bottom: 8px;
   box-shadow: var(--shadow);
-  overflow: hidden;
 }
 .membro-item {
   display: flex;
@@ -525,20 +523,23 @@ body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   border-radius: 14px;
-  grid-column: 1;
-  grid-row: 1;
+  position: relative;
   z-index: 2;
   transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
 }
 .membro-actions-reveal {
-  grid-column: 1;
-  grid-row: 1;
-  justify-self: end;
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
   width: 104px;
   display: flex;
-  align-self: stretch;
   z-index: 1;
+  visibility: hidden;
+  border-radius: 0 14px 14px 0;
+  overflow: hidden;
+}
+.membro-swipe-wrap.swiped .membro-actions-reveal {
+  visibility: visible;
 }
 .membro-action-btn {
   display: flex;
@@ -2048,6 +2049,7 @@ function resetSwipe(wrap){
   if(!wrap) return;
   const item = wrap.querySelector('.membro-item');
   if(item) animateItem(item, 0, 260);
+  wrap.classList.remove('swiped');
   if(_activeSwipe === wrap) _activeSwipe = null;
 }
 
@@ -2084,6 +2086,7 @@ function addSwipeGesture(wrap, item){
     lastT  = Date.now();
     dx = Math.max(-REVEAL, Math.min(0, startOffset + diffX));
     item.style.transform = `translateX(${dx}px)`;
+    if(dx < 0) wrap.classList.add('swiped');
   }, {passive: false});
 
   item.addEventListener('touchend', () => {
@@ -2097,9 +2100,11 @@ function addSwipeGesture(wrap, item){
     const distClose = Math.abs(dx);
     if(shouldOpen && !shouldClose){
       animateItem(item, -REVEAL, Math.max(80, distOpen * 1.5));
+      wrap.classList.add('swiped');
       _activeSwipe = wrap;
     } else {
       animateItem(item, 0, Math.max(80, distClose * 1.5));
+      wrap.classList.remove('swiped');
       _activeSwipe = null;
     }
   });
