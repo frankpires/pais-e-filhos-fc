@@ -507,12 +507,12 @@ body {
 .membro-badge-tipo.crianca { background: #e8f5e9; color: #3a3a5c; }
 /* ── SWIPE-TO-REVEAL ACTIONS ── */
 .membro-swipe-wrap {
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: 1fr;
   border-radius: 14px;
   margin-bottom: 8px;
-  overflow: hidden;
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
 .membro-item {
   display: flex;
@@ -525,17 +525,20 @@ body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   border-radius: 14px;
-  flex: 0 0 100%;
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 2;
   transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
 }
 .membro-actions-reveal {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  width: 104px;
   display: flex;
-  align-items: stretch;
-  flex: 0 0 104px;
-  margin-left: -104px;
-  transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform;
+  align-self: stretch;
+  z-index: 1;
 }
 .membro-action-btn {
   display: flex;
@@ -547,8 +550,8 @@ body {
   font-size: 0;
 }
 .membro-action-btn svg { display: block; }
-.membro-action-btn.edit  { background: var(--amber); border-radius: 0; }
-.membro-action-btn.delete{ background: var(--red);   border-radius: 0 14px 14px 0; }
+.membro-action-btn.edit  { background: var(--amber); }
+.membro-action-btn.delete{ background: var(--red); }
 .membro-action-btn:active { filter: brightness(0.88); }
 
 .membro-check {
@@ -2034,62 +2037,69 @@ function confirmarPresenca(){
 let _activeSwipe = null;
 
 const EASE_OUT = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-const EASE_BACK = 'cubic-bezier(0.34, 1.20, 0.64, 1)';
+const EASE_SWIPE = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+function animateItem(item, toX, duration){
+  item.style.transition = `transform ${duration}ms ${EASE_SWIPE}`;
+  item.style.transform  = toX === 0 ? '' : `translateX(${toX}px)`;
+}
 
 function resetSwipe(wrap){
   if(!wrap) return;
-  const item    = wrap.querySelector('.membro-item');
-  const actions = wrap.querySelector('.membro-actions-reveal');
-  if(item)    { item.style.transition = `transform 0.28s ${EASE_BACK}`; item.style.transform = ''; }
-  if(actions) { actions.style.transition = `transform 0.28s ${EASE_BACK}`; actions.style.transform = ''; }
+  const item = wrap.querySelector('.membro-item');
+  if(item) animateItem(item, 0, 260);
   if(_activeSwipe === wrap) _activeSwipe = null;
 }
 
 function addSwipeGesture(wrap, item){
   const REVEAL = 104;
-  const actions = wrap.querySelector('.membro-actions-reveal');
-  let startX = 0, startY = 0, dx = 0, swiping = false, isHoriz = null;
+  let startX = 0, startY = 0, dx = 0, lastDx = 0, lastT = 0;
+  let swiping = false, isHoriz = null;
+  // offset when starting from already-open state
+  let startOffset = 0;
 
   item.addEventListener('touchstart', (e) => {
     if(_activeSwipe && _activeSwipe !== wrap) resetSwipe(_activeSwipe);
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-    dx = 0; swiping = true; isHoriz = null;
-    item.style.transition    = 'none';
-    actions.style.transition = 'none';
+    // get current offset from transform
+    const mat = new DOMMatrix(getComputedStyle(item).transform);
+    startOffset = mat.m41; // translateX value
+    dx = startOffset; lastDx = dx; lastT = Date.now();
+    swiping = true; isHoriz = null;
+    item.style.transition = 'none';
   }, {passive: true});
 
   item.addEventListener('touchmove', (e) => {
     if(!swiping) return;
-    const cx = e.touches[0].clientX;
-    const cy = e.touches[0].clientY;
-    const diffX = cx - startX;
-    const diffY = cy - startY;
+    const diffX = e.touches[0].clientX - startX;
+    const diffY = e.touches[0].clientY - startY;
     if(isHoriz === null){
       if(Math.abs(diffX) > Math.abs(diffY) + 4)      isHoriz = true;
       else if(Math.abs(diffY) > Math.abs(diffX) + 4) isHoriz = false;
     }
     if(!isHoriz) return;
     e.preventDefault();
-    dx = Math.max(-REVEAL, Math.min(0, diffX));
-    item.style.transform    = `translateX(${dx}px)`;
-    actions.style.transform = `translateX(${dx}px)`;
+    lastDx = dx;
+    lastT  = Date.now();
+    dx = Math.max(-REVEAL, Math.min(0, startOffset + diffX));
+    item.style.transform = `translateX(${dx}px)`;
   }, {passive: false});
 
   item.addEventListener('touchend', () => {
     if(!swiping) return;
     swiping = false;
-    if(dx < -REVEAL / 2){
-      item.style.transition    = `transform 0.22s ${EASE_OUT}`;
-      actions.style.transition = `transform 0.22s ${EASE_OUT}`;
-      item.style.transform    = `translateX(-${REVEAL}px)`;
-      actions.style.transform = `translateX(-${REVEAL}px)`;
+    // Calcular velocidade (px/ms) para decidir direção pelo flick
+    const velocity = (dx - lastDx) / Math.max(1, Date.now() - lastT);
+    const shouldOpen  = velocity < -0.3 || (velocity >= -0.3 && dx < -REVEAL / 2);
+    const shouldClose = velocity >  0.3 || (velocity <=  0.3 && dx > -REVEAL / 2);
+    const distOpen  = Math.abs(-REVEAL - dx);
+    const distClose = Math.abs(dx);
+    if(shouldOpen && !shouldClose){
+      animateItem(item, -REVEAL, Math.max(80, distOpen * 1.5));
       _activeSwipe = wrap;
     } else {
-      item.style.transition    = `transform 0.28s ${EASE_BACK}`;
-      actions.style.transition = `transform 0.28s ${EASE_BACK}`;
-      item.style.transform    = '';
-      actions.style.transform = '';
+      animateItem(item, 0, Math.max(80, distClose * 1.5));
       _activeSwipe = null;
     }
   });
@@ -2141,7 +2151,27 @@ function renderMembros(){
       const btnDel = document.createElement('button');
       btnDel.className = 'membro-action-btn delete';
       btnDel.innerHTML = delSvg;
-      btnDel.addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); removeMembro(m.id); });
+      btnDel.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetSwipe(wrap);
+        openSheet(`Excluir ${m.name}?`, body => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'padding:4px 20px 16px;font-size:.88rem;color:#666;line-height:1.5';
+          msg.textContent = 'Esta ação não pode ser desfeita.';
+          body.appendChild(msg);
+          const confirm = document.createElement('button');
+          confirm.className = 'sheet-option';
+          confirm.style.cssText = 'color:var(--red);font-weight:700';
+          confirm.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></span><span class="opt-text">Sim, excluir</span>';
+          confirm.addEventListener('click', () => { removeMembro(m.id); closeSheet(); });
+          body.appendChild(confirm);
+          const cancel = document.createElement('button');
+          cancel.className = 'sheet-option cancel';
+          cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Cancelar</span>';
+          cancel.addEventListener('click', closeSheet);
+          body.appendChild(cancel);
+        });
+      });
       actions.appendChild(btnEdit);
       actions.appendChild(btnDel);
       wrap.appendChild(actions);
@@ -2317,6 +2347,11 @@ function abrirAddMembro(){
 
 
 document.getElementById('confirmarPresencaBtn').addEventListener('click', confirmarPresenca);
+
+// Fecha swipe aberto ao tocar fora de um item
+document.getElementById('membrosList').addEventListener('click', (e) => {
+  if(_activeSwipe && !_activeSwipe.contains(e.target)) resetSwipe(_activeSwipe);
+}, true);
 
 loadState();
 // Garante UI inicial mesmo sem Firebase (ex: primeira vez, offline)
