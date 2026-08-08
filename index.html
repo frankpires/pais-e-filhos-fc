@@ -410,6 +410,44 @@ body {
   border-bottom-color: var(--green);
 }
 
+/* ── MEMBROS SUMMARY BAR ── */
+.membros-summary-bar {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  padding: 8px 16px;
+  background: var(--chalk);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+.msb-item strong { color: var(--ink); font-weight: 700; }
+.msb-sep { color: var(--line); }
+.msb-colete em { font-style: normal; color: var(--red); font-size: 0.68rem; }
+
+/* ── COLETE TOGGLE ── */
+.colete-btn {
+  border: 1.5px solid #ddd;
+  background: none;
+  border-radius: 6px;
+  width: 30px; height: 30px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.3;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+}
+.colete-btn.tem {
+  opacity: 1;
+  border-color: var(--amber);
+  background: #fffbeb;
+}
+.colete-btn:active { opacity: 0.6; }
+
 /* ── MEMBROS LIST ── */
 .membros-list {
   flex: 1;
@@ -428,7 +466,6 @@ body {
   background: var(--card);
   border-radius: 14px;
   box-shadow: var(--shadow);
-  margin-bottom: 8px;
   padding: 0 14px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -453,6 +490,10 @@ body {
   flex: 1;
   font-size: 0.9rem;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .membro-item.presente .membro-name { color: var(--ink); }
 .membro-item:not(.presente) .membro-name { color: var(--ink-soft); }
@@ -467,22 +508,92 @@ body {
 }
 .membro-badge-tipo.adulto { background: var(--amber); color: var(--green); }
 .membro-badge-tipo.crianca { background: #e8f5e9; color: #3a3a5c; }
-.membro-edit {
-  border: none; background: none;
-  color: #bbb; font-size: 1rem;
-  width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; border-radius: 8px; flex-shrink: 0;
+/* ── SWIPE-TO-REVEAL ACTIONS ── */
+.membro-swipe-wrap {
+  position: relative;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  /* clip the sliding card only, not the buttons */
+  overflow: hidden;
 }
-.membro-edit:active { color: var(--amber); background: #fffbeb; }
-.membro-delete {
-  border: none; background: none;
-  color: #ddd; font-size: 1rem;
-  width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; border-radius: 8px; flex-shrink: 0;
+.membro-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  min-height: 52px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  border-radius: 14px;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.25s ease;
+  will-change: transform;
 }
-.membro-delete:active { color: var(--red); background: #fee2e2; }
+.membro-actions-reveal {
+  position: absolute;
+  top: 0; bottom: 0;
+  right: 0;
+  width: 104px;
+  display: flex;
+  align-items: stretch;
+  z-index: 1;
+  transform: translateX(104px);
+  transition: transform 0.25s ease;
+}
+.membro-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  border: none;
+  cursor: pointer;
+  font-size: 0;
+}
+.membro-action-btn svg { display: block; }
+.membro-action-btn.edit  { background: var(--amber); border-radius: 14px 0 0 14px; }
+.membro-action-btn.delete{ background: var(--red);   border-radius: 0 14px 14px 0; }
+.membro-action-btn:active { filter: brightness(0.88); }
+
+.membro-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.membro-item.presente .membro-check {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--white);
+}
+.membro-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.membro-item.presente .membro-name { color: var(--ink); }
+.membro-item:not(.presente) .membro-name { color: var(--ink-soft); }
+.membro-badge-tipo {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  border-radius: 4px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.membro-badge-tipo.adulto { background: var(--amber); color: var(--green); }
+.membro-badge-tipo.crianca { background: #e8f5e9; color: #3a3a5c; }
 
 /* ── MEMBROS FOOTER ── */
 .membros-sheet-add {
@@ -1926,10 +2037,89 @@ function confirmarPresenca(){
   switchFilaView('fila');
 }
 
+/* ── SWIPE GESTURE ── */
+let _activeSwipe = null;
+
+function resetSwipe(wrap){
+  if(!wrap) return;
+  const item    = wrap.querySelector('.membro-item');
+  const actions = wrap.querySelector('.membro-actions-reveal');
+  if(item)    { item.style.transition = 'transform 0.25s ease'; item.style.transform = ''; }
+  if(actions) { actions.style.transition = 'transform 0.25s ease'; actions.style.transform = 'translateX(104px)'; }
+  if(_activeSwipe === wrap) _activeSwipe = null;
+}
+
+function addSwipeGesture(wrap, item){
+  const REVEAL = 104;
+  const actions = wrap.querySelector('.membro-actions-reveal');
+  let startX = 0, startY = 0, dx = 0, swiping = false, isHoriz = null;
+
+  item.addEventListener('touchstart', (e) => {
+    if(_activeSwipe && _activeSwipe !== wrap) resetSwipe(_activeSwipe);
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dx = 0; swiping = true; isHoriz = null;
+    item.style.transition    = 'none';
+    actions.style.transition = 'none';
+  }, {passive: true});
+
+  item.addEventListener('touchmove', (e) => {
+    if(!swiping) return;
+    const cx = e.touches[0].clientX;
+    const cy = e.touches[0].clientY;
+    const diffX = cx - startX;
+    const diffY = cy - startY;
+    if(isHoriz === null){
+      if(Math.abs(diffX) > Math.abs(diffY) + 4)      isHoriz = true;
+      else if(Math.abs(diffY) > Math.abs(diffX) + 4) isHoriz = false;
+    }
+    if(!isHoriz) return;
+    e.preventDefault();
+    dx = Math.max(-REVEAL, Math.min(0, diffX));
+    item.style.transform    = `translateX(${dx}px)`;
+    actions.style.transform = `translateX(${104 + dx}px)`;
+  }, {passive: false});
+
+  item.addEventListener('touchend', () => {
+    if(!swiping) return;
+    swiping = false;
+    item.style.transition    = 'transform 0.25s ease';
+    actions.style.transition = 'transform 0.25s ease';
+    if(dx < -REVEAL / 2){
+      item.style.transform    = `translateX(-${REVEAL}px)`;
+      actions.style.transform = `translateX(0px)`;
+      _activeSwipe = wrap;
+    } else {
+      item.style.transform    = '';
+      actions.style.transform = `translateX(${REVEAL}px)`;
+      _activeSwipe = null;
+    }
+  });
+}
+
 function renderMembros(){
   const list = document.getElementById('membrosList');
   const membros = state.membros || [];
   list.innerHTML = '';
+
+  // ── Resumo quantitativo ──
+  if(membros.length > 0){
+    const adultos  = membros.filter(m => m.adult).length;
+    const criancas = membros.filter(m => !m.adult).length;
+    const comColete = membros.filter(m => m.temColete).length;
+    const semColete = membros.length - comColete;
+    const summary = document.createElement('li');
+    summary.className = 'membros-summary-bar';
+    summary.innerHTML = `
+      <span class="msb-item"><strong>${membros.length}</strong> membros</span>
+      <span class="msb-sep">·</span>
+      <span class="msb-item"><strong>${adultos}</strong> adultos</span>
+      <span class="msb-sep">·</span>
+      <span class="msb-item"><strong>${criancas}</strong> crianças</span>
+      <span class="msb-sep">·</span>
+      <span class="msb-item msb-colete"><strong>${comColete}</strong> com colete${semColete > 0 ? ` <em>(${semColete} sem)</em>` : ' ✓'}</span>`;
+    list.appendChild(summary);
+  }
 
   if(membros.length === 0){
     const empty = document.createElement('li');
@@ -1938,31 +2128,52 @@ function renderMembros(){
     list.appendChild(empty);
   } else {
     membros.forEach(m => {
-      const li = document.createElement('li');
+      const wrap = document.createElement('li');
+      wrap.className = 'membro-swipe-wrap';
+
+      // Reveal buttons behind
+      const actions = document.createElement('div');
+      actions.className = 'membro-actions-reveal';
+      const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
+      const delSvg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+      const btnEdit = document.createElement('button');
+      btnEdit.className = 'membro-action-btn edit';
+      btnEdit.innerHTML = editSvg;
+      btnEdit.addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); editarMembro(m.id); });
+      const btnDel = document.createElement('button');
+      btnDel.className = 'membro-action-btn delete';
+      btnDel.innerHTML = delSvg;
+      btnDel.addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); removeMembro(m.id); });
+      actions.appendChild(btnEdit);
+      actions.appendChild(btnDel);
+      wrap.appendChild(actions);
+
+      // Main row
+      const li = document.createElement('div');
       li.className = 'membro-item' + (presencasMarcadas.has(m.id) ? ' presente' : '');
+      const checkSvg = presencasMarcadas.has(m.id)
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
+        : '';
+      const coleteIcon = m.temColete ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fbbf24" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3 L7 2 Q9 2 10 4 Q11 6 12 6 Q13 6 14 4 Q15 2 17 2 L20 3 L20 6 Q19 7 19 8 L19 21 L5 21 L5 8 Q5 7 4 6 Z"/></svg>' : '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#d0ccc6" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3 L7 2 Q9 2 10 4 Q11 6 12 6 Q13 6 14 4 Q15 2 17 2 L20 3 L20 6 Q19 7 19 8 L19 21 L5 21 L5 8 Q5 7 4 6 Z"/></svg>';
       li.innerHTML = `
-        <div class="membro-check">${presencasMarcadas.has(m.id) ? '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg>' : ''}</div>
+        <div class="membro-check">${checkSvg}</div>
         <span class="membro-name">${m.name}</span>
         <span class="membro-badge-tipo ${m.adult?'adulto':'crianca'}">${m.adult?'Adulto':'Criança'}</span>
-        <button class="membro-edit" title="Editar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
-        <button class="membro-delete" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
-      li.querySelector('.membro-check').addEventListener('click', () => togglePresenca(m.id));
-      li.querySelector('.membro-name').addEventListener('click', () => togglePresenca(m.id));
-      li.querySelector('.membro-badge-tipo').addEventListener('click', () => togglePresenca(m.id));
-      li.querySelector('.membro-edit').addEventListener('click', (e) => {
+        <button class="colete-btn${m.temColete?' tem':''}" title="${m.temColete?'Tem colete':'Sem colete'}">${coleteIcon}</button>`;
+      li.querySelector('.membro-check').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
+      li.querySelector('.membro-name').addEventListener('click',  () => { resetSwipe(wrap); togglePresenca(m.id); });
+      li.querySelector('.membro-badge-tipo').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
+      li.querySelector('.colete-btn').addEventListener('click', (e) => {
         e.stopPropagation();
-        editarMembro(m.id);
+        m.temColete = !m.temColete;
+        saveState(); renderMembros();
       });
-      li.querySelector('.membro-delete').addEventListener('click', (e) => {
-        e.stopPropagation();
-        removeMembro(m.id);
-      });
-      list.appendChild(li);
+      addSwipeGesture(wrap, li);
+      wrap.appendChild(li);
+      list.appendChild(wrap);
     });
   }
 
-  // "+ Adicionar membro" como última linha da lista — rola junto com o conteúdo,
-  // não ocupa espaço fixo entre a lista e o botão de confirmar presença
   const addLi = document.createElement('li');
   addLi.className = 'membro-item-add';
   addLi.innerHTML = `<span class="membro-item-add-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"11\" height=\"11\" stroke-width=\"2.5\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></span><span>Adicionar membro</span>`;
