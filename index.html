@@ -110,6 +110,82 @@ body {
   flex-shrink: 0;
 }
 
+/* ── HEADER STATUS CHIP ── */
+.header-status {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s;
+  border-radius: 100px;
+}
+.header-status.urgent {
+  background: var(--green);
+  color: var(--white);
+  padding: 4px 10px 4px 8px;
+  margin-top: 1px;
+}
+.header-status.urgent .sync-dot { background: #4caf7d; }
+.header-status-chevron {
+  font-size: 0.8rem;
+  color: #bbb;
+  transition: color 0.2s;
+}
+.header-status.urgent .header-status-chevron { color: rgba(255,255,255,.5); }
+
+/* ── CARD PRÓXIMO TIME ── */
+.proximo-card {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 10px 14px;
+  margin: 10px 16px 0;
+  border-left: 3px solid var(--green);
+  flex-shrink: 0;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+}
+.proximo-card.visible { display: flex; }
+.proximo-lbl {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.proximo-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.proximo-pill {
+  background: var(--bg);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 3px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.proximo-pill .pp-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+  flex-shrink: 0;
+}
+
 /* ── TIMER NA QUADRA (entre times e botões de ação) ── */
 .court-timer{
   display: flex;
@@ -1003,6 +1079,37 @@ body {
 }
 .btn-reset:active{ border-color: var(--red); color: var(--red); }
 
+/* ── FILA — GRUPOS PRÓXIMO TIME / AGUARDANDO ── */
+.queue-group-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.queue-group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(28,43,30,.15);
+}
+.queue-group-label.rest {
+  color: #bbb;
+  padding-top: 10px;
+}
+.queue-group-label.rest::after { background: rgba(0,0,0,.07); }
+.queue-item.next {
+  box-shadow: 0 2px 10px rgba(28,43,30,.1);
+  border: 1px solid rgba(28,43,30,.07);
+}
+.queue-item.waiting .queue-num { background: #ddd; color: #aaa; }
+.queue-item.waiting .queue-name { color: #aaa; }
+.queue-item.waiting .adult-badge { background: #eee; color: #bbb; }
+
 /* ── RESULTADOS SCREEN ── */
 .results-list {
   list-style: none;
@@ -1192,10 +1299,11 @@ body {
   <header class="app-header">
     <div class="header-left">
       <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC</div>
-      <div class="header-status" id="headerStatus">
+      <button class="header-status" id="headerStatus" onclick="abrirProximoTime()">
         <span class="sync-dot"></span>
         <span id="headerStatusText">0 na fila</span>
-      </div>
+        <span class="header-status-chevron">›</span>
+      </button>
     </div>
     <button class="header-config-btn" id="headerConfigBtn" title="Configurações"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
   </header>
@@ -1206,6 +1314,10 @@ body {
     <!-- Bloco verde: times + timer -->
     <div class="court-block">
       <div class="court-timer" id="courtTimer" style="display:none"></div>
+      <div class="proximo-card" id="proximoCard">
+        <div class="proximo-lbl">A seguir</div>
+        <div class="proximo-pills" id="proximoPills"></div>
+      </div>
       <div class="scoreboard-unified" id="scoreboardUnified"></div>
     </div>
 
@@ -1422,6 +1534,7 @@ function timerTickLocal(){
     if(!t.running){ clearInterval(timerInterval); return; }
     const left = timerSecondsLeft();
     renderTimerBlock();
+    renderHeader(teamSize());
     if(left === 0 && !_lastAlerted){
       _lastAlerted = true;
       state.timer = { running:false, startedAt:null, secondsLeft:0, finished:true };
@@ -1647,11 +1760,51 @@ function render(){
   
 }
 
+function proximoTime(){
+  // Retorna os próximos N jogadores que formariam o próximo time
+  const ts = teamSize(), t = targetAdults();
+  const q = [...state.queue];
+  const idx = [];
+  for(let i=0;i<q.length;i++){ if(idx.filter(j=>q[j].adult).length>=t) break; if(q[i].adult) idx.push(i); }
+  for(let i=0;i<q.length&&idx.length<ts;i++){ if(!q[i].adult&&!idx.includes(i)) idx.push(i); }
+  for(let i=0;i<q.length&&idx.length<ts;i++){ if(!idx.includes(i)) idx.push(i); }
+  return idx.sort((a,b)=>a-b).map(i=>q[i]);
+}
+
 function renderHeader(ts){
-  const el=document.getElementById('headerStatusText');
+  const el = document.getElementById('headerStatusText');
+  const chip = document.getElementById('headerStatus');
+  const proximoCard = document.getElementById('proximoCard');
+  const proximoPills = document.getElementById('proximoPills');
   if(!el) return;
-  const waiting=state.queue.length;
-  el.textContent=`${waiting} na fila`;
+
+  const waiting = state.queue.length;
+  const left = timerSecondsLeft();
+  const timerRunning = timerState().running;
+  const isUrgent = timerRunning && left > 0 && left <= 120;
+  const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
+  const nextTeam = proximoTime();
+
+  // Chip urgente
+  if(isUrgent && nextTeam.length > 0){
+    const names = nextTeam.slice(0,2).map(p=>p.name.split(' ')[0]).join(', ');
+    const extra = nextTeam.length > 2 ? ` +${nextTeam.length-2}` : '';
+    el.textContent = `A seguir: ${names}${extra}`;
+    chip.classList.add('urgent');
+  } else {
+    el.textContent = `${waiting} na fila`;
+    chip.classList.remove('urgent');
+  }
+
+  // Card próximo time (aparece só nos últimos 2 min com partida em andamento)
+  if(isUrgent && hasMatch && nextTeam.length > 0){
+    proximoPills.innerHTML = nextTeam.map(p=>
+      `<span class="proximo-pill">${p.adult?'<span class="pp-dot"></span>':''}${p.name}</span>`
+    ).join('');
+    proximoCard.classList.add('visible');
+  } else {
+    proximoCard.classList.remove('visible');
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -1844,6 +1997,64 @@ function renderCourt(ts, target){
 
 function renderCourtEdit(){} // mantido para não quebrar chamadas antigas
 
+function abrirProximoTime(){
+  const next = proximoTime();
+  const rest = state.queue.slice(next.length);
+  if(state.queue.length === 0){
+    openSheet('Fila vazia', body => {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'padding:8px 20px 16px;font-size:.88rem;color:#999';
+      msg.textContent = 'Nenhum jogador aguardando na fila.';
+      body.appendChild(msg);
+      const cancel = document.createElement('button');
+      cancel.className = 'sheet-option cancel';
+      cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Fechar</span>';
+      cancel.addEventListener('click', closeSheet);
+      body.appendChild(cancel);
+    });
+    return;
+  }
+  openSheet('Próximos a entrar', body => {
+    const makePills = (players, dim) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 12px';
+      players.forEach(p => {
+        const pill = document.createElement('span');
+        pill.style.cssText = `background:var(--${dim?'cement':'bg'});border-radius:100px;font-size:.82rem;font-weight:600;color:${dim?'#999':'var(--ink)'};padding:4px 12px;display:inline-flex;align-items:center;gap:5px`;
+        if(p.adult && !dim){
+          const dot = document.createElement('span');
+          dot.style.cssText = 'width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0';
+          pill.appendChild(dot);
+        }
+        pill.appendChild(document.createTextNode(p.name));
+        wrap.appendChild(pill);
+      });
+      return wrap;
+    };
+
+    if(next.length > 0){
+      const lbl1 = document.createElement('div');
+      lbl1.className = 'sheet-divider';
+      lbl1.textContent = `Próximo time · ${next.length} jogadores`;
+      body.appendChild(lbl1);
+      body.appendChild(makePills(next, false));
+    }
+    if(rest.length > 0){
+      const lbl2 = document.createElement('div');
+      lbl2.className = 'sheet-divider';
+      lbl2.textContent = `Aguardando · ${rest.length} restantes`;
+      body.appendChild(lbl2);
+      body.appendChild(makePills(rest, true));
+    }
+
+    const cancel = document.createElement('button');
+    cancel.className = 'sheet-option cancel';
+    cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Fechar</span>';
+    cancel.addEventListener('click', closeSheet);
+    body.appendChild(cancel);
+  });
+}
+
 function abrirAddConvidado(){
   openSheet('Adicionar convidado', body => {
     body.style.cssText = 'padding:16px 20px;display:flex;flex-direction:column;gap:12px';
@@ -1892,9 +2103,29 @@ function renderQueue(ts, target){
   const teams=Math.floor(state.queue.length/ts);
   meta.textContent=`${state.queue.length} jogador(es) · ${adults} adulto(s) · ${teams} time(s) completo(s)`;
 
+  const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
+  const nextTeam = hasMatch ? proximoTime() : [];
+
+  if(hasMatch && nextTeam.length > 0 && state.queue.length > 0){
+    const lbl = document.createElement('li');
+    lbl.className = 'queue-group-label';
+    lbl.textContent = 'Próximo time';
+    list.appendChild(lbl);
+  }
+
   state.queue.forEach((player,i)=>{
+    const isNext = hasMatch && i < nextTeam.length;
+    const isWaiting = hasMatch && i >= nextTeam.length;
+
+    if(isWaiting && i === nextTeam.length){
+      const lbl = document.createElement('li');
+      lbl.className = 'queue-group-label rest';
+      lbl.textContent = 'Aguardando';
+      list.appendChild(lbl);
+    }
+
     const li=document.createElement('li');
-    li.className='queue-item';
+    li.className=`queue-item${isNext?' next':''}${isWaiting?' waiting':''}`;
     li.innerHTML=`
       <span class="queue-num">${i+1}</span>
       <span class="queue-name">${player.name}</span>
@@ -1904,10 +2135,9 @@ function renderQueue(ts, target){
     list.appendChild(li);
   });
 
-  // "+ Adicionar convidado" como última linha da lista
   const addLi=document.createElement('li');
   addLi.className='membro-item-add';
-  addLi.innerHTML=`<span class="membro-item-add-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"11\" height=\"11\" stroke-width=\"2.5\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></span><span>Adicionar convidado</span>`;
+  addLi.innerHTML=`<span class="membro-item-add-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><span>Adicionar convidado</span>`;
   addLi.addEventListener('click', abrirAddConvidado);
   list.appendChild(addLi);
 }
