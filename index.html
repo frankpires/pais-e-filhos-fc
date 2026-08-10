@@ -78,7 +78,7 @@ body {
 }
 .app-title {
   font-family: 'Bebas Neue', cursive;
-  font-size: 1.6rem;
+  font-size: clamp(1.35rem, 4.2vw, 1.6rem);
   letter-spacing: 1px;
   line-height: 1;
   display: flex;
@@ -191,16 +191,15 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 20px;
+  padding: clamp(12px, 3.5vw, 16px) clamp(14px, 4vw, 20px);
   flex-shrink: 0;
   background: var(--card);
-  border-radius: 20px;
+  border-radius: clamp(16px, 4vw, 20px);
   box-shadow: var(--shadow);
-  margin: 12px 16px 0;
 }
 .court-timer-display{
   font-family: 'Bebas Neue', cursive;
-  font-size: 3.4rem;
+  font-size: clamp(2.8rem, 8.5vw, 3.4rem);
   line-height: 1;
   letter-spacing: 3px;
   color: var(--ink);
@@ -218,12 +217,12 @@ body {
   background: var(--green);
   color: var(--white);
   border-radius: 100px;
-  font-size: 0.85rem;
+  font-size: clamp(0.78rem, 2.2vw, 0.85rem);
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  padding: 0 20px;
+  padding: 0 clamp(14px, 4vw, 20px);
   cursor: pointer;
-  min-height: 44px;
+  min-height: clamp(40px, 10vw, 44px);
   letter-spacing: 0.2px;
   display: flex; align-items: center; gap: 8px;
 }
@@ -298,6 +297,7 @@ body {
   background: var(--bg);
   overflow: hidden;
   min-height: 0;
+  padding-top: clamp(6px, 1.8vw, 10px);
 }
 .scoreboard-unified{
   flex: 1;
@@ -324,15 +324,61 @@ body {
   gap: 8px;
 }
 .su-empty-court .icon{ font-size: 2.5rem; }
+
+/* ── PLAYER ROWS — novo estilo ── */
+.su-team { overflow: hidden; }
+.su-header {
+  padding: 10px 14px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.su-header-name { font-size: 0.85rem; font-weight: 800; color: var(--ink); letter-spacing: .3px; }
+.su-adult-pips { display: flex; align-items: center; gap: 3px; }
+.su-pip { width: 7px; height: 7px; border-radius: 50%; }
+.su-pip.on  { background: var(--amber); }
+.su-pip.off { background: #e0e0e0; }
+.su-pip-label { font-size: 9px; color: #bbb; font-weight: 600; margin-left: 3px; }
+
+.su-player {
+  padding: clamp(6px, 1.8vw, 8px) clamp(10px, 3vw, 14px);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.su-player:last-of-type { border-bottom: none; }
+.su-player:active { background: var(--chalk); }
+.su-player.adulto-row { border-left: 2px solid var(--amber); padding-left: 12px; }
+
+.su-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+  background: var(--bg);
+  color: var(--ink-soft);
+}
+.su-avatar.adult-av { background: #fff8ec; color: #c17f10; }
+
+.su-player-info { flex: 1; min-width: 0; }
+.su-player-name { font-size: 0.8rem; font-weight: 600; color: var(--ink); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.su-player-tipo { font-size: 0.68rem; color: #bbb; font-weight: 500; margin-top: 1px; }
+.su-player-tipo.adult-tipo { color: #c17f10; }
 .su-team{
   flex: 1;
   display: flex;
   flex-direction: column;
   background: var(--card);
-  border-radius: 20px;
+  border-radius: clamp(14px, 3.5vw, 20px);
   box-shadow: var(--shadow);
   overflow: hidden;
-  padding: 14px 12px;
+  padding: clamp(10px, 2.8vw, 14px) clamp(10px, 2.8vw, 12px);
   gap: 0;
   min-height: 160px;
 }
@@ -404,14 +450,111 @@ body {
 }
 .timer-alert-overlay.active{ display: block; }
 .su-spacer{ height: 6px; }
+.su-badge {
+  font-size: 0.58rem;
+  font-weight: 800;
+  border-radius: 4px;
+  padding: 2px 5px;
+  letter-spacing: .3px;
+}
+.su-badge-winner { background: #e8f5e9; color: #2e7d32; }
+.su-badge-new    { background: #e8f5e9; color: #2e7d32; }
+.su-team-new     { border: 2px solid rgba(76,175,77,.5); background: #edfbee; }
+
+.su-team {
+  transition: opacity 0.4s ease;
+}
+.su-team.fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── FLASH DE CONFIRMAÇÃO ── */
+.court-flash {
+  position: absolute;
+  inset: 0;
+  background: var(--green);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+  border-radius: 0;
+  transition: opacity 0.15s;
+}
+.court-flash.active { opacity: 0.1; }
+
+/* ── TIMER WRAP ── */
+.court-timer-wrap {
+  flex-shrink: 0;
+  padding: clamp(8px, 2.2vw, 12px) clamp(12px, 3.5vw, 16px) 0;
+  /* padding lateral igual ao court-actions */
+}
+
+/* ── BOTÃO WIN COM HINT ── */
+.btn-win-label { display: block; }
+.btn-win-hint {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  opacity: 0.55;
+  margin-top: 1px;
+  letter-spacing: 0.2px;
+}
+
+/* ── BANNER A SEGUIR (últimos 2min) ── */
+.seguir-banner {
+  background: var(--green);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-direction: column;
+  gap: 4px;
+}
+.seguir-banner-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: #4caf7d;
+}
+.seguir-banner-names {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.4;
+}
+
+/* ── BANNER REVISÃO ── */
+.review-banner {
+  background: var(--chalk);
+  border-radius: 14px;
+  border-left: 4px solid var(--green);
+  padding: 10px 14px 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+.review-banner-icon { flex-shrink: 0; display: flex; align-items: center; }
+.review-banner-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1px;
+}
+.review-banner-sub {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}
 
 /* ── COURT ACTIONS (fixed below scoreboard) ── */
 .court-actions {
   background: var(--bg);
-  padding: 10px 16px 14px;
+  padding: clamp(8px, 2.2vw, 10px) clamp(12px, 3.5vw, 16px) 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 1.8vw, 8px);
   flex-shrink: 0;
 }
 .win-row {
@@ -429,8 +572,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 48px;
-  padding: 0 16px;
+  min-height: clamp(44px, 11vw, 48px);
+  padding: 0 clamp(12px, 3.5vw, 16px);
   transition: filter 0.08s, transform 0.08s, background 0.08s;
   letter-spacing: 0.2px;
   -webkit-tap-highlight-color: transparent;
@@ -1308,26 +1451,53 @@ body {
   </header>
 
   <!-- TELA 1: EM QUADRA -->
-  <div class="screen active" id="screenQuadra">
+  <div class="screen active" id="screenQuadra" style="position:relative">
+    <!-- Flash de confirmação -->
+    <div class="court-flash" id="courtFlash"></div>
 
-    <!-- Bloco verde: times + timer -->
-    <div class="court-block">
-      <div class="court-timer" id="courtTimer" style="display:none"></div>
-      <div class="proximo-card" id="proximoCard">
-        <div class="proximo-lbl">A seguir</div>
-        <div class="proximo-pills" id="proximoPills"></div>
-      </div>
-      <div class="scoreboard-unified" id="scoreboardUnified"></div>
+    <!-- 1. TIMER — protagonista -->
+    <div class="court-timer-wrap">
+      <div class="court-timer" id="courtTimer"></div>
     </div>
 
-    <!-- Botões de resultado -->
-    <div class="court-actions">
-      <div class="win-row">
-        <button class="btn btn-win" id="winA"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Time A venceu</button>
-        <button class="btn btn-win" id="winB"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Time B venceu</button>
+    <!-- 2. AÇÕES — logo abaixo do timer -->
+    <div class="court-actions" id="courtActions">
+      <!-- botões de resultado (quando há partida) -->
+      <div class="win-row" id="winRow" style="display:none">
+        <button class="btn btn-win" id="winA">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          <span><span class="btn-win-label">Time A venceu</span><span class="btn-win-hint" id="hintA"></span></span>
+        </button>
+        <button class="btn btn-win" id="winB">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          <span><span class="btn-win-label">Time B venceu</span><span class="btn-win-hint" id="hintB"></span></span>
+        </button>
       </div>
-      <button class="btn btn-start" id="startBtn">Iniciar partida</button>
-      <button class="btn btn-tie"  id="tieBtn">Empate — tira os dois</button>
+      <!-- empate -->
+      <button class="btn btn-tie" id="tieBtn" style="display:none">Empate — tira os dois</button>
+      <!-- banner "A seguir" — últimos 2min -->
+      <div class="seguir-banner" id="seguirBanner" style="display:none">
+        <div class="seguir-banner-label">A seguir</div>
+        <div class="seguir-banner-names" id="seguirNames"></div>
+      </div>
+      <!-- escalar (quadra vazia) -->
+      <button class="btn btn-start" id="startBtn" style="display:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Escalar times da fila
+      </button>
+      <!-- banner revisão (pausa intencional após resultado) -->
+      <div class="review-banner" id="reviewBanner" style="display:none">
+        <div class="review-banner-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
+        <div class="review-banner-text">
+          <div class="review-banner-title">Revise o time antes de iniciar</div>
+          <div class="review-banner-sub">Toque num jogador para substituir</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. TIMES — abaixo das ações -->
+    <div class="court-block">
+      <div class="scoreboard-unified" id="scoreboardUnified"></div>
     </div>
   </div>
 
@@ -1503,9 +1673,13 @@ function timerStart(){
   if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
   const remaining = timerSecondsLeft();
   state.timer = { running:true, startedAt:Date.now(), secondsLeft:remaining, finished:false };
+  // Sai do modo revisão ao iniciar
+  state._reviewMode = false;
+  state._lastWinner = null;
   _lastAlerted = false;
   document.getElementById('timerAlertOverlay').classList.remove('active');
   saveState();
+  render(); // garante que o banner de revisão some imediatamente
   timerTickLocal();
 }
 
@@ -1534,6 +1708,8 @@ function timerTickLocal(){
     const left = timerSecondsLeft();
     renderTimerBlock();
     renderHeader(teamSize());
+    // Atualiza banner "A seguir" e hints quando urgente
+    if(left <= 121) { renderCourt(teamSize(), targetAdults()); }
     if(left === 0 && !_lastAlerted){
       _lastAlerted = true;
       state.timer = { running:false, startedAt:null, secondsLeft:0, finished:true };
@@ -1570,25 +1746,28 @@ function timerFmt(sec){
 }
 
 function renderTimerBlock(){
-  const el=document.getElementById('courtTimer');
+  const el = document.getElementById('courtTimer');
   if(!el) return;
-  const t=timerState();
-  const left=timerSecondsLeft();
-  const urgent=(left<=60&&left>0)||t.finished;
-  const hasMatch=state.courtA.length>0||state.courtB.length>0;
+  const t = timerState();
+  const left = timerSecondsLeft();
+  const urgent = left <= 120 && left > 0 && t.running;
+  const finished = t.finished;
 
-  if(!hasMatch){ el.style.display='none'; return; }
-  el.style.display='flex';
+  el.style.display = 'flex';
 
-  const startLabel = t.running ? '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/><rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/></svg> Pausar' : '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><polygon points=\"6 3 20 12 6 21 6 3\"/></svg> Iniciar';
-  el.innerHTML=`
-    <div class="court-timer-display${urgent?' urgent':''}">${timerFmt(left)}</div>
+  const pauseIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>';
+  const playIcon  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+  const resetIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+  const startLabel = t.running ? `${pauseIcon} Pausar` : `${playIcon} Iniciar`;
+
+  el.innerHTML = `
+    <div class="court-timer-display${urgent||finished?' urgent':''}">${timerFmt(left)}</div>
     <div class="court-timer-controls">
       <button class="court-timer-btn${t.running?' running':''}">${startLabel}</button>
-      <button class="court-timer-btn reset-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+      <button class="court-timer-btn reset-btn">${resetIcon}</button>
     </div>`;
-  el.querySelector('.court-timer-btn:not(.reset-btn)').onclick=t.running?timerPause:timerStart;
-  el.querySelector('.reset-btn').onclick=timerReset;
+  el.querySelector('.court-timer-btn:not(.reset-btn)').onclick = t.running ? timerPause : timerStart;
+  el.querySelector('.reset-btn').onclick = timerReset;
 }
 
 // Quando Firebase atualiza o estado (outro celular pressionou ▶ ou ⏸),
@@ -1680,32 +1859,113 @@ function addHistoryEntry(e){
   if(state.history.length>100) state.history=state.history.slice(-100);
 }
 
+function clearGhosts(){
+  document.querySelectorAll('.court-ghost').forEach(g => g.parentNode && g.parentNode.removeChild(g));
+}
+
+function flashCourt(){
+  const flash = document.getElementById('courtFlash');
+  if(!flash) return;
+  flash.classList.add('active');
+  setTimeout(() => flash.classList.remove('active'), 400);
+}
+
+function fadeScoreboard(loserIdx, cb){
+  // Aplica opacity 0 só no card perdedor via style direto
+  const teams = document.querySelectorAll('#scoreboardUnified .su-team');
+  const target = loserIdx !== null ? teams[loserIdx] : null;
+  if(target){
+    target.style.transition = 'opacity 0.35s ease';
+    target.style.opacity = '0';
+  }
+  setTimeout(cb, target ? 380 : 0);
+}
+
 function winTeam(which){
-  const loserKey=which==='A'?'courtB':'courtA', winnerKey=which==='A'?'courtA':'courtB';
-  const loser=state[loserKey]; if(!loser.length) return;
-  addHistoryEntry({type:'win',time:Date.now(),winner:which,winnerNames:state[winnerKey].map(p=>p.name),loserNames:loser.map(p=>p.name)});
-  const queueBefore = state.queue.length; // jogadores na fila antes dos perdedores entrarem
-  state.queue.push(...loser);
-  state[loserKey]=[];
-  // Só preenche a vaga automaticamente se havia jogadores suficientes
-  // na fila ANTES dos perdedores — senão seria o mesmo time voltando
-  const ts = teamSize();
-  if(queueBefore >= ts) tryFillSlots();
-  timerReset();
-  saveState(); render();
+  const loserKey  = which === 'A' ? 'courtB' : 'courtA';
+  const winnerKey = which === 'A' ? 'courtA' : 'courtB';
+  const loser = state[loserKey];
+  if(!loser.length) return;
+
+  addHistoryEntry({type:'win', time:Date.now(), winner:which,
+    winnerNames: state[winnerKey].map(p=>p.name),
+    loserNames:  loser.map(p=>p.name)});
+
+  flashCourt();
+
+  const loserIdx = which === 'A' ? 1 : 0;
+  fadeScoreboard(loserIdx, () => {
+    const queueBefore = state.queue.length;
+    state.queue.push(...loser);
+    state[loserKey] = [];
+    if(queueBefore >= teamSize()) tryFillSlots();
+    state._reviewMode = true;
+    state._lastWinner = which;
+    timerReset();
+    saveState();
+    render();
+
+    // Fade in do card novo
+    requestAnimationFrame(() => {
+      const teams = document.querySelectorAll('#scoreboardUnified .su-team');
+      const newCard = teams[loserIdx];
+      if(newCard){
+        newCard.style.transition = 'none';
+        newCard.style.opacity = '0';
+        requestAnimationFrame(() => {
+          newCard.style.transition = 'opacity 0.45s ease';
+          newCard.style.opacity = '1';
+          setTimeout(() => { newCard.style.transition = ''; newCard.style.opacity = ''; }, 500);
+        });
+      }
+    });
+  });
 }
 
 function tie(){
-  const ts=teamSize();
-  if(!state.courtA.length||!state.courtB.length) return;
-  if(state.queue.length<2*ts) return;
-  addHistoryEntry({type:'empate',time:Date.now(),teamANames:state.courtA.map(p=>p.name),teamBNames:state.courtB.map(p=>p.name)});
-  state.queue.push(...state.courtA,...state.courtB);
-  state.courtA=[]; state.courtB=[];
-  tryFillSlots();
-  timerReset();
-  saveState(); render();
+  const ts = teamSize();
+  if(!state.courtA.length || !state.courtB.length) return;
+  if(state.queue.length < 2*ts) return;
+  addHistoryEntry({type:'empate', time:Date.now(),
+    teamANames: state.courtA.map(p=>p.name),
+    teamBNames: state.courtB.map(p=>p.name)});
+
+  flashCourt();
+
+  // Fade out dos dois cards
+  const teams = document.querySelectorAll('#scoreboardUnified .su-team');
+  teams.forEach(t => {
+    t.style.transition = 'opacity 0.35s ease';
+    t.style.opacity = '0';
+  });
+
+  setTimeout(() => {
+    state.queue.push(...state.courtA, ...state.courtB);
+    state.courtA = []; state.courtB = [];
+    tryFillSlots();
+    state._reviewMode = true;
+    state._lastWinner = null;
+    timerReset();
+    saveState();
+    render();
+
+    // Fade in dos novos cards
+    requestAnimationFrame(() => {
+      const newTeams = document.querySelectorAll('#scoreboardUnified .su-team');
+      newTeams.forEach(t => {
+        t.style.transition = 'none';
+        t.style.opacity = '0';
+        requestAnimationFrame(() => {
+          t.style.transition = 'opacity 0.45s ease';
+          t.style.opacity = '1';
+          setTimeout(() => { t.style.transition = ''; t.style.opacity = ''; }, 500);
+        });
+      });
+    });
+  }, 380);
 }
+
+
 
 function addToQueue(name, adult){ state.queue.push({name,adult:!!adult}); saveState(); render(); }
 function removeFromQueue(i){ state.queue.splice(i,1); saveState(); render(); }
@@ -1739,6 +1999,7 @@ function toggleSwapSelection(which,idx){
    RENDER
 ═══════════════════════════════════════════ */
 function render(){
+  clearGhosts();
   const ts=teamSize(), target=targetAdults();
   // lucide icons re-initialized after render (see bottom)
   // Sync hidden inputs (used by legacy render code)
@@ -1775,6 +2036,7 @@ function renderHeader(ts){
   const chip = document.getElementById('headerStatus');
   const proximoCard = document.getElementById('proximoCard');
   const proximoPills = document.getElementById('proximoPills');
+  if(!el || !chip) return;
   if(!el) return;
 
   const waiting = state.queue.length;
@@ -1784,24 +2046,17 @@ function renderHeader(ts){
   const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
   const nextTeam = proximoTime();
 
-  // Chip urgente
-  if(isUrgent && nextTeam.length > 0){
-    const names = nextTeam.slice(0,2).map(p=>p.name.split(' ')[0]).join(', ');
-    const extra = nextTeam.length > 2 ? ` +${nextTeam.length-2}` : '';
-    el.textContent = `A seguir: ${names}${extra}`;
-    chip.classList.add('urgent');
-  } else {
-    el.textContent = `${waiting} na fila`;
-    chip.classList.remove('urgent');
-  }
+  // Chip simples — sempre mostra quantidade na fila
+  el.textContent = `${waiting} na fila`;
+  chip.classList.remove('urgent');
 
   // Card próximo time (aparece só nos últimos 2 min com partida em andamento)
-  if(isUrgent && hasMatch && nextTeam.length > 0){
+  if(proximoCard && isUrgent && hasMatch && nextTeam.length > 0){
     proximoPills.innerHTML = nextTeam.map(p=>
       `<span class="proximo-pill">${p.adult?'<span class="pp-dot"></span>':''}${p.name}</span>`
     ).join('');
     proximoCard.classList.add('visible');
-  } else {
+  } else if(proximoCard){
     proximoCard.classList.remove('visible');
   }
 }
@@ -1918,90 +2173,162 @@ function openPlayerSheet(which, idx){
 }
 
 function renderCourt(ts, target){
-  const container=document.getElementById('scoreboardUnified');
-  container.innerHTML='';
+  const container = document.getElementById('scoreboardUnified');
+  container.innerHTML = '';
 
-  const emptySlots=(state.courtA.length===0?1:0)+(state.courtB.length===0?1:0);
-  const bothFull=state.courtA.length>0&&state.courtB.length>0;
-  const canStart=emptySlots>0&&state.queue.length>=emptySlots*ts;
-  const enoughTie=state.queue.length>=2*ts;
+  const hasA = state.courtA.length > 0;
+  const hasB = state.courtB.length > 0;
+  const bothFull = hasA && hasB;
+  const emptySlots = (!hasA?1:0) + (!hasB?1:0);
+  const canStart = emptySlots > 0 && state.queue.length >= emptySlots * ts;
+  const enoughTie = state.queue.length >= 2 * ts;
+  const isReview = state._reviewMode || false;
+  const left = timerSecondsLeft();
+  const isUrgent = timerState().running && left > 0 && left <= 120;
+  const next = proximoTime();
 
-  const startBtn=document.getElementById('startBtn');
-  startBtn.disabled=!canStart;
-  startBtn.innerHTML=emptySlots===2?'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" stroke-width=\"1.75\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg> Escalar times da fila':'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"16\" height=\"16\" stroke-width=\"1.75\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg> Preencher vaga';
-  document.getElementById('winA').disabled=state.courtA.length===0;
-  document.getElementById('winB').disabled=state.courtB.length===0;
-  document.getElementById('tieBtn').disabled=!(bothFull&&enoughTie);
+  // ── Botões de resultado ──
+  const winRow   = document.getElementById('winRow');
+  const tieBtn   = document.getElementById('tieBtn');
+  const startBtn = document.getElementById('startBtn');
+  const reviewBanner  = document.getElementById('reviewBanner');
+  const seguirBanner  = document.getElementById('seguirBanner');
+  const seguirNames   = document.getElementById('seguirNames');
+  const hintA = document.getElementById('hintA');
+  const hintB = document.getElementById('hintB');
 
-  const makeTeamCol=(which, team)=>{
-    const col=document.createElement('div');
-    col.className='su-team';
-    const adults=team.filter(p=>p.adult).length;
-    const hdr=document.createElement('div');
-    hdr.className='su-header';
-    hdr.innerHTML=`<span>TIME ${which}</span>${team.length?`<span class="adult-info">${adults}/${target}</span>`:''}`;
+  if(bothFull){
+    // partida em andamento ou pausa de revisão
+    winRow.style.display   = 'flex';
+    tieBtn.style.display   = enoughTie ? 'block' : 'none';
+    startBtn.style.display = 'none';
+    reviewBanner.style.display = isReview ? 'flex' : 'none';
+
+    // hints nos botões (últimos 2min ou revisão)
+    if(isUrgent || isReview){
+      hintA.textContent = 'Time B sai';
+      hintB.textContent = 'Time A sai';
+    } else {
+      hintA.textContent = '';
+      hintB.textContent = '';
+    }
+
+    // banner "A seguir" — últimos 2min
+    if(isUrgent && next.length > 0){
+      const names = next.map(p => p.name.split(' ')[0]).join(' · ');
+      seguirNames.textContent = names;
+      seguirBanner.style.display = 'flex';
+    } else {
+      seguirBanner.style.display = 'none';
+    }
+  } else {
+    // quadra vazia ou parcialmente preenchida
+    winRow.style.display   = 'none';
+    tieBtn.style.display   = 'none';
+    startBtn.style.display = canStart ? 'block' : 'none';
+    reviewBanner.style.display  = 'none';
+    seguirBanner.style.display  = 'none';
+    hintA.textContent = '';
+    hintB.textContent = '';
+  }
+
+  document.getElementById('winA').disabled = !hasA;
+  document.getElementById('winB').disabled = !hasB;
+
+  // ── Scoreboards ──
+  const makeTeamCol = (which, team, badge) => {
+    const col = document.createElement('div');
+    col.className = 'su-team' + (badge === 'new' ? ' su-team-new' : '');
+    const adultCount = team.filter(p => p.adult).length;
+
+    // Header com pips de adultos
+    const hdr = document.createElement('div');
+    hdr.className = 'su-header';
+    const badgeHtml = badge === 'winner'
+      ? '<span class="su-badge su-badge-winner">PERMANECE</span>'
+      : badge === 'new'
+      ? '<span class="su-badge su-badge-new">NOVO TIME</span>'
+      : '';
+    // Gerar pips: target adultos esperados
+    const pipsHtml = team.length > 0 ? (() => {
+      const total = Math.max(target, adultCount);
+      let p = '';
+      for(let i = 0; i < total; i++){
+        p += `<span class="su-pip ${i < adultCount ? 'on' : 'off'}"></span>`;
+      }
+      return `<div class="su-adult-pips">${p}<span class="su-pip-label">adultos</span></div>`;
+    })() : '';
+    hdr.innerHTML = `<span class="su-header-name">TIME ${which}</span>${badgeHtml || pipsHtml}`;
     col.appendChild(hdr);
 
-    if(team.length===0){
-      const empty=document.createElement('div');
-      empty.className='su-empty';
-      empty.textContent='Vaga livre';
+    if(team.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'su-empty';
+      empty.textContent = 'Vaga livre';
       col.appendChild(empty);
     } else {
-      team.forEach((player,idx)=>{
-        const row=document.createElement('div');
-        row.className='su-player';
-        row.innerHTML=`
-          ${player.adult?'<span class="adulto-tag">Adulto</span>':''}
-          <span class="pname">${player.name}</span>
-          <span class="ptap">›</span>`;
-        row.addEventListener('click',()=>openPlayerSheet(which,idx));
+      // Adultos primeiro, depois crianças
+      const sorted = [...team].map((p, i) => ({...p, _orig: i}))
+        .sort((a, b) => (b.adult ? 1 : 0) - (a.adult ? 1 : 0));
+      sorted.forEach((player) => {
+        const idx = player._orig;
+        const row = document.createElement('div');
+        row.className = 'su-player' + (player.adult ? ' adulto-row' : '');
+        const initial = player.name.trim()[0].toUpperCase();
+        row.innerHTML = `
+          <div class="su-avatar${player.adult ? ' adult-av' : ''}">${initial}</div>
+          <div class="su-player-info">
+            <div class="su-player-name">${player.name}</div>
+            <div class="su-player-tipo${player.adult ? ' adult-tipo' : ''}">${player.adult ? 'Adulto' : 'Criança'}</div>
+          </div>`;
+        row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
       });
     }
-    const spacer=document.createElement('div');
-    spacer.className='su-spacer';
-    col.appendChild(spacer);
+    col.appendChild(Object.assign(document.createElement('div'), {className:'su-spacer'}));
     return col;
   };
 
-  // Equaliza altura dos cards após render
+  const winnerBadge = state._lastWinner || null; // 'A' ou 'B'
+
+  if(!hasA && !hasB){
+    const makeEmpty = (which) => {
+      const col = document.createElement('div');
+      col.className = 'su-team';
+      const hdr = document.createElement('div');
+      hdr.className = 'su-header';
+      hdr.innerHTML = `<span class="su-header-name">TIME ${which}</span>`;
+      col.appendChild(hdr);
+      const empty = document.createElement('div');
+      empty.className = 'su-empty';
+      empty.textContent = 'Quadra vazia';
+      col.appendChild(empty);
+      return col;
+    };
+    container.appendChild(makeEmpty('A'));
+    const vs = document.createElement('div');
+    vs.className = 'su-vs'; vs.textContent = '×';
+    container.appendChild(vs);
+    container.appendChild(makeEmpty('B'));
+  } else {
+    const badgeA = winnerBadge === 'A' ? 'winner' : winnerBadge === 'B' ? 'new' : null;
+    const badgeB = winnerBadge === 'B' ? 'winner' : winnerBadge === 'A' ? 'new' : null;
+    container.appendChild(makeTeamCol('A', state.courtA, badgeA));
+    const vs = document.createElement('div');
+    vs.className = 'su-vs'; vs.textContent = '×';
+    container.appendChild(vs);
+    container.appendChild(makeTeamCol('B', state.courtB, badgeB));
+  }
+
+  // Equaliza altura
   requestAnimationFrame(() => {
     const teams = document.querySelectorAll('#scoreboardUnified .su-team');
     teams.forEach(t => t.style.height = '');
-    if(teams.length === 2 && (state.courtA.length > 0 || state.courtB.length > 0)){
+    if(teams.length === 2 && bothFull){
       const h = Math.max(teams[0].offsetHeight, teams[1].offsetHeight);
       teams.forEach(t => t.style.height = h + 'px');
     }
   });
-
-  if(state.courtA.length===0 && state.courtB.length===0){
-    // Show two empty team cards instead of a centered message
-    const makeEmptyTeam = (which) => {
-      const col=document.createElement('div');
-      col.className='su-team';
-      const hdr=document.createElement('div');
-      hdr.className='su-header';
-      hdr.innerHTML=`<span>TIME ${which}</span><span class="adult-info">0/0</span>`;
-      col.appendChild(hdr);
-      const empty=document.createElement('div');
-      empty.className='su-empty';
-      empty.textContent='Quadra vazia';
-      col.appendChild(empty);
-      return col;
-    };
-    container.appendChild(makeEmptyTeam('A'));
-    const vs=document.createElement('div');
-    vs.className='su-vs'; vs.textContent='×';
-    container.appendChild(vs);
-    container.appendChild(makeEmptyTeam('B'));
-  } else {
-    container.appendChild(makeTeamCol('A', state.courtA));
-    const vs=document.createElement('div');
-    vs.className='su-vs'; vs.textContent='×';
-    container.appendChild(vs);
-    container.appendChild(makeTeamCol('B', state.courtB));
-  }
 }
 
 function renderCourtEdit(){} // mantido para não quebrar chamadas antigas
@@ -2300,7 +2627,11 @@ function confirmFeedback(btn, action){
 }
 
 document.getElementById('startBtn').addEventListener('click', e => {
-  confirmFeedback(e.currentTarget, () => { tryFillSlots(); timerReset(); saveState(); render(); });
+  confirmFeedback(e.currentTarget, () => {
+    state._reviewMode = false;
+    state._lastWinner = null;
+    tryFillSlots(); timerReset(); saveState(); render();
+  });
 });
 document.getElementById('tieBtn').addEventListener('click', e => {
   confirmFeedback(e.currentTarget, tie);
