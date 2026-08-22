@@ -29,11 +29,12 @@ link vai ver a mesma fila, em tempo real, sem precisar recarregar a página.
 3. Vai aparecer um bloco `firebaseConfig = { ... }` com várias chaves
    (`apiKey`, `authDomain`, `databaseURL`, etc). Copie esses valores.
 
-## 4. Colar as chaves no index.html
+## 4. Colar as chaves no HTML do app
 
-Abra o `index.html` deste projeto, procure por `firebaseConfig` (perto do
-início da tag `<script>`, função `loadState`) e substitua os valores
-`"COLE_AQUI..."` pelos valores reais que você copiou no passo 3.
+Abra o arquivo do app (`paisfilhos.html` ou `calangada.html`, conforme o
+grupo), procure por `firebaseConfig` (perto do fim do arquivo, no `<script
+type="module">`) e substitua os valores `"COLE_AQUI..."` pelos valores reais
+que você copiou no passo 3.
 
 ## 5. Publicar
 
@@ -45,3 +46,12 @@ que ainda sobrou algum `COLE_AQUI` no arquivo.
 
 Abra o link em dois celulares diferentes e teste: adicione um jogador em um
 e veja aparecer no outro na hora.
+
+## Sobre o Calangada
+
+`paisfilhos.html` e `calangada.html` compartilham o mesmo projeto/banco do
+Firebase (mesma `databaseURL`) — cada um grava num nó separado
+(`paisfilhos/state` e `calangada/state`), então os dois grupos não veem a
+fila um do outro, mas usam a mesma conta Firebase gratuita. Não é preciso
+criar um segundo projeto no Firebase, só repetir o passo 4 acima
+manualmente em cada arquivo se algum dia trocar as chaves.
