@@ -335,11 +335,6 @@ body {
   border-bottom: 1px solid var(--line);
 }
 .su-header-name { font-size: 0.85rem; font-weight: 800; color: var(--ink); letter-spacing: .3px; }
-.su-adult-pips { display: flex; align-items: center; gap: 3px; }
-.su-pip { width: 7px; height: 7px; border-radius: 50%; }
-.su-pip.on  { background: var(--amber); }
-.su-pip.off { background: #e0e0e0; }
-.su-pip-label { font-size: 9px; color: #bbb; font-weight: 600; margin-left: 3px; }
 
 .su-player {
   padding: clamp(6px, 1.8vw, 8px) clamp(10px, 3vw, 14px);
@@ -353,7 +348,8 @@ body {
 }
 .su-player:last-of-type { border-bottom: none; }
 .su-player:active { background: var(--chalk); }
-.su-player.adulto-row { border-left: 2px solid var(--amber); padding-left: 12px; }
+.su-player.veterano-row { border-left: 2px solid var(--amber); padding-left: 12px; }
+.su-player.extra-row { border-left: 2px dashed var(--ink-soft); padding-left: 12px; }
 
 .su-avatar {
   width: 28px; height: 28px;
@@ -364,12 +360,15 @@ body {
   background: var(--bg);
   color: var(--ink-soft);
 }
-.su-avatar.adult-av { background: #fff8ec; color: #c17f10; }
+.su-avatar.veterano-av { background: #fff8ec; color: #c17f10; }
+.su-avatar.extra-av { background: var(--cement); color: var(--ink-soft); }
 
 .su-player-info { flex: 1; min-width: 0; }
 .su-player-name { font-size: 0.8rem; font-weight: 600; color: var(--ink); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .su-player-tipo { font-size: 0.68rem; color: #bbb; font-weight: 500; margin-top: 1px; }
-.su-player-tipo.adult-tipo { color: #c17f10; }
+.su-player-tipo.veterano-tipo { color: #c17f10; }
+.su-player-tipo.extra-tipo { color: var(--ink-soft); font-style: italic; }
+.su-comp-summary { font-family:'Inter',sans-serif; font-size:0.68rem; color:var(--ink-soft); font-weight:600; letter-spacing:0; }
 .su-team{
   flex: 1;
   display: flex;
@@ -805,8 +804,9 @@ body {
   flex-shrink: 0;
   text-transform: uppercase;
 }
-.membro-badge-tipo.adulto { background: var(--amber); color: var(--green); }
-.membro-badge-tipo.crianca { background: #e8f5e9; color: #3a3a5c; }
+.membro-badge-tipo.veterano { background: var(--amber); color: var(--green); }
+.membro-badge-tipo.base { background: #e8f5e9; color: #3a3a5c; }
+.membro-badge-tipo.extra { background: var(--cement); color: var(--ink-soft); }
 /* ── SWIPE-TO-REVEAL ACTIONS ── */
 .membro-swipe-wrap {
   position: relative;
@@ -891,8 +891,9 @@ body {
   flex-shrink: 0;
   text-transform: uppercase;
 }
-.membro-badge-tipo.adulto { background: var(--amber); color: var(--green); }
-.membro-badge-tipo.crianca { background: #e8f5e9; color: #3a3a5c; }
+.membro-badge-tipo.veterano { background: var(--amber); color: var(--green); }
+.membro-badge-tipo.base { background: #e8f5e9; color: #3a3a5c; }
+.membro-badge-tipo.extra { background: var(--cement); color: var(--ink-soft); }
 
 
 
@@ -1122,8 +1123,9 @@ body {
   transition: filter 0.08s, transform 0.08s;
 }
 .fila-add-btn:active { transform: scale(0.95); filter: brightness(0.82); }
-.fila-add-child { background: #3a3a5c; color: var(--white); }
-.fila-add-adult { background: var(--amber); color: var(--green); }
+.fila-add-veterano { background: var(--amber); color: var(--green); }
+.fila-add-base { background: #3a3a5c; color: var(--white); }
+.fila-add-extra { background: var(--cement); color: var(--ink); }
 
 /* ── HEADER RIGHT (status + config btn) ── */
 .header-right {
@@ -1253,16 +1255,17 @@ body {
   flex-shrink: 0;
 }
 .queue-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
-.adult-badge {
+.cat-badge {
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  background: var(--amber);
-  color: var(--green);
   border-radius: 4px;
   padding: 2px 6px;
   flex-shrink: 0;
 }
+.cat-badge.veterano { background: var(--amber); color: var(--green); }
+.cat-badge.base { background: #e8f5e9; color: #3a3a5c; }
+.cat-badge.extra { background: var(--cement); color: var(--ink-soft); }
 .remove-btn {
   border: none; background: none;
   color: #ccc;
@@ -1334,7 +1337,7 @@ body {
 }
 .queue-item.waiting .queue-num { background: #ddd; color: #aaa; }
 .queue-item.waiting .queue-name { color: #aaa; }
-.queue-item.waiting .adult-badge { background: #eee; color: #bbb; }
+.queue-item.waiting .cat-badge { background: #eee; color: #bbb; }
 
 /* ── RESULTADOS SCREEN ── */
 .results-list {
@@ -1632,8 +1635,9 @@ body {
         </div>
         <div class="membros-filter-chips">
           <button class="filter-chip active" data-filter="todos">Todos</button>
-          <button class="filter-chip" data-filter="adulto">Adultos</button>
-          <button class="filter-chip" data-filter="crianca">Crianças</button>
+          <button class="filter-chip" data-filter="veterano">Veteranos</button>
+          <button class="filter-chip" data-filter="base">Base</button>
+          <button class="filter-chip" data-filter="extra">Extra</button>
           <button class="filter-chip" data-filter="colete">Sem colete</button>
         </div>
       </div>
@@ -1672,15 +1676,10 @@ body {
         </div>
       </div>
       <ul class="queue-list" id="queueList"></ul>
-      <!-- inputs ocultos mantidos para compatibilidade com handleAdd -->
-      <input type="text" id="nameInput" style="display:none" autocomplete="off">
-      <button id="addChildBtn" style="display:none"></button>
-      <button id="addAdultBtn" style="display:none"></button>
     </div>
 
     <!-- Config inputs (hidden) -->
     <input type="number" id="teamSize" min="1" max="15" value="5" style="display:none">
-    <input type="number" id="targetAdults" min="0" max="15" value="2" style="display:none">
     <input type="number" id="matchDuration" min="1" max="60" value="10" style="display:none">
   </div>
 
@@ -1701,14 +1700,6 @@ body {
           <button onclick="stepConfig('teamSizeSheet',-1)">−</button>
           <span id="teamSizeSheet">5</span>
           <button onclick="stepConfig('teamSizeSheet',1)">+</button>
-        </div>
-      </div>
-      <div class="config-sheet-row">
-        <label class="config-sheet-label">Adultos por time (meta)</label>
-        <div class="config-sheet-stepper">
-          <button onclick="stepConfig('targetAdultsSheet',-1)">−</button>
-          <span id="targetAdultsSheet">2</span>
-          <button onclick="stepConfig('targetAdultsSheet',1)">+</button>
         </div>
       </div>
       <div class="config-sheet-row">
@@ -1766,7 +1757,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
    ESTADO & FIREBASE
 ═══════════════════════════════════════════ */
 let state = {
-  teamSize: 5, targetAdults: 2, matchDuration: 10,
+  teamSize: 5, matchDuration: 10,
   queue: [], courtA: [], courtB: [],
   history: [],
   membros: []  // [{id, name, adult}] — cadastro permanente do grupo
@@ -1845,7 +1836,7 @@ function timerTickLocal(){
     renderTimerBlock();
     renderHeader(teamSize());
     // Atualiza banner "A seguir" e hints quando urgente
-    if(left <= 121) { renderCourt(teamSize(), targetAdults()); }
+    if(left <= 121) { renderCourt(teamSize()); }
     if(left === 0 && !_lastAlerted){
       _lastAlerted = true;
       state.timer = { running:false, startedAt:null, secondsLeft:0, finished:true };
@@ -1927,8 +1918,6 @@ function loadState(){
       if(_localChangePending) return;
       const wasRunning = timerState().running;
       state = Object.assign(state, remote);
-      if(state.targetAdults === undefined && remote.maxAdults !== undefined)
-        state.targetAdults = remote.maxAdults;
       _fbReady = true;
       // Se o estado do timer mudou remotamente, sincroniza o tick local
       const nowRunning = timerState().running;
@@ -1954,12 +1943,20 @@ function saveState(isRetry){
    LÓGICA DE NEGÓCIO (inalterada)
 ═══════════════════════════════════════════ */
 function teamSize(){ return Math.max(1, parseInt(state.teamSize) || 1); }
-function targetAdults(){ return Math.max(0, parseInt(state.targetAdults) ?? 2); }
+function catLabel(p){ return p.categoria==='veterano' ? 'Veterano' : p.categoria==='extra' ? 'Extra' : 'Base'; }
 
-function selectTeamFromQueueCopy(q, ts, target){
+// Composição preferencial de cada time: 2 Veteranos + 3 Base (= teamSize
+// padrão de 5), com 1 Extra como 6ª vaga bônus quando sobrar alguém da
+// categoria Extra na fila. Se faltar Veterano ou Base pra bater a meta,
+// completa com quem estiver disponível — a meta é preferência, não regra dura.
+const TARGET_VETERANOS = 2;
+const TARGET_BASE = 3;
+
+function selectBaseTeam(q, ts){
   const idx = [];
-  for(let i=0; i<q.length; i++){ if(idx.filter(j=>q[j].adult).length >= target) break; if(q[i].adult) idx.push(i); }
-  for(let i=0; i<q.length && idx.length<ts; i++){ if(!q[i].adult && !idx.includes(i)) idx.push(i); }
+  const countCat = (cat) => idx.filter(j => q[j].categoria === cat).length;
+  for(let i=0; i<q.length && countCat('veterano')<TARGET_VETERANOS; i++){ if(q[i].categoria==='veterano') idx.push(i); }
+  for(let i=0; i<q.length && countCat('base')<TARGET_BASE; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
   for(let i=0; i<q.length && idx.length<ts; i++){ if(!idx.includes(i)) idx.push(i); }
   if(idx.length < ts) return null;
   idx.sort((a,b)=>a-b);
@@ -1968,20 +1965,49 @@ function selectTeamFromQueueCopy(q, ts, target){
   return chosen;
 }
 
-function canFormNTeams(arr, ts, target, n){
+// 6ª vaga bônus: 1 Extra, só se sobrar alguém Extra na fila. Recebe um time
+// já formado (com a base completa) e tenta anexar 1 Extra a mais nele.
+function grantBonusExtra(team, q){
+  if(!team) return;
+  const i = q.findIndex(p => p.categoria === 'extra');
+  if(i === -1) return;
+  team.push(q[i]);
+  q.splice(i, 1);
+}
+
+function selectTeamFromQueueCopy(q, ts){
+  const team = selectBaseTeam(q, ts);
+  if(team) grantBonusExtra(team, q);
+  return team;
+}
+
+function canFormNTeams(arr, ts, n){
   const copy = [...arr];
-  for(let k=0;k<n;k++) if(!selectTeamFromQueueCopy(copy,ts,target)) return false;
+  for(let k=0;k<n;k++) if(!selectTeamFromQueueCopy(copy,ts)) return false;
   return true;
 }
 
 function tryFillSlots(){
-  const ts=teamSize(), t=targetAdults();
-  if(state.courtA.length===0){ const team=selectTeamFromQueueCopy(state.queue,ts,t); if(team) state.courtA=team; }
-  if(state.courtB.length===0){ const team=selectTeamFromQueueCopy(state.queue,ts,t); if(team) state.courtB=team; }
+  const ts=teamSize();
+  const needA = state.courtA.length===0;
+  const needB = state.courtB.length===0;
+  if(needA && needB){
+    // Monta a base dos DOIS times antes de considerar qualquer bônus de Extra —
+    // senão o Time A pode "roubar" do Time B a vaga que faltava pra fechar a base.
+    const teamA = selectBaseTeam(state.queue, ts);
+    const teamB = selectBaseTeam(state.queue, ts);
+    if(teamA) state.courtA = teamA;
+    if(teamB) state.courtB = teamB;
+    if(teamA) grantBonusExtra(state.courtA, state.queue);
+    if(teamB) grantBonusExtra(state.courtB, state.queue);
+  } else {
+    if(needA){ const team=selectTeamFromQueueCopy(state.queue,ts); if(team) state.courtA=team; }
+    if(needB){ const team=selectTeamFromQueueCopy(state.queue,ts); if(team) state.courtB=team; }
+  }
 }
 
 function syncCourtSizes(){
-  const ts=teamSize(), t=targetAdults();
+  const ts=teamSize();
   ['courtA','courtB'].forEach(key=>{
     const team=state[key]; if(!team.length) return;
     if(team.length>ts){ state.queue.unshift(...team.splice(ts)); }
@@ -2105,7 +2131,7 @@ function tie(){
 
 
 
-function addToQueue(name, adult, guest){ state.queue.push({name,adult:!!adult,guest:!!guest}); saveState(); render(); }
+function addToQueue(name, categoria, guest){ state.queue.push({name,categoria,guest:!!guest}); saveState(); render(); }
 function removeFromQueue(i){ state.queue.splice(i,1); saveState(); render(); }
 
 function substitutePlayer(which, idx, qi){
@@ -2138,34 +2164,38 @@ function toggleSwapSelection(which,idx){
 ═══════════════════════════════════════════ */
 function render(){
   clearGhosts();
-  const ts=teamSize(), target=targetAdults();
+  const ts=teamSize();
   // lucide icons re-initialized after render (see bottom)
   // Sync hidden inputs (used by legacy render code)
   const tsEl=document.getElementById('teamSize'); if(tsEl) tsEl.value=state.teamSize;
-  const taEl=document.getElementById('targetAdults'); if(taEl) taEl.value=state.targetAdults;
   const mdEl=document.getElementById('matchDuration'); if(mdEl) mdEl.value=state.matchDuration||10;
   // Sync sheet steppers if open
   const tss=document.getElementById('teamSizeSheet'); if(tss) tss.textContent=state.teamSize||5;
-  const tas=document.getElementById('targetAdultsSheet'); if(tas) tas.textContent=state.targetAdults||2;
   const mds=document.getElementById('matchDurationSheet'); if(mds) mds.textContent=state.matchDuration||10;
   if(!state.membros) state.membros=[];
   renderMembros();
-  renderCourt(ts, target);
+  renderCourt(ts);
   renderTimerBlock();
-  renderQueue(ts, target);
+  renderQueue(ts);
   renderResults();
   renderHeader(ts);
-  
+
 }
 
 function proximoTime(){
-  // Retorna os próximos N jogadores que formariam o próximo time
-  const ts = teamSize(), t = targetAdults();
+  // Retorna os próximos jogadores que formariam o próximo time (mesma
+  // preferência 2 Veteranos + 3 Base + 1 Extra bônus do selectTeamFromQueueCopy,
+  // só que sem tirar ninguém da fila de verdade — é só uma prévia).
+  const ts = teamSize();
   const q = [...state.queue];
   const idx = [];
-  for(let i=0;i<q.length;i++){ if(idx.filter(j=>q[j].adult).length>=t) break; if(q[i].adult) idx.push(i); }
-  for(let i=0;i<q.length&&idx.length<ts;i++){ if(!q[i].adult&&!idx.includes(i)) idx.push(i); }
-  for(let i=0;i<q.length&&idx.length<ts;i++){ if(!idx.includes(i)) idx.push(i); }
+  const countCat = (cat) => idx.filter(j => q[j].categoria === cat).length;
+  for(let i=0; i<q.length && countCat('veterano')<TARGET_VETERANOS; i++){ if(q[i].categoria==='veterano') idx.push(i); }
+  for(let i=0; i<q.length && countCat('base')<TARGET_BASE; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
+  for(let i=0; i<q.length && idx.length<ts; i++){ if(!idx.includes(i)) idx.push(i); }
+  if(idx.length >= ts){
+    for(let i=0; i<q.length; i++){ if(!idx.includes(i) && q[i].categoria==='extra'){ idx.push(i); break; } }
+  }
   return idx.sort((a,b)=>a-b).map(i=>q[i]);
 }
 
@@ -2191,7 +2221,7 @@ function renderHeader(ts){
   // Card próximo time (aparece só nos últimos 2 min com partida em andamento)
   if(proximoCard && isUrgent && hasMatch && nextTeam.length > 0){
     proximoPills.innerHTML = nextTeam.map(p=>
-      `<span class="proximo-pill">${p.adult?'<span class="pp-dot"></span>':''}${p.name}</span>`
+      `<span class="proximo-pill">${p.categoria==='veterano'?'<span class="pp-dot"></span>':''}${p.name}</span>`
     ).join('');
     proximoCard.classList.add('visible');
   } else if(proximoCard){
@@ -2232,7 +2262,7 @@ function openPlayerSheet(which, idx){
     swapSelection=null; saveState(); render(); closeSheet(); return;
   }
 
-  const title=`${player.name}${player.adult?' · <span style="font-size:.7rem;font-weight:700;background:var(--amber);color:#1c1c2e;border-radius:3px;padding:1px 6px;vertical-align:middle">ADULTO</span>':''}`;
+  const title=`${player.name} · <span style="font-size:.7rem;font-weight:700;background:var(--amber);color:#1c1c2e;border-radius:3px;padding:1px 6px;vertical-align:middle">${catLabel(player).toUpperCase()}</span>`;
   openSheet(title, body=>{
     // ── Tab switcher ──
     const tabs=document.createElement('div');
@@ -2270,7 +2300,7 @@ function openPlayerSheet(which, idx){
       state.queue.forEach((qp,qi)=>{
         const opt=document.createElement('button');
         opt.className='sheet-option';
-        opt.innerHTML=`<span class="opt-icon">${qp.adult?'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"0\"><circle cx=\"12\" cy=\"12\" r=\"6\" fill=\"currentColor\"/></svg>':'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"6\"/></svg>'}</span><span class="opt-text">${qp.name}<span class="opt-sub">${qp.adult?'Adulto — ':'Criança — '}posição ${qi+1} na fila</span></span>`;
+        opt.innerHTML=`<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"0\"><circle cx=\"12\" cy=\"12\" r=\"6\" fill=\"currentColor\"/></svg></span><span class="opt-text">${qp.name}<span class="opt-sub">${catLabel(qp)} — posição ${qi+1} na fila</span></span>`;
         opt.addEventListener('click',()=>{ substitutePlayer(which,idx,qi); closeSheet(); });
         paneSubstitute.appendChild(opt);
       });
@@ -2287,7 +2317,7 @@ function openPlayerSheet(which, idx){
       otherTeam.forEach((op,oi)=>{
         const opt=document.createElement('button');
         opt.className='sheet-option';
-        opt.innerHTML=`<span class="opt-icon">${op.adult?'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"0\"><circle cx=\"12\" cy=\"12\" r=\"6\" fill=\"currentColor\"/></svg>':'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"6\"/></svg>'}</span><span class="opt-text">${op.name}<span class="opt-sub">${op.adult?'Adulto':'Criança'} · Time ${otherWhich}</span></span>`;
+        opt.innerHTML=`<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"10\" height=\"10\" stroke-width=\"0\"><circle cx=\"12\" cy=\"12\" r=\"6\" fill=\"currentColor\"/></svg></span><span class="opt-text">${op.name}<span class="opt-sub">${catLabel(op)} · Time ${otherWhich}</span></span>`;
         opt.addEventListener('click',()=>{
           const tA=which==='A'?state.courtA:state.courtB;
           const tB=otherWhich==='A'?state.courtA:state.courtB;
@@ -2315,7 +2345,7 @@ function sameDay(t1, t2){
   return a.toDateString() === b.toDateString();
 }
 
-function renderCourt(ts, target){
+function renderCourt(ts){
   const container = document.getElementById('scoreboardUnified');
   container.innerHTML = '';
 
@@ -2442,9 +2472,11 @@ function renderCourt(ts, target){
   const makeTeamCol = (which, team, badge) => {
     const col = document.createElement('div');
     col.className = 'su-team' + (badge === 'new' ? ' su-team-new' : '');
-    const adultCount = team.filter(p => p.adult).length;
+    const vCount = team.filter(p => p.categoria === 'veterano').length;
+    const bCount = team.filter(p => p.categoria === 'base').length;
+    const eCount = team.filter(p => p.categoria === 'extra').length;
 
-    // Header com pips de adultos
+    // Header com resumo de composição (veteranos · base · extra)
     const hdr = document.createElement('div');
     hdr.className = 'su-header';
     const badgeHtml = badge === 'winner'
@@ -2452,16 +2484,10 @@ function renderCourt(ts, target){
       : badge === 'new'
       ? '<span class="su-badge su-badge-new">NOVO TIME</span>'
       : '';
-    // Gerar pips: target adultos esperados
-    const pipsHtml = team.length > 0 ? (() => {
-      const total = Math.max(target, adultCount);
-      let p = '';
-      for(let i = 0; i < total; i++){
-        p += `<span class="su-pip ${i < adultCount ? 'on' : 'off'}"></span>`;
-      }
-      return `<div class="su-adult-pips">${p}<span class="su-pip-label">adultos</span></div>`;
-    })() : '';
-    hdr.innerHTML = `<span class="su-header-name">TIME ${which}</span>${badgeHtml || pipsHtml}`;
+    const compHtml = team.length > 0
+      ? `<div class="su-comp-summary">${vCount} veterano${vCount!==1?'s':''} · ${bCount} base${eCount>0?` · ${eCount} extra`:''}</div>`
+      : '';
+    hdr.innerHTML = `<span class="su-header-name">TIME ${which}</span>${badgeHtml || compHtml}`;
     col.appendChild(hdr);
 
     if(team.length === 0){
@@ -2470,21 +2496,23 @@ function renderCourt(ts, target){
       empty.textContent = 'Vaga livre';
       col.appendChild(empty);
     } else {
-      // Adultos primeiro, depois crianças
+      // Veteranos primeiro, depois base, depois extra
+      const rank = { veterano: 0, base: 1, extra: 2 };
       const sorted = [...team].map((p, i) => ({...p, _orig: i}))
-        .sort((a, b) => (b.adult ? 1 : 0) - (a.adult ? 1 : 0));
+        .sort((a, b) => (rank[a.categoria]??1) - (rank[b.categoria]??1));
       sorted.forEach((player) => {
         const idx = player._orig;
+        const catClass = player.categoria === 'veterano' ? 'veterano' : player.categoria === 'extra' ? 'extra' : '';
+        const catLabel = player.categoria === 'veterano' ? 'Veterano' : player.categoria === 'extra' ? 'Extra' : 'Base';
         const row = document.createElement('div');
-        row.className = 'su-player' + (player.adult ? ' adulto-row' : '');
+        row.className = 'su-player' + (catClass ? ` ${catClass}-row` : '');
         const initial = player.name.trim()[0].toUpperCase();
         row.innerHTML = `
-          <div class="su-avatar${player.adult ? ' adult-av' : ''}">${initial}</div>
+          <div class="su-avatar${catClass ? ` ${catClass}-av` : ''}">${initial}</div>
           <div class="su-player-info">
             <div class="su-player-name">${player.name}</div>
-            <div class="su-player-tipo${player.adult ? ' adult-tipo' : ''}">${player.adult ? 'Adulto' : 'Criança'}</div>
-          </div>
-          ${player.guest ? '<span class="guest-badge">CONVIDADO</span>' : ''}`;
+            <div class="su-player-tipo${catClass ? ` ${catClass}-tipo` : ''}">${catLabel}${player.guest ? ' · Convidado' : ''}</div>
+          </div>`;
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
       });
@@ -2524,13 +2552,15 @@ function renderCourt(ts, target){
     container.appendChild(makeTeamCol('B', state.courtB, badgeB));
   }
 
-  // Equaliza altura
+  // Equaliza altura — só grava um valor se a tela estiver realmente visível
+  // (offsetHeight mede 0 quando a aba Em Quadra está em segundo plano, e
+  // travar as colunas em 0px deixava os nomes espremidos ao voltar pra ela).
   requestAnimationFrame(() => {
     const teams = document.querySelectorAll('#scoreboardUnified .su-team');
     teams.forEach(t => t.style.height = '');
     if(teams.length === 2 && bothFull){
       const h = Math.max(teams[0].offsetHeight, teams[1].offsetHeight);
-      teams.forEach(t => t.style.height = h + 'px');
+      if(h > 0) teams.forEach(t => t.style.height = h + 'px');
     }
   });
 }
@@ -2567,7 +2597,7 @@ function abrirProximoTime(){
       players.forEach(p => {
         const pill = document.createElement('span');
         pill.style.cssText = `background:var(--${dim?'cement':'bg'});border-radius:100px;font-size:.82rem;font-weight:600;color:${dim?'#999':'var(--ink)'};padding:4px 12px;display:inline-flex;align-items:center;gap:5px`;
-        if(p.adult && !dim){
+        if(p.categoria === 'veterano' && !dim){
           const dot = document.createElement('span');
           dot.style.cssText = 'width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0';
           pill.appendChild(dot);
@@ -2613,24 +2643,25 @@ function abrirAddConvidado(){
     input.addEventListener('blur', () => input.style.borderColor = '#ddd');
     body.appendChild(input);
     const btns = document.createElement('div');
-    btns.style.cssText = 'display:flex;gap:8px';
-    const addBtn = (label, adult) => {
+    btns.style.cssText = 'display:flex;gap:6px';
+    const addBtn = (label, categoria) => {
       const b = document.createElement('button');
-      b.className = `fila-add-btn ${adult ? 'fila-add-adult' : 'fila-add-child'}`;
-      b.style.cssText = 'flex:1;height:48px;font-size:.9rem';
+      b.className = `fila-add-btn fila-add-${categoria}`;
+      b.style.cssText = 'flex:1;height:48px;font-size:.82rem;padding:0 4px';
       b.textContent = label;
       b.addEventListener('click', () => {
         const name = input.value.trim();
         if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
-        addToQueue(name, adult, true); saveState(); render();
+        addToQueue(name, categoria, true); saveState(); render();
         input.value = ''; input.style.borderColor = '#ddd'; input.focus();
         b.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg> ' + label;
         setTimeout(() => b.textContent = label, 1000);
       });
       return b;
     };
-    btns.appendChild(addBtn('+ Criança', false));
-    btns.appendChild(addBtn('+ Adulto', true));
+    btns.appendChild(addBtn('+ Veterano', 'veterano'));
+    btns.appendChild(addBtn('+ Base', 'base'));
+    btns.appendChild(addBtn('+ Extra', 'extra'));
     body.appendChild(btns);
     const cancel = document.createElement('button');
     cancel.className = 'sheet-option cancel';
@@ -2641,13 +2672,14 @@ function abrirAddConvidado(){
   });
 }
 
-function renderQueue(ts, target){
+function renderQueue(ts){
   const list=document.getElementById('queueList');
   const meta=document.getElementById('queueMeta');
   list.innerHTML='';
-  const adults=state.queue.filter(p=>p.adult).length;
+  const veteranos=state.queue.filter(p=>p.categoria==='veterano').length;
+  const bases=state.queue.filter(p=>p.categoria==='base').length;
   const teams=Math.floor(state.queue.length/ts);
-  meta.textContent=`${state.queue.length} jogador(es) · ${adults} adulto(s) · ${teams} time(s) completo(s)`;
+  meta.textContent=`${state.queue.length} jogador(es) · ${veteranos} veterano(s) · ${bases} base(s) · ${teams} time(s) completo(s)`;
 
   const hasA = state.courtA.length > 0;
   const hasB = state.courtB.length > 0;
@@ -2695,7 +2727,7 @@ function renderQueue(ts, target){
     li.innerHTML=`
       <span class="queue-num">${i+1}</span>
       <span class="queue-name">${player.name}</span>
-      ${player.adult?'<span class="adult-badge">ADULTO</span>':''}
+      <span class="cat-badge ${player.categoria}">${player.categoria==='veterano'?'VETERANO':player.categoria==='extra'?'EXTRA':'BASE'}</span>
       ${player.guest?'<span class="guest-badge">CONVIDADO</span>':''}
       <button class="remove-btn" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
     li.querySelector('.remove-btn').addEventListener('click',()=>removeFromQueue(i));
@@ -2780,21 +2812,21 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
       switchFilaView(hasMatch ? 'fila' : 'membros');
     }
+    if(btn.id === 'tabQuadra'){
+      // Reequaliza a altura dos times agora que a tela ficou visível —
+      // qualquer atualização enquanto ela estava em segundo plano não
+      // conseguiu medir a altura real.
+      renderCourt(teamSize());
+    }
   });
 });
 
 /* ═══════════════════════════════════════════
    EVENTOS
 ═══════════════════════════════════════════ */
-function handleAdd(adult){
-  const input=document.getElementById('nameInput');
-  const name=input.value.trim();
-  if(name){ addToQueue(name,adult,true); input.value=''; input.focus(); }
-}
 /* ── CONFIG SHEET ── */
 function openConfigSheet(){
   document.getElementById('teamSizeSheet').textContent = state.teamSize||5;
-  document.getElementById('targetAdultsSheet').textContent = state.targetAdults||2;
   document.getElementById('matchDurationSheet').textContent = state.matchDuration||10;
   document.getElementById('configSheet').style.display='block';
   document.getElementById('configSheetBackdrop').style.display='block';
@@ -2805,13 +2837,12 @@ function closeConfigSheet(){
 }
 function stepConfig(id, delta){
   const el=document.getElementById(id);
-  const limits={teamSizeSheet:[1,15],targetAdultsSheet:[0,15],matchDurationSheet:[1,60]};
+  const limits={teamSizeSheet:[1,15],matchDurationSheet:[1,60]};
   const [min,max]=limits[id];
   const val=Math.min(max,Math.max(min,(parseInt(el.textContent)||0)+delta));
   el.textContent=val;
   // Apply to state immediately
   if(id==='teamSizeSheet'){ state.teamSize=val; syncCourtSizes(); }
-  if(id==='targetAdultsSheet'){ state.targetAdults=val; }
   if(id==='matchDurationSheet'){ state.matchDuration=val; if(!timerState().running){ state.timer={...timerState(),secondsLeft:val*60}; } }
   saveState(); render();
 }
@@ -2846,10 +2877,6 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     });
   }, 200);
 });
-document.getElementById('addChildBtn').addEventListener('click',()=>handleAdd(false));
-document.getElementById('addAdultBtn').addEventListener('click',()=>handleAdd(true));
-document.getElementById('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleAdd(false); } });
-
 /* ── FEEDBACK TÁTIL E VISUAL ── */
 function confirmFeedback(btn, action){
   // Vibração curta de confirmação
@@ -2944,14 +2971,14 @@ document.getElementById('staleClearBtn').addEventListener('click', () => {
 // presença marcada localmente (não persiste — só vale no dia)
 let presencasMarcadas = new Set();
 let _filtroTexto = '';
-let _filtroTipo  = 'todos'; // 'todos' | 'adulto' | 'crianca' | 'colete'
+let _filtroTipo  = 'todos'; // 'todos' | 'veterano' | 'base' | 'extra' | 'colete'
 
 
-function addMembro(name, adult){
+function addMembro(name, categoria){
   if(!name.trim()) return;
   if(!state.membros) state.membros = [];
   const id = Date.now() + '_' + Math.random().toString(36).slice(2,6);
-  state.membros.push({ id, name: name.trim(), adult: !!adult });
+  state.membros.push({ id, name: name.trim(), categoria });
   saveState();
   renderMembros();
 }
@@ -2982,7 +3009,7 @@ function confirmarPresenca(){
 
   // Insere os confirmados no INÍCIO da fila (antes dos convidados)
   state.queue = [
-    ...novos.map(m => ({ name: m.name, adult: m.adult })),
+    ...novos.map(m => ({ name: m.name, categoria: m.categoria })),
     ...state.queue
   ];
 
@@ -3080,8 +3107,9 @@ function renderMembros(){
 
   // ── Resumo quantitativo ──
   if(membros.length > 0){
-    const adultos  = membros.filter(m => m.adult).length;
-    const criancas = membros.filter(m => !m.adult).length;
+    const veteranos = membros.filter(m => m.categoria==='veterano').length;
+    const bases     = membros.filter(m => m.categoria==='base').length;
+    const extras    = membros.filter(m => m.categoria==='extra').length;
     const comColete = membros.filter(m => m.temColete).length;
     const semColete = membros.length - comColete;
     const summary = document.createElement('li');
@@ -3089,9 +3117,11 @@ function renderMembros(){
     summary.innerHTML = `
       <span class="msb-item"><strong>${membros.length}</strong> membros</span>
       <span class="msb-sep">·</span>
-      <span class="msb-item"><strong>${adultos}</strong> adultos</span>
+      <span class="msb-item"><strong>${veteranos}</strong> veteranos</span>
       <span class="msb-sep">·</span>
-      <span class="msb-item"><strong>${criancas}</strong> crianças</span>
+      <span class="msb-item"><strong>${bases}</strong> base</span>
+      <span class="msb-sep">·</span>
+      <span class="msb-item"><strong>${extras}</strong> extras</span>
       <span class="msb-sep">·</span>
       <span class="msb-item msb-colete"><strong>${comColete}</strong> com colete${semColete > 0 ? ` <em>(${semColete} sem)</em>` : ' ✓'}</span>
       <button class="membros-filter-btn" id="membrosFilterBtn" title="Filtrar">
@@ -3124,9 +3154,7 @@ function renderMembros(){
   const filtered = membros.filter(m => {
     const textoOk = !_filtroTexto || m.name.toLowerCase().includes(_filtroTexto.toLowerCase());
     const tipoOk  = _filtroTipo === 'todos'
-      || (_filtroTipo === 'adulto'  ? m.adult
-      : (_filtroTipo === 'crianca'  ? !m.adult
-      : (_filtroTipo === 'colete'   ? !m.temColete : true)));
+      || (_filtroTipo === 'colete' ? !m.temColete : m.categoria === _filtroTipo);
     return textoOk && tipoOk;
   });
 
@@ -3192,7 +3220,7 @@ function renderMembros(){
       li.innerHTML = `
         <div class="membro-check">${checkSvg}</div>
         <span class="membro-name">${m.name}</span>
-        <span class="membro-badge-tipo ${m.adult?'adulto':'crianca'}">${m.adult?'Adulto':'Criança'}</span>
+        <span class="membro-badge-tipo ${m.categoria}">${m.categoria==='veterano'?'Veterano':m.categoria==='extra'?'Extra':'Base'}</span>
         <button class="colete-btn${m.temColete?' tem':''}" title="${m.temColete?'Tem colete':'Sem colete'}">${coleteIcon}</button>`;
       li.querySelector('.membro-check').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
       li.querySelector('.membro-name').addEventListener('click',  () => { resetSwipe(wrap); togglePresenca(m.id); });
@@ -3238,7 +3266,7 @@ function switchFilaView(view){
       if(inp) inp.value = '';
       panel.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
     }
-    renderQueue(teamSize(), targetAdults());
+    renderQueue(teamSize());
   }
 }
 
@@ -3264,25 +3292,26 @@ function editarMembro(id){
     input.addEventListener('blur',  () => input.style.borderColor = '#ddd');
     body.appendChild(input);
 
-    // Tipo: Criança / Adulto toggle
-    let isAdult = m.adult;
+    // Categoria: Veterano / Base / Extra
+    let categoria = m.categoria;
     const typeRow = document.createElement('div');
-    typeRow.style.cssText = 'display:flex;gap:8px';
+    typeRow.style.cssText = 'display:flex;gap:6px';
 
-    const mkTypeBtn = (label, adult) => {
+    const mkTypeBtn = (label, cat) => {
       const b = document.createElement('button');
-      b.className = `fila-add-btn ${adult ? 'fila-add-adult' : 'fila-add-child'}`;
-      b.style.cssText = `flex:1;height:44px;font-size:.88rem;opacity:${isAdult===adult?'1':'0.4'}`;
+      b.className = `fila-add-btn fila-add-${cat}`;
+      b.style.cssText = `flex:1;height:44px;font-size:.82rem;padding:0 4px;opacity:${categoria===cat?'1':'0.4'}`;
       b.textContent = label;
       b.addEventListener('click', () => {
-        isAdult = adult;
+        categoria = cat;
         typeRow.querySelectorAll('button').forEach(x => x.style.opacity = '0.4');
         b.style.opacity = '1';
       });
       return b;
     };
-    typeRow.appendChild(mkTypeBtn('Criança', false));
-    typeRow.appendChild(mkTypeBtn('Adulto', true));
+    typeRow.appendChild(mkTypeBtn('Veterano', 'veterano'));
+    typeRow.appendChild(mkTypeBtn('Base', 'base'));
+    typeRow.appendChild(mkTypeBtn('Extra', 'extra'));
     body.appendChild(typeRow);
 
     // Salvar
@@ -3294,7 +3323,7 @@ function editarMembro(id){
       const name = input.value.trim();
       if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
       m.name = name;
-      m.adult = isAdult;
+      m.categoria = categoria;
       saveState();
       renderMembros();
       closeSheet();
@@ -3326,17 +3355,17 @@ function abrirAddMembro(){
     body.appendChild(input);
 
     const btns = document.createElement('div');
-    btns.style.cssText = 'display:flex;gap:8px';
+    btns.style.cssText = 'display:flex;gap:6px';
 
-    const addBtn = (label, adult) => {
+    const addBtn = (label, categoria) => {
       const b = document.createElement('button');
-      b.className = `fila-add-btn ${adult ? 'fila-add-adult' : 'fila-add-child'}`;
-      b.style.cssText = 'flex:1;height:48px;font-size:.9rem';
+      b.className = `fila-add-btn fila-add-${categoria}`;
+      b.style.cssText = 'flex:1;height:48px;font-size:.82rem;padding:0 4px';
       b.textContent = label;
       b.addEventListener('click', () => {
         const name = input.value.trim();
         if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
-        addMembro(name, adult);
+        addMembro(name, categoria);
         input.value = '';
         input.style.borderColor = '#ddd';
         input.focus();
@@ -3348,8 +3377,9 @@ function abrirAddMembro(){
       return b;
     };
 
-    btns.appendChild(addBtn('+ Criança', false));
-    btns.appendChild(addBtn('+ Adulto', true));
+    btns.appendChild(addBtn('+ Veterano', 'veterano'));
+    btns.appendChild(addBtn('+ Base', 'base'));
+    btns.appendChild(addBtn('+ Extra', 'extra'));
     body.appendChild(btns);
 
     const cancel = document.createElement('button');
