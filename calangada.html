@@ -1218,6 +1218,56 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+.config-sheet-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  padding: 14px 20px;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.config-sheet-link .chev { margin-left: auto; color: var(--ink-soft); }
+/* ── REGRAS ── */
+.regras-sec { margin-bottom: 18px; }
+.regras-sec:last-child { margin-bottom: 0; }
+.regras-sec h3 {
+  font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 800;
+  letter-spacing: .7px; text-transform: uppercase; color: var(--accent-dim);
+  margin-bottom: 7px; display: flex; align-items: center; gap: 6px;
+}
+.regras-adj {
+  display: inline-flex; align-items: center; gap: 3px; font-size: .62rem; font-weight: 700;
+  letter-spacing: .2px; text-transform: none; color: var(--primary); background: #e8f5e9;
+  border-radius: 100px; padding: 2px 8px 2px 6px;
+}
+.regras-sec p { font-size: .83rem; line-height: 1.55; color: var(--ink); }
+.regras-sec p + p { margin-top: 6px; }
+.regras-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.regras-chip { font-size: .72rem; font-weight: 700; border-radius: 100px; padding: 5px 12px; }
+.regras-chip.vet   { background: var(--accent); color: var(--primary); }
+.regras-chip.base  { background: #e8f5e9; color: #3a3a5c; }
+.regras-chip.extra { background: var(--cement); color: var(--ink-soft); border: 1px dashed var(--ink-soft); }
+.regras-note {
+  background: var(--chalk); border-left: 3px solid var(--accent); border-radius: 10px;
+  padding: 9px 11px; font-size: .78rem; color: var(--ink-soft); line-height: 1.5; margin-top: 8px;
+}
+.regras-tie-rules { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+.regras-tie-rule { display: flex; gap: 10px; align-items: flex-start; background: var(--chalk); border-radius: 10px; padding: 8px 10px; }
+.regras-tie-count {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
+  color: var(--primary); font-weight: 800; font-size: .76rem; display: flex; align-items: center;
+  justify-content: center; margin-top: 1px;
+}
+.regras-tie-desc { font-size: .78rem; line-height: 1.5; color: var(--ink); }
+.regras-tie-desc b { color: var(--primary); }
+.regras-divider { height: 1px; background: var(--line); margin: 16px 0; }
 .queue-list {
   flex: 1;
   overflow-y: auto;
@@ -1704,6 +1754,8 @@ body {
         </div>
       </div>
       <div class="config-sheet-divider"></div>
+      <button class="config-sheet-link" id="regrasBtn" onclick="abrirRegras()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Regras do jogo <span class="chev">›</span></button>
+      <div class="config-sheet-divider"></div>
       <button class="config-sheet-reset" id="resetBtn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Limpar fila e quadra</button>
     </div>
   </div>
@@ -2081,45 +2133,94 @@ function winTeam(which){
 function tie(){
   const ts = teamSize();
   if(!state.courtA.length || !state.courtB.length) return;
-  if(state.queue.length < 2*ts) return;
-  addHistoryEntry({type:'empate', time:Date.now(),
-    teamANames: state.courtA.map(p=>p.name),
-    teamBNames: state.courtB.map(p=>p.name)});
 
-  flashCourt();
+  // Dois times completos esperando na fila: os dois times da quadra saem
+  if(state.queue.length >= 2*ts){
+    addHistoryEntry({type:'empate', time:Date.now(),
+      teamANames: state.courtA.map(p=>p.name),
+      teamBNames: state.courtB.map(p=>p.name)});
 
-  // Fade out dos dois cards
-  const teams = document.querySelectorAll('#scoreboardUnified .su-team');
-  teams.forEach(t => {
-    t.style.transition = 'opacity 0.35s ease';
-    t.style.opacity = '0';
-  });
+    flashCourt();
 
-  setTimeout(() => {
-    state.queue.push(...state.courtA, ...state.courtB);
-    state.courtA = []; state.courtB = [];
-    tryFillSlots();
-    state._reviewMode = true;
-    state._lastWinner = null;
-    state.lastActivityAt = Date.now();
-    timerReset();
-    saveState();
-    render();
+    // Fade out dos dois cards
+    const teams = document.querySelectorAll('#scoreboardUnified .su-team');
+    teams.forEach(t => {
+      t.style.transition = 'opacity 0.35s ease';
+      t.style.opacity = '0';
+    });
 
-    // Fade in dos novos cards
-    requestAnimationFrame(() => {
-      const newTeams = document.querySelectorAll('#scoreboardUnified .su-team');
-      newTeams.forEach(t => {
-        t.style.transition = 'none';
-        t.style.opacity = '0';
-        requestAnimationFrame(() => {
-          t.style.transition = 'opacity 0.45s ease';
-          t.style.opacity = '1';
-          setTimeout(() => { t.style.transition = ''; t.style.opacity = ''; }, 500);
+    setTimeout(() => {
+      state.queue.push(...state.courtA, ...state.courtB);
+      state.courtA = []; state.courtB = [];
+      tryFillSlots();
+      state._reviewMode = true;
+      state._lastWinner = null;
+      state.lastActivityAt = Date.now();
+      timerReset();
+      saveState();
+      render();
+
+      // Fade in dos novos cards
+      requestAnimationFrame(() => {
+        const newTeams = document.querySelectorAll('#scoreboardUnified .su-team');
+        newTeams.forEach(t => {
+          t.style.transition = 'none';
+          t.style.opacity = '0';
+          requestAnimationFrame(() => {
+            t.style.transition = 'opacity 0.45s ease';
+            t.style.opacity = '1';
+            setTimeout(() => { t.style.transition = ''; t.style.opacity = ''; }, 500);
+          });
         });
       });
+    }, 380);
+    return;
+  }
+
+  // Só um time completo esperando, e há um time que já estava na quadra por ter
+  // vencido a partida anterior: só o desafiante (o outro) sai
+  if(state.queue.length >= ts && state._lastWinner){
+    const staysWhich = state._lastWinner;
+    const staysKey  = staysWhich === 'A' ? 'courtA' : 'courtB';
+    const leavesKey = staysWhich === 'A' ? 'courtB' : 'courtA';
+    const leaves = state[leavesKey];
+
+    addHistoryEntry({type:'empate-parcial', time:Date.now(), staysWhich,
+      staysNames:  state[staysKey].map(p=>p.name),
+      leavesNames: leaves.map(p=>p.name)});
+
+    flashCourt();
+
+    const leavesIdx = staysWhich === 'A' ? 1 : 0;
+    fadeScoreboard(leavesIdx, () => {
+      state.queue.push(...leaves);
+      state[leavesKey] = [];
+      tryFillSlots();
+      state._reviewMode = true;
+      state.lastActivityAt = Date.now();
+      timerReset();
+      saveState();
+      render();
+
+      // Fade in do card novo
+      requestAnimationFrame(() => {
+        const teams = document.querySelectorAll('#scoreboardUnified .su-team');
+        const newCard = teams[leavesIdx];
+        if(newCard){
+          newCard.style.transition = 'none';
+          newCard.style.opacity = '0';
+          requestAnimationFrame(() => {
+            newCard.style.transition = 'opacity 0.45s ease';
+            newCard.style.opacity = '1';
+            setTimeout(() => { newCard.style.transition = ''; newCard.style.opacity = ''; }, 500);
+          });
+        }
+      });
     });
-  }, 380);
+    return;
+  }
+
+  // Fila insuficiente, ou nenhum time é "campeão" definido: ninguém sai
 }
 
 
@@ -2349,7 +2450,9 @@ function renderCourt(ts){
   const emptySlots = (!hasA?1:0) + (!hasB?1:0);
   const needed = emptySlots * ts;
   const canStart = emptySlots > 0 && state.queue.length >= needed;
-  const enoughTie = state.queue.length >= 2 * ts;
+  const canTieBoth    = state.queue.length >= 2 * ts;
+  const canTiePartial = !canTieBoth && state.queue.length >= ts && !!state._lastWinner;
+  const enoughTie = canTieBoth || canTiePartial;
   const isReview = state._reviewMode || false;
   const left = timerSecondsLeft();
   const isUrgent = timerState().running && left > 0 && left <= 120;
@@ -2399,6 +2502,9 @@ function renderCourt(ts){
       // partida em andamento ou pausa de revisão
       winRow.style.display   = 'flex';
       tieBtn.style.display   = enoughTie ? 'block' : 'none';
+      if(enoughTie && _armedBtn !== tieBtn){
+        tieBtn.textContent = canTieBoth ? 'Empate — tira os dois' : `Empate — Time ${state._lastWinner==='A'?'B':'A'} sai`;
+      }
       startBtn.style.display = 'none';
       startCard.style.display = 'none';
       courtNudge.style.display = 'none';
@@ -2769,6 +2875,23 @@ function renderResults(){
             <div class="result-players">${entry.loserNames.join('<br>')}</div>
           </div>
         </div>`;
+    } else if(entry.type==='empate-parcial'){
+      const leavesSide = entry.staysWhich==='A' ? 'B' : 'A';
+      li.innerHTML=`
+        <div class="result-item-header">
+          <span class="result-badge tie">Empate — Time ${entry.staysWhich} continua</span>
+          <span class="result-time">${time}</span>
+        </div>
+        <div class="result-teams">
+          <div class="result-team winner">
+            <div class="result-team-label">Time ${entry.staysWhich} · Continua</div>
+            <div class="result-players">${entry.staysNames.join('<br>')}</div>
+          </div>
+          <div class="result-team">
+            <div class="result-team-label">Time ${leavesSide} · Saiu</div>
+            <div class="result-players">${entry.leavesNames.join('<br>')}</div>
+          </div>
+        </div>`;
     } else {
       li.innerHTML=`
         <div class="result-item-header">
@@ -2827,6 +2950,63 @@ function openConfigSheet(){
 function closeConfigSheet(){
   document.getElementById('configSheet').style.display='none';
   document.getElementById('configSheetBackdrop').style.display='none';
+}
+function abrirRegras(){
+  closeConfigSheet();
+  const ts = teamSize();
+  openSheet('Regras do jogo', body => {
+    body.style.cssText = 'padding:4px 20px 20px';
+    body.innerHTML = `
+      <div class="regras-sec">
+        <h3>Composição dos times <span class="regras-adj">ajustável</span></h3>
+        <p>Com os ${ts} jogadores por time configurados hoje, cada time é montado preferencialmente com:</p>
+        <div class="regras-chips">
+          <span class="regras-chip vet">${TARGET_VETERANOS} Veteranos</span>
+          <span class="regras-chip base">${TARGET_BASE} Base</span>
+          <span class="regras-chip extra">+1 Extra</span>
+        </div>
+        <p>O Extra só entra se sobrar alguém dessa categoria na fila — é uma vaga bônus, não tira o lugar de ninguém.</p>
+        <div class="regras-note">"Jogadores por time" muda esses números pra cima ou pra baixo — ajuste em Configurações. Se faltar Veterano ou Base na fila, o time completa com quem estiver disponível: é uma preferência, não uma regra fixa.</div>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Tempo de jogo <span class="regras-adj">ajustável</span></h3>
+        <p>Hoje configurado para ${state.matchDuration||10} minutos por partida, com aviso quando o tempo acaba.</p>
+        <div class="regras-note">Muda a qualquer momento em Configurações — "Tempo de jogo (minutos)".</div>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Categorias dos membros</h3>
+        <p><b>Veterano</b> — jogador mais experiente, prioridade na montagem.<br><b>Base</b> — jogador regular do grupo.<br><b>Extra</b> — categoria ocasional, entra como bônus quando sobra vaga.</p>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Membros × convidados</h3>
+        <p>Membros cadastrados ficam salvos pra sempre — não precisa digitar de novo toda semana. Convidados são avulsos: só valem por hoje, não entram no cadastro do grupo.</p>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Fila e presença</h3>
+        <p>Marque quem está presente hoje em Membros e confirme — isso monta a fila do dia, na ordem em que foi confirmado.</p>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Resultado da partida</h3>
+        <p>Quem vence continua na quadra pra encarar o próximo time da fila; quem perde volta pro fim da fila.</p>
+        <p>No empate, quem sai depende de quantos times completos tem esperando na fila:</p>
+        <div class="regras-tie-rules">
+          <div class="regras-tie-rule"><span class="regras-tie-count">2</span><span class="regras-tie-desc"><b>Dois times completos</b> esperando → os dois times da quadra saem, entram os dois da fila.</span></div>
+          <div class="regras-tie-rule"><span class="regras-tie-count">1</span><span class="regras-tie-desc"><b>Só um time completo</b> esperando → sai apenas quem entrou por último na quadra; o outro continua.</span></div>
+          <div class="regras-tie-rule"><span class="regras-tie-count">0</span><span class="regras-tie-desc"><b>Nenhum time completo</b> esperando → ninguém sai, os dois continuam até a fila ter gente.</span></div>
+        </div>
+        <div class="regras-note">Pra evitar toque sem querer, confirmar um resultado precisa de dois toques: o primeiro arma o botão, o segundo confirma.</div>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Dado de dia anterior</h3>
+        <p>Se a quadra ainda mostrar o time de um dia que não é hoje, o app avisa e oferece limpar tudo pra começar o dia de hoje.</p>
+      </div>`;
+  });
 }
 function stepConfig(id, delta){
   const el=document.getElementById(id);
