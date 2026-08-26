@@ -2511,9 +2511,8 @@ function renderCourt(ts){
           <div class="su-avatar${catClass ? ` ${catClass}-av` : ''}">${initial}</div>
           <div class="su-player-info">
             <div class="su-player-name">${player.name}</div>
-            <div class="su-player-tipo${catClass ? ` ${catClass}-tipo` : ''}">${catLabel}</div>
-          </div>
-          ${player.guest ? '<span class="guest-badge">CONVIDADO</span>' : ''}`;
+            <div class="su-player-tipo${catClass ? ` ${catClass}-tipo` : ''}">${catLabel}${player.guest ? ' · Convidado' : ''}</div>
+          </div>`;
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
       });
