@@ -546,6 +546,80 @@ body {
   color: var(--ink-soft);
 }
 
+/* ── NUDGE (orientação contextual — nunca deixa a próxima ação por conta da intuição) ── */
+.nudge{
+  background: var(--chalk);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.76rem;
+  color: var(--ink);
+  line-height: 1.4;
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+.nudge svg{ flex-shrink: 0; margin-top: 1px; color: var(--accent); }
+.nudge b{ display: block; font-size: .78rem; margin-bottom: 1px; }
+.nudge .go{
+  margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; font-weight: 800;
+  color: var(--accent-dim, #cc4f30); cursor: pointer; font-size: .74rem;
+}
+.nudge.ready{ background: #e8f5e9; border-left-color: #2e7d32; }
+.nudge.ready svg{ color: #2e7d32; }
+.nudge.ready .go{ color: #2e7d32; }
+.nudge.top{ margin: 10px 16px 0; }
+
+/* ── CARTÃO DE INÍCIO (quadra + fila zeradas) ── */
+.start-card{
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+  font-size: .8rem;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+.start-card b{ font-size: .92rem; color: var(--ink); }
+
+/* ── BANNER DE DIA ANTERIOR ── */
+.stale-banner{
+  margin: 0 16px 10px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  box-shadow: var(--shadow);
+}
+.stale-banner svg{ flex-shrink: 0; margin-top: 2px; color: var(--accent); }
+.stale-banner b{ display: block; font-size: .88rem; margin-bottom: 2px; }
+.stale-banner-text{ font-size: .78rem; line-height: 1.45; color: rgba(255,255,255,.82); }
+.court-block.dimmed{ opacity: .5; }
+
+#startBtnCount{
+  font-family: 'Inter', sans-serif; font-weight: 800; font-size: .72rem;
+  background: rgba(255,255,255,.28); border-radius: 100px; padding: 1px 8px;
+}
+#startBtn:disabled #startBtnCount{ background: rgba(0,0,0,.06); color: var(--ink); }
+
+/* ── ETIQUETA DE CONVIDADO (avulso, não faz parte do cadastro do grupo) ── */
+.guest-badge{
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: var(--cement);
+  color: var(--ink-soft);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
 /* ── COURT ACTIONS (fixed below scoreboard) ── */
 .court-actions {
   background: var(--bg);
@@ -586,6 +660,17 @@ body {
 .btn-start { background: var(--accent); color: #fff; width: 100%; border-radius: 100px !important; }
 .btn-tie  { background: var(--card); color: var(--ink-soft); border: none; width: 100%; border-radius: 100px !important; box-shadow: var(--shadow); }
 .btn-danger { background: var(--red); color: var(--white); }
+
+/* ── CONFIRMAÇÃO DE RESULTADO (evita toque acidental) ── */
+@keyframes btn-armed-pulse {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.18); }
+}
+.btn-win.btn-armed, .btn-tie.btn-armed {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  animation: btn-armed-pulse 0.9s ease-in-out infinite;
+}
 
 @keyframes btn-confirm {
   0%   { transform: scale(0.93); filter: brightness(0.75); }
@@ -1453,6 +1538,15 @@ body {
     <!-- Flash de confirmação -->
     <div class="court-flash" id="courtFlash"></div>
 
+    <!-- Banner de dia anterior — dado velho nunca se passa por hoje -->
+    <div class="stale-banner" id="staleBanner" style="display:none">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+      <div>
+        <b id="staleBannerDate"></b>
+        <div class="stale-banner-text">Ninguém confirmou presença hoje ainda. Bora limpar e começar o dia?</div>
+      </div>
+    </div>
+
     <!-- 1. TIMER — protagonista -->
     <div class="court-timer-wrap">
       <div class="court-timer" id="courtTimer"></div>
@@ -1478,11 +1572,31 @@ body {
         <div class="seguir-banner-label">A seguir</div>
         <div class="seguir-banner-names" id="seguirNames"></div>
       </div>
+      <!-- convite inicial (quadra + fila zeradas) -->
+      <div class="start-card" id="startCard" style="display:none">
+        <b>Ninguém confirmou presença ainda</b>
+        <span>Comece marcando quem está presente pra montar os times de hoje.</span>
+        <button class="btn btn-start" id="startCardBtn" style="margin-top:6px">Confirmar presença de hoje →</button>
+      </div>
+
       <!-- escalar (quadra vazia) -->
       <button class="btn btn-start" id="startBtn" style="display:none">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Escalar times da fila
+        <span>Escalar times da fila</span><span id="startBtnCount"></span>
       </button>
+
+      <!-- aviso de progresso (falta gente pra escalar) -->
+      <div class="nudge" id="courtNudge" style="display:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
+        <div>
+          <b id="courtNudgeText"></b>
+          Confirme presença de mais gente na fila pra liberar os times.
+          <div class="go" id="courtNudgeGo">Ir pra Membros <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+        </div>
+      </div>
+
+      <!-- limpar quadra de dia anterior -->
+      <button class="btn btn-start" id="staleClearBtn" style="display:none">Limpar quadra e fila — começar hoje</button>
       <!-- banner revisão (pausa intencional após resultado) -->
       <div class="review-banner" id="reviewBanner" style="display:none">
         <div class="review-banner-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
@@ -1522,6 +1636,13 @@ body {
           <button class="filter-chip" data-filter="colete">Sem colete</button>
         </div>
       </div>
+      <div class="nudge top" id="membrosNudge" style="display:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
+        <div>
+          <b>Toque nos nomes de quem está presente hoje</b>
+          Marca presença — o botão libera assim que tiver alguém.
+        </div>
+      </div>
       <ul class="membros-list" id="membrosList"></ul>
       <div class="membros-footer">
         <button class="btn-confirmar" id="confirmarPresencaBtn">
@@ -1533,6 +1654,22 @@ body {
     <!-- VIEW: FILA (convidados + manual) -->
     <div id="viewFilaContent" style="display:none;flex-direction:column;flex:1;overflow:hidden">
       <div class="fila-meta" id="queueMeta"></div>
+      <div class="nudge top" id="filaGapNudge" style="display:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
+        <div>
+          <b id="filaGapNudgeText"></b>
+          Volte em Membros pra marcar mais gente, ou chame um convidado abaixo.
+          <div class="go" id="filaGapNudgeGo">Ir pra Membros <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+        </div>
+      </div>
+      <div class="nudge top ready" id="filaReadyNudge" style="display:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+        <div>
+          <b>Já dá pra montar os times</b>
+          Vá em Em Quadra pra escalar e começar a partida.
+          <div class="go" id="filaReadyNudgeGo">Ir pra Em Quadra <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+        </div>
+      </div>
       <ul class="queue-list" id="queueList"></ul>
       <!-- inputs ocultos mantidos para compatibilidade com handleAdd -->
       <input type="text" id="nameInput" style="display:none" autocomplete="off">
@@ -1899,6 +2036,7 @@ function winTeam(which){
     if(queueBefore >= teamSize()) tryFillSlots();
     state._reviewMode = true;
     state._lastWinner = which;
+    state.lastActivityAt = Date.now();
     timerReset();
     saveState();
     render();
@@ -1943,6 +2081,7 @@ function tie(){
     tryFillSlots();
     state._reviewMode = true;
     state._lastWinner = null;
+    state.lastActivityAt = Date.now();
     timerReset();
     saveState();
     render();
@@ -1965,7 +2104,7 @@ function tie(){
 
 
 
-function addToQueue(name, adult){ state.queue.push({name,adult:!!adult}); saveState(); render(); }
+function addToQueue(name, adult, guest){ state.queue.push({name,adult:!!adult,guest:!!guest}); saveState(); render(); }
 function removeFromQueue(i){ state.queue.splice(i,1); saveState(); render(); }
 
 function substitutePlayer(which, idx, qi){
@@ -2170,6 +2309,11 @@ function openPlayerSheet(which, idx){
   });
 }
 
+function sameDay(t1, t2){
+  const a = new Date(t1), b = new Date(t2);
+  return a.toDateString() === b.toDateString();
+}
+
 function renderCourt(ts, target){
   const container = document.getElementById('scoreboardUnified');
   container.innerHTML = '';
@@ -2177,57 +2321,117 @@ function renderCourt(ts, target){
   const hasA = state.courtA.length > 0;
   const hasB = state.courtB.length > 0;
   const bothFull = hasA && hasB;
+  const bothEmpty = !hasA && !hasB;
   const emptySlots = (!hasA?1:0) + (!hasB?1:0);
-  const canStart = emptySlots > 0 && state.queue.length >= emptySlots * ts;
+  const needed = emptySlots * ts;
+  const canStart = emptySlots > 0 && state.queue.length >= needed;
   const enoughTie = state.queue.length >= 2 * ts;
   const isReview = state._reviewMode || false;
   const left = timerSecondsLeft();
   const isUrgent = timerState().running && left > 0 && left <= 120;
   const next = proximoTime();
+  const isStale = (hasA || hasB) && state.lastActivityAt && !sameDay(state.lastActivityAt, Date.now());
 
   // ── Botões de resultado ──
-  const winRow   = document.getElementById('winRow');
-  const tieBtn   = document.getElementById('tieBtn');
-  const startBtn = document.getElementById('startBtn');
+  const winRow      = document.getElementById('winRow');
+  const tieBtn       = document.getElementById('tieBtn');
+  const startBtn      = document.getElementById('startBtn');
+  const startBtnCount = document.getElementById('startBtnCount');
+  const startCard      = document.getElementById('startCard');
+  const courtNudge      = document.getElementById('courtNudge');
+  const courtNudgeText  = document.getElementById('courtNudgeText');
+  const staleBanner      = document.getElementById('staleBanner');
+  const staleBannerDate  = document.getElementById('staleBannerDate');
+  const staleClearBtn    = document.getElementById('staleClearBtn');
+  const courtBlock       = document.querySelector('.court-block');
   const reviewBanner  = document.getElementById('reviewBanner');
   const seguirBanner  = document.getElementById('seguirBanner');
   const seguirNames   = document.getElementById('seguirNames');
   const hintA = document.getElementById('hintA');
   const hintB = document.getElementById('hintB');
 
-  if(bothFull){
-    // partida em andamento ou pausa de revisão
-    winRow.style.display   = 'flex';
-    tieBtn.style.display   = enoughTie ? 'block' : 'none';
+  if(isStale){
+    disarmResultBtn();
+    // Dado de outro dia: nunca se passa por hoje — convite claro pra virar a página
+    const dt = new Date(state.lastActivityAt);
+    staleBannerDate.textContent = 'Isso é de ' + dt.toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
+    staleBanner.style.display = 'flex';
+    staleClearBtn.style.display = 'block';
+    courtBlock.classList.add('dimmed');
+    winRow.style.display = 'none';
+    tieBtn.style.display = 'none';
     startBtn.style.display = 'none';
-    reviewBanner.style.display = isReview ? 'flex' : 'none';
+    startCard.style.display = 'none';
+    courtNudge.style.display = 'none';
+    reviewBanner.style.display = 'none';
+    seguirBanner.style.display = 'none';
+    hintA.textContent = ''; hintB.textContent = '';
+  } else {
+    staleBanner.style.display = 'none';
+    staleClearBtn.style.display = 'none';
+    courtBlock.classList.remove('dimmed');
 
-    // hints nos botões (últimos 2min ou revisão)
-    if(isUrgent || isReview){
-      hintA.textContent = 'Time B sai';
-      hintB.textContent = 'Time A sai';
+    if(bothFull){
+      // partida em andamento ou pausa de revisão
+      winRow.style.display   = 'flex';
+      tieBtn.style.display   = enoughTie ? 'block' : 'none';
+      startBtn.style.display = 'none';
+      startCard.style.display = 'none';
+      courtNudge.style.display = 'none';
+      reviewBanner.style.display = isReview ? 'flex' : 'none';
+
+      // hints nos botões (últimos 2min ou revisão)
+      if(isUrgent || isReview){
+        hintA.textContent = 'Time B sai';
+        hintB.textContent = 'Time A sai';
+      } else {
+        hintA.textContent = '';
+        hintB.textContent = '';
+      }
+
+      // banner "A seguir" — últimos 2min
+      if(isUrgent && next.length > 0){
+        const names = next.map(p => p.name.split(' ')[0]).join(' · ');
+        seguirNames.textContent = names;
+        seguirBanner.style.display = 'flex';
+      } else {
+        seguirBanner.style.display = 'none';
+      }
     } else {
+      // quadra vazia ou parcialmente preenchida
+      disarmResultBtn();
+      winRow.style.display   = 'none';
+      tieBtn.style.display   = 'none';
+      reviewBanner.style.display  = 'none';
+      seguirBanner.style.display  = 'none';
       hintA.textContent = '';
       hintB.textContent = '';
-    }
 
-    // banner "A seguir" — últimos 2min
-    if(isUrgent && next.length > 0){
-      const names = next.map(p => p.name.split(' ')[0]).join(' · ');
-      seguirNames.textContent = names;
-      seguirBanner.style.display = 'flex';
-    } else {
-      seguirBanner.style.display = 'none';
+      if(bothEmpty && state.queue.length === 0){
+        // ninguém confirmado ainda — um único convite claro, guiado
+        startBtn.style.display = 'none';
+        courtNudge.style.display = 'none';
+        startCard.style.display = 'flex';
+      } else if(bothEmpty){
+        // quadra vazia, fila em formação — botão sempre visível, com contador
+        startCard.style.display = 'none';
+        startBtn.style.display = 'block';
+        startBtn.disabled = !canStart;
+        startBtnCount.textContent = `${Math.min(state.queue.length, needed)} de ${needed}`;
+        if(canStart){
+          courtNudge.style.display = 'none';
+        } else {
+          courtNudge.style.display = 'flex';
+          courtNudgeText.textContent = `Faltam ${needed - state.queue.length} pessoa(s) confirmada(s)`;
+        }
+      } else {
+        // uma vaga só (rotação em andamento) — comportamento já existente
+        startCard.style.display = 'none';
+        courtNudge.style.display = 'none';
+        startBtnCount.textContent = '';
+        startBtn.style.display = canStart ? 'block' : 'none';
+      }
     }
-  } else {
-    // quadra vazia ou parcialmente preenchida
-    winRow.style.display   = 'none';
-    tieBtn.style.display   = 'none';
-    startBtn.style.display = canStart ? 'block' : 'none';
-    reviewBanner.style.display  = 'none';
-    seguirBanner.style.display  = 'none';
-    hintA.textContent = '';
-    hintB.textContent = '';
   }
 
   document.getElementById('winA').disabled = !hasA;
@@ -2278,7 +2482,8 @@ function renderCourt(ts, target){
           <div class="su-player-info">
             <div class="su-player-name">${player.name}</div>
             <div class="su-player-tipo${player.adult ? ' adult-tipo' : ''}">${player.adult ? 'Adulto' : 'Criança'}</div>
-          </div>`;
+          </div>
+          ${player.guest ? '<span class="guest-badge">CONVIDADO</span>' : ''}`;
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
       });
@@ -2335,11 +2540,17 @@ function abrirProximoTime(){
   const next = proximoTime();
   const rest = state.queue.slice(next.length);
   if(state.queue.length === 0){
-    openSheet('Fila vazia', body => {
+    openSheet('Ainda ninguém na fila', body => {
       const msg = document.createElement('div');
       msg.style.cssText = 'padding:8px 20px 16px;font-size:.88rem;color:#999';
-      msg.textContent = 'Nenhum jogador aguardando na fila.';
+      msg.textContent = 'Confirme quem está presente hoje em Membros pra começar a formar os times.';
       body.appendChild(msg);
+      const goBtn = document.createElement('button');
+      goBtn.className = 'sheet-option';
+      goBtn.style.cssText = 'color:var(--primary);font-weight:700';
+      goBtn.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span><span class="opt-text">Ir pra Membros</span>';
+      goBtn.addEventListener('click', () => { closeSheet(); goToMembros(); });
+      body.appendChild(goBtn);
       const cancel = document.createElement('button');
       cancel.className = 'sheet-option cancel';
       cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Fechar</span>';
@@ -2410,7 +2621,7 @@ function abrirAddConvidado(){
       b.addEventListener('click', () => {
         const name = input.value.trim();
         if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
-        addToQueue(name, adult); saveState(); render();
+        addToQueue(name, adult, true); saveState(); render();
         input.value = ''; input.style.borderColor = '#ddd'; input.focus();
         b.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg> ' + label;
         setTimeout(() => b.textContent = label, 1000);
@@ -2436,6 +2647,26 @@ function renderQueue(ts, target){
   const adults=state.queue.filter(p=>p.adult).length;
   const teams=Math.floor(state.queue.length/ts);
   meta.textContent=`${state.queue.length} jogador(es) · ${adults} adulto(s) · ${teams} time(s) completo(s)`;
+
+  const hasA = state.courtA.length > 0;
+  const hasB = state.courtB.length > 0;
+  const bothEmpty = !hasA && !hasB;
+  const emptySlots = (!hasA?1:0) + (!hasB?1:0);
+  const needed = emptySlots * ts;
+  const gapNudge   = document.getElementById('filaGapNudge');
+  const gapText    = document.getElementById('filaGapNudgeText');
+  const readyNudge = document.getElementById('filaReadyNudge');
+  if(bothEmpty && needed > 0 && state.queue.length > 0 && state.queue.length < needed){
+    gapNudge.style.display = 'flex';
+    gapText.textContent = `Faltam ${needed - state.queue.length} pessoa(s) pra começar`;
+    readyNudge.style.display = 'none';
+  } else if(bothEmpty && needed > 0 && state.queue.length >= needed){
+    gapNudge.style.display = 'none';
+    readyNudge.style.display = 'flex';
+  } else {
+    gapNudge.style.display = 'none';
+    readyNudge.style.display = 'none';
+  }
 
   const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
   const nextTeam = hasMatch ? proximoTime() : [];
@@ -2464,6 +2695,7 @@ function renderQueue(ts, target){
       <span class="queue-num">${i+1}</span>
       <span class="queue-name">${player.name}</span>
       ${player.adult?'<span class="adult-badge">ADULTO</span>':''}
+      ${player.guest?'<span class="guest-badge">CONVIDADO</span>':''}
       <button class="remove-btn" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
     li.querySelector('.remove-btn').addEventListener('click',()=>removeFromQueue(i));
     list.appendChild(li);
@@ -2541,6 +2773,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.screen).classList.add('active');
+    if(btn.id === 'tabFila'){
+      // Com partida já escalada, a fila é o que importa agora — não força
+      // passar por Membros de novo toda vez que a aba é aberta.
+      const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
+      switchFilaView(hasMatch ? 'fila' : 'membros');
+    }
   });
 });
 
@@ -2550,7 +2788,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 function handleAdd(adult){
   const input=document.getElementById('nameInput');
   const name=input.value.trim();
-  if(name){ addToQueue(name,adult); input.value=''; input.focus(); }
+  if(name){ addToQueue(name,adult,true); input.value=''; input.focus(); }
 }
 /* ── CONFIG SHEET ── */
 function openConfigSheet(){
@@ -2628,17 +2866,74 @@ document.getElementById('startBtn').addEventListener('click', e => {
   confirmFeedback(e.currentTarget, () => {
     state._reviewMode = false;
     state._lastWinner = null;
-    tryFillSlots(); timerReset(); saveState(); render();
+    tryFillSlots(); state.lastActivityAt = Date.now(); timerReset(); saveState(); render();
   });
 });
+/* ── ARMAR/CONFIRMAR — toque acidental não decide o resultado sozinho ── */
+const ARM_TIMEOUT_MS = 2800;
+let _armedBtn = null;
+let _armedTimeout = null;
+
+function disarmResultBtn(){
+  if(_armedBtn){
+    _armedBtn.classList.remove('btn-armed');
+    const label = _armedBtn.querySelector('.btn-win-label');
+    if(label && _armedBtn._origLabel !== undefined) label.textContent = _armedBtn._origLabel;
+    else if(!label && _armedBtn._origLabel !== undefined) _armedBtn.textContent = _armedBtn._origLabel;
+    const hint = _armedBtn.querySelector('.btn-win-hint');
+    if(hint) hint.style.display = '';
+  }
+  clearTimeout(_armedTimeout);
+  _armedBtn = null;
+}
+
+function armOrConfirmResult(btn, armedText, action){
+  if(_armedBtn === btn){
+    disarmResultBtn();
+    confirmFeedback(btn, action);
+    return;
+  }
+  disarmResultBtn();
+  _armedBtn = btn;
+  const label = btn.querySelector('.btn-win-label');
+  if(label){ btn._origLabel = label.textContent; label.textContent = armedText; }
+  else { btn._origLabel = btn.textContent; btn.textContent = armedText; }
+  const hint = btn.querySelector('.btn-win-hint');
+  if(hint) hint.style.display = 'none';
+  btn.classList.add('btn-armed');
+  if(navigator.vibrate) navigator.vibrate(15);
+  _armedTimeout = setTimeout(disarmResultBtn, ARM_TIMEOUT_MS);
+}
+
 document.getElementById('tieBtn').addEventListener('click', e => {
-  confirmFeedback(e.currentTarget, tie);
+  armOrConfirmResult(e.currentTarget, 'Toque de novo: empate?', tie);
 });
 document.getElementById('winA').addEventListener('click', e => {
-  confirmFeedback(e.currentTarget, () => winTeam('A'));
+  armOrConfirmResult(e.currentTarget, 'Toque de novo: venceu?', () => winTeam('A'));
 });
 document.getElementById('winB').addEventListener('click', e => {
-  confirmFeedback(e.currentTarget, () => winTeam('B'));
+  armOrConfirmResult(e.currentTarget, 'Toque de novo: venceu?', () => winTeam('B'));
+});
+
+/* ── NAVEGAÇÃO GUIADA (nunca deixa a próxima ação por conta da intuição) ── */
+function goToMembros(){
+  document.getElementById('tabFila').click();
+  switchFilaView('membros');
+}
+function goToQuadra(){
+  document.getElementById('tabQuadra').click();
+}
+document.getElementById('startCardBtn').addEventListener('click', goToMembros);
+document.getElementById('courtNudgeGo').addEventListener('click', goToMembros);
+document.getElementById('staleClearBtn').addEventListener('click', () => {
+  state.courtA = []; state.courtB = [];
+  state.queue = [];
+  state._reviewMode = false;
+  state._lastWinner = null;
+  state.lastActivityAt = Date.now();
+  saveState();
+  goToMembros();
+  render();
 });
 
 
@@ -2777,6 +3072,10 @@ function renderMembros(){
   const list = document.getElementById('membrosList');
   const membros = state.membros || [];
   list.innerHTML = '';
+
+  // Orientação sempre presente por estado — nunca "aprende e some"
+  const membrosNudge = document.getElementById('membrosNudge');
+  if(membrosNudge) membrosNudge.style.display = presencasMarcadas.size === 0 ? 'flex' : 'none';
 
   // ── Resumo quantitativo ──
   if(membros.length > 0){
@@ -2944,6 +3243,8 @@ function switchFilaView(view){
 
 document.getElementById('toggleMembros').addEventListener('click', () => switchFilaView('membros'));
 document.getElementById('toggleFila').addEventListener('click', () => switchFilaView('fila'));
+document.getElementById('filaGapNudgeGo').addEventListener('click', () => switchFilaView('membros'));
+document.getElementById('filaReadyNudgeGo').addEventListener('click', goToQuadra);
 
 // Adicionar membro
 function editarMembro(id){
