@@ -835,6 +835,11 @@ body {
   transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
 }
+.membro-item.ja-ativo { cursor: default; }
+.membro-item.ja-ativo:active { filter: none; }
+.membro-item.ja-ativo .membro-check,
+.membro-item.ja-ativo .membro-name,
+.membro-item.ja-ativo .membro-badge-tipo { cursor: default; }
 .membro-actions-reveal {
   position: absolute;
   top: 0; right: 0; bottom: 0;
@@ -3463,11 +3468,12 @@ function renderMembros(){
 
       // Main row
       const li = document.createElement('div');
-      li.className = 'membro-item' + (presencasMarcadas.has(m.id) ? ' presente' : '');
+      const status = membroStatusHoje(m);
+      const jaAtivoHoje = status !== null;
+      li.className = 'membro-item' + (presencasMarcadas.has(m.id) ? ' presente' : '') + (jaAtivoHoje ? ' ja-ativo' : '');
       const checkSvg = presencasMarcadas.has(m.id)
         ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
         : '';
-      const status = membroStatusHoje(m);
       const statusIcon = status === 'quadra'
         ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="8" height="8"><circle cx="12" cy="12" r="12" fill="currentColor"/></svg>'
         : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="9" height="9"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -3478,9 +3484,11 @@ function renderMembros(){
         ${statusTag}
         <span class="membro-badge-tipo ${m.categoria}">${m.categoria==='veterano'?'Veterano':m.categoria==='extra'?'Extra':'Base'}${m.temColete?'':' · sem colete'}</span>
         <button class="membro-edit-btn" title="Editar membro">${editSvg}</button>`;
-      li.querySelector('.membro-check').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
-      li.querySelector('.membro-name').addEventListener('click',  () => { resetSwipe(wrap); togglePresenca(m.id); });
-      li.querySelector('.membro-badge-tipo').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
+      if(!jaAtivoHoje){
+        li.querySelector('.membro-check').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
+        li.querySelector('.membro-name').addEventListener('click',  () => { resetSwipe(wrap); togglePresenca(m.id); });
+        li.querySelector('.membro-badge-tipo').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
+      }
       li.querySelector('.membro-edit-btn').addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); editarMembro(m.id); });
       addSwipeGesture(wrap, li);
       wrap.appendChild(li);
