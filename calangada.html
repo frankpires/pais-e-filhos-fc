@@ -742,6 +742,17 @@ body {
 }
 .membro-edit-btn:active { background: var(--cement); }
 
+/* ── STATUS "JÁ CONFIRMADO HOJE" (fila/quadra) ── */
+.membro-status-tag {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: .2px;
+  border-radius: 100px; padding: 3px 9px;
+  flex-shrink: 0; white-space: nowrap;
+}
+.membro-status-tag svg { flex-shrink: 0; }
+.membro-status-tag.fila   { background: var(--chalk); color: var(--ink-soft); }
+.membro-status-tag.quadra { background: #e8f5e9; color: var(--primary); }
+
 /* ── MEMBROS LIST ── */
 .membros-list {
   flex: 1;
@@ -3218,6 +3229,16 @@ function removeMembro(id){
   renderMembros();
 }
 
+// A fila/quadra guarda só nome+categoria (não o id do membro), então o
+// jeito de saber "esse membro já foi confirmado hoje?" é por nome — mesmo
+// critério de deduplicação já usado em confirmarPresenca().
+function membroStatusHoje(m){
+  const nome = m.name.toLowerCase();
+  if([...state.courtA, ...state.courtB].some(p => p.name.toLowerCase() === nome)) return 'quadra';
+  if(state.queue.some(p => p.name.toLowerCase() === nome)) return 'fila';
+  return null;
+}
+
 function togglePresenca(id){
   if(presencasMarcadas.has(id)) presencasMarcadas.delete(id);
   else presencasMarcadas.add(id);
@@ -3439,9 +3460,15 @@ function renderMembros(){
       const checkSvg = presencasMarcadas.has(m.id)
         ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
         : '';
+      const status = membroStatusHoje(m);
+      const statusIcon = status === 'quadra'
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="8" height="8"><circle cx="12" cy="12" r="12" fill="currentColor"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="9" height="9"><path d="M20 6 9 17l-5-5"/></svg>';
+      const statusTag = status ? `<span class="membro-status-tag ${status}">${statusIcon}${status==='quadra'?'Em quadra':'Na fila'}</span>` : '';
       li.innerHTML = `
         <div class="membro-check">${checkSvg}</div>
         <span class="membro-name">${m.name}</span>
+        ${statusTag}
         <span class="membro-badge-tipo ${m.categoria}">${m.categoria==='veterano'?'Veterano':m.categoria==='extra'?'Extra':'Base'}${m.temColete?'':' · sem colete'}</span>
         <button class="membro-edit-btn" title="Editar membro">${editSvg}</button>`;
       li.querySelector('.membro-check').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
