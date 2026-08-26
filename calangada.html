@@ -2773,6 +2773,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.screen).classList.add('active');
+    if(btn.id === 'tabFila'){
+      // Com partida já escalada, a fila é o que importa agora — não força
+      // passar por Membros de novo toda vez que a aba é aberta.
+      const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
+      switchFilaView(hasMatch ? 'fila' : 'membros');
+    }
   });
 });
 
