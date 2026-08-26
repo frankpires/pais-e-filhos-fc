@@ -3213,13 +3213,20 @@ let _filtroTexto = '';
 let _filtroTipo  = 'todos'; // 'todos' | 'veterano' | 'base' | 'extra' | 'colete'
 
 
+function membroComEsseNomeJaExiste(name, excludeId){
+  const alvo = name.trim().toLowerCase();
+  return (state.membros||[]).some(m => m.id !== excludeId && m.name.trim().toLowerCase() === alvo);
+}
+
 function addMembro(name, categoria){
-  if(!name.trim()) return;
+  if(!name.trim()) return false;
+  if(membroComEsseNomeJaExiste(name)) return false;
   if(!state.membros) state.membros = [];
   const id = Date.now() + '_' + Math.random().toString(36).slice(2,6);
   state.membros.push({ id, name: name.trim(), categoria });
   saveState();
   renderMembros();
+  return true;
 }
 
 function removeMembro(id){
@@ -3537,6 +3544,12 @@ function editarMembro(id){
     input.addEventListener('blur',  () => input.style.borderColor = '#ddd');
     body.appendChild(input);
 
+    const errorHint = document.createElement('div');
+    errorHint.style.cssText = 'display:none;margin-top:-6px;font-size:.78rem;color:var(--red)';
+    errorHint.textContent = 'Já existe um membro com esse nome.';
+    body.appendChild(errorHint);
+    input.addEventListener('input', () => { errorHint.style.display = 'none'; });
+
     // Categoria: Veterano / Base / Extra
     let categoria = m.categoria;
     const typeRow = document.createElement('div');
@@ -3579,7 +3592,8 @@ function editarMembro(id){
     saveBtn.textContent = 'Salvar';
     saveBtn.addEventListener('click', () => {
       const name = input.value.trim();
-      if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
+      if(!name){ input.focus(); input.style.borderColor='var(--red)'; errorHint.style.display='none'; return; }
+      if(membroComEsseNomeJaExiste(name, m.id)){ input.focus(); input.style.borderColor='var(--red)'; errorHint.style.display='block'; return; }
       m.name = name;
       m.categoria = categoria;
       m.temColete = temColete;
@@ -3613,6 +3627,12 @@ function abrirAddMembro(){
     input.addEventListener('blur', () => input.style.borderColor = '#ddd');
     body.appendChild(input);
 
+    const errorHint = document.createElement('div');
+    errorHint.style.cssText = 'display:none;margin-top:-6px;font-size:.78rem;color:var(--red)';
+    errorHint.textContent = 'Já existe um membro com esse nome.';
+    body.appendChild(errorHint);
+    input.addEventListener('input', () => { errorHint.style.display = 'none'; });
+
     const btns = document.createElement('div');
     btns.style.cssText = 'display:flex;gap:6px';
 
@@ -3623,7 +3643,9 @@ function abrirAddMembro(){
       b.textContent = label;
       b.addEventListener('click', () => {
         const name = input.value.trim();
-        if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
+        if(!name){ input.focus(); input.style.borderColor='var(--red)'; errorHint.style.display='none'; return; }
+        if(membroComEsseNomeJaExiste(name)){ input.focus(); input.style.borderColor='var(--red)'; errorHint.style.display='block'; return; }
+        errorHint.style.display = 'none';
         addMembro(name, categoria);
         input.value = '';
         input.style.borderColor = '#ddd';
