@@ -2552,13 +2552,15 @@ function renderCourt(ts){
     container.appendChild(makeTeamCol('B', state.courtB, badgeB));
   }
 
-  // Equaliza altura
+  // Equaliza altura — só grava um valor se a tela estiver realmente visível
+  // (offsetHeight mede 0 quando a aba Em Quadra está em segundo plano, e
+  // travar as colunas em 0px deixava os nomes espremidos ao voltar pra ela).
   requestAnimationFrame(() => {
     const teams = document.querySelectorAll('#scoreboardUnified .su-team');
     teams.forEach(t => t.style.height = '');
     if(teams.length === 2 && bothFull){
       const h = Math.max(teams[0].offsetHeight, teams[1].offsetHeight);
-      teams.forEach(t => t.style.height = h + 'px');
+      if(h > 0) teams.forEach(t => t.style.height = h + 'px');
     }
   });
 }
@@ -2809,6 +2811,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       // passar por Membros de novo toda vez que a aba é aberta.
       const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
       switchFilaView(hasMatch ? 'fila' : 'membros');
+    }
+    if(btn.id === 'tabQuadra'){
+      // Reequaliza a altura dos times agora que a tela ficou visível —
+      // qualquer atualização enquanto ela estava em segundo plano não
+      // conseguiu medir a altura real.
+      renderCourt(teamSize());
     }
   });
 });
