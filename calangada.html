@@ -727,26 +727,20 @@ body {
 .msb-sep { color: var(--line); }
 .msb-colete em { font-style: normal; color: var(--red); font-size: 0.68rem; }
 
-/* ── COLETE TOGGLE ── */
-.colete-btn {
-  border: 1.5px solid #ddd;
-  background: none;
-  border-radius: 6px;
+/* ── EDITAR MEMBRO (atalho na linha) ── */
+.membro-edit-btn {
+  border: none;
+  background: var(--chalk);
+  border-radius: 8px;
   width: 30px; height: 30px;
-  font-size: 0.85rem;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  opacity: 0.3;
+  color: var(--ink-soft);
   -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+  transition: background 0.15s;
 }
-.colete-btn.tem {
-  opacity: 1;
-  border-color: var(--accent);
-  background: #fffbeb;
-}
-.colete-btn:active { opacity: 0.6; }
+.membro-edit-btn:active { background: var(--cement); }
 
 /* ── MEMBROS LIST ── */
 .membros-list {
@@ -833,7 +827,7 @@ body {
 .membro-actions-reveal {
   position: absolute;
   top: 0; right: 0; bottom: 0;
-  width: 104px;
+  width: 52px;
   display: flex;
   z-index: 1;
   visibility: hidden;
@@ -853,7 +847,6 @@ body {
   font-size: 0;
 }
 .membro-action-btn svg { display: block; }
-.membro-action-btn.edit  { background: var(--accent); }
 .membro-action-btn.delete{ background: var(--red); }
 .membro-action-btn:active { filter: brightness(0.88); }
 
@@ -3220,7 +3213,7 @@ function resetSwipe(wrap){
 }
 
 function addSwipeGesture(wrap, item){
-  const REVEAL = 104;
+  const REVEAL = 52;
   let startX = 0, startY = 0, dx = 0, lastDx = 0, lastT = 0;
   let swiping = false, isHoriz = null;
   // offset when starting from already-open state
@@ -3356,12 +3349,8 @@ function renderMembros(){
       // Reveal buttons behind
       const actions = document.createElement('div');
       actions.className = 'membro-actions-reveal';
-      const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
+      const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
       const delSvg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
-      const btnEdit = document.createElement('button');
-      btnEdit.className = 'membro-action-btn edit';
-      btnEdit.innerHTML = editSvg;
-      btnEdit.addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); editarMembro(m.id); });
       const btnDel = document.createElement('button');
       btnDel.className = 'membro-action-btn delete';
       btnDel.innerHTML = delSvg;
@@ -3386,7 +3375,6 @@ function renderMembros(){
           body.appendChild(cancel);
         });
       });
-      actions.appendChild(btnEdit);
       actions.appendChild(btnDel);
       wrap.appendChild(actions);
 
@@ -3396,20 +3384,15 @@ function renderMembros(){
       const checkSvg = presencasMarcadas.has(m.id)
         ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
         : '';
-      const coleteIcon = m.temColete ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fbbf24" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3 L7 2 Q9 2 10 4 Q11 6 12 6 Q13 6 14 4 Q15 2 17 2 L20 3 L20 6 Q19 7 19 8 L19 21 L5 21 L5 8 Q5 7 4 6 Z"/></svg>' : '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#d0ccc6" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3 L7 2 Q9 2 10 4 Q11 6 12 6 Q13 6 14 4 Q15 2 17 2 L20 3 L20 6 Q19 7 19 8 L19 21 L5 21 L5 8 Q5 7 4 6 Z"/></svg>';
       li.innerHTML = `
         <div class="membro-check">${checkSvg}</div>
         <span class="membro-name">${m.name}</span>
-        <span class="membro-badge-tipo ${m.categoria}">${m.categoria==='veterano'?'Veterano':m.categoria==='extra'?'Extra':'Base'}</span>
-        <button class="colete-btn${m.temColete?' tem':''}" title="${m.temColete?'Tem colete':'Sem colete'}">${coleteIcon}</button>`;
+        <span class="membro-badge-tipo ${m.categoria}">${m.categoria==='veterano'?'Veterano':m.categoria==='extra'?'Extra':'Base'}${m.temColete?'':' · sem colete'}</span>
+        <button class="membro-edit-btn" title="Editar membro">${editSvg}</button>`;
       li.querySelector('.membro-check').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
       li.querySelector('.membro-name').addEventListener('click',  () => { resetSwipe(wrap); togglePresenca(m.id); });
       li.querySelector('.membro-badge-tipo').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
-      li.querySelector('.colete-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        m.temColete = !m.temColete;
-        saveState(); renderMembros();
-      });
+      li.querySelector('.membro-edit-btn').addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); editarMembro(m.id); });
       addSwipeGesture(wrap, li);
       wrap.appendChild(li);
       list.appendChild(wrap);
@@ -3494,6 +3477,19 @@ function editarMembro(id){
     typeRow.appendChild(mkTypeBtn('Extra', 'extra'));
     body.appendChild(typeRow);
 
+    // Colete (cadastro: já comprou ou não)
+    let temColete = !!m.temColete;
+    const coleteBtn = document.createElement('button');
+    coleteBtn.type = 'button';
+    coleteBtn.style.cssText = 'display:flex;align-items:center;justify-content:space-between;width:100%;height:48px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:.86rem;font-weight:600;background:var(--chalk);color:var(--ink);cursor:pointer';
+    const renderColeteBtn = () => {
+      coleteBtn.style.borderColor = temColete ? 'var(--accent)' : '#ddd';
+      coleteBtn.innerHTML = `<span>Colete</span><span style="font-weight:800;color:${temColete ? 'var(--accent-dim)' : '#999'}">${temColete ? 'Comprou' : 'Não comprou'}</span>`;
+    };
+    renderColeteBtn();
+    coleteBtn.addEventListener('click', () => { temColete = !temColete; renderColeteBtn(); });
+    body.appendChild(coleteBtn);
+
     // Salvar
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn-confirmar';
@@ -3504,6 +3500,7 @@ function editarMembro(id){
       if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
       m.name = name;
       m.categoria = categoria;
+      m.temColete = temColete;
       saveState();
       renderMembros();
       closeSheet();
