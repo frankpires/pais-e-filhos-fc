@@ -1754,6 +1754,23 @@ body {
         </div>
       </div>
       <div class="config-sheet-divider"></div>
+      <div class="config-sheet-row">
+        <label class="config-sheet-label">Veteranos por time</label>
+        <div class="config-sheet-stepper">
+          <button onclick="stepConfig('targetVeteranosSheet',-1)">−</button>
+          <span id="targetVeteranosSheet">2</span>
+          <button onclick="stepConfig('targetVeteranosSheet',1)">+</button>
+        </div>
+      </div>
+      <div class="config-sheet-row">
+        <label class="config-sheet-label">Base por time</label>
+        <div class="config-sheet-stepper">
+          <button onclick="stepConfig('targetBaseSheet',-1)">−</button>
+          <span id="targetBaseSheet">3</span>
+          <button onclick="stepConfig('targetBaseSheet',1)">+</button>
+        </div>
+      </div>
+      <div class="config-sheet-divider"></div>
       <button class="config-sheet-link" id="regrasBtn" onclick="abrirRegras()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Regras do jogo <span class="chev">›</span></button>
       <div class="config-sheet-divider"></div>
       <button class="config-sheet-reset" id="resetBtn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Limpar fila e quadra</button>
@@ -1990,18 +2007,27 @@ function saveState(isRetry){
 function teamSize(){ return Math.max(1, parseInt(state.teamSize) || 1); }
 function catLabel(p){ return p.categoria==='veterano' ? 'Veterano' : p.categoria==='extra' ? 'Extra' : 'Base'; }
 
-// Composição preferencial de cada time: 2 Veteranos + 3 Base (= teamSize
-// padrão de 5), com 1 Extra como 6ª vaga bônus quando sobrar alguém da
-// categoria Extra na fila. Se faltar Veterano ou Base pra bater a meta,
-// completa com quem estiver disponível — a meta é preferência, não regra dura.
-const TARGET_VETERANOS = 2;
-const TARGET_BASE = 3;
+// Composição preferencial de cada time: N Veteranos + N Base (ajustável em
+// Configurações, padrão 2+3 = teamSize padrão de 5), com 1 Extra como vaga
+// bônus quando sobrar alguém da categoria Extra na fila. Se faltar Veterano
+// ou Base pra bater a meta, completa com quem estiver disponível — a meta é
+// preferência, não regra dura.
+function targetVeteranos(){
+  const v = state.targetVeteranos;
+  return (v===undefined || v===null || isNaN(v)) ? 2 : Math.max(0, parseInt(v));
+}
+function targetBase(){
+  const v = state.targetBase;
+  return (v===undefined || v===null || isNaN(v)) ? 3 : Math.max(0, parseInt(v));
+}
 
 function selectBaseTeam(q, ts){
   const idx = [];
   const countCat = (cat) => idx.filter(j => q[j].categoria === cat).length;
-  for(let i=0; i<q.length && countCat('veterano')<TARGET_VETERANOS; i++){ if(q[i].categoria==='veterano') idx.push(i); }
-  for(let i=0; i<q.length && countCat('base')<TARGET_BASE; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
+  const tv = Math.min(targetVeteranos(), ts);
+  const tb = Math.min(targetBase(), ts - tv);
+  for(let i=0; i<q.length && countCat('veterano')<tv; i++){ if(q[i].categoria==='veterano') idx.push(i); }
+  for(let i=0; i<q.length && countCat('base')<tb; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
   for(let i=0; i<q.length && idx.length<ts; i++){ if(!idx.includes(i)) idx.push(i); }
   if(idx.length < ts) return null;
   idx.sort((a,b)=>a-b);
@@ -2278,14 +2304,16 @@ function render(){
 
 function proximoTime(){
   // Retorna os próximos jogadores que formariam o próximo time (mesma
-  // preferência 2 Veteranos + 3 Base + 1 Extra bônus do selectTeamFromQueueCopy,
+  // preferência Veteranos + Base + 1 Extra bônus do selectTeamFromQueueCopy,
   // só que sem tirar ninguém da fila de verdade — é só uma prévia).
   const ts = teamSize();
   const q = [...state.queue];
   const idx = [];
   const countCat = (cat) => idx.filter(j => q[j].categoria === cat).length;
-  for(let i=0; i<q.length && countCat('veterano')<TARGET_VETERANOS; i++){ if(q[i].categoria==='veterano') idx.push(i); }
-  for(let i=0; i<q.length && countCat('base')<TARGET_BASE; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
+  const tv = Math.min(targetVeteranos(), ts);
+  const tb = Math.min(targetBase(), ts - tv);
+  for(let i=0; i<q.length && countCat('veterano')<tv; i++){ if(q[i].categoria==='veterano') idx.push(i); }
+  for(let i=0; i<q.length && countCat('base')<tb; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
   for(let i=0; i<q.length && idx.length<ts; i++){ if(!idx.includes(i)) idx.push(i); }
   if(idx.length >= ts){
     for(let i=0; i<q.length; i++){ if(!idx.includes(i) && q[i].categoria==='extra'){ idx.push(i); break; } }
@@ -2944,6 +2972,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 function openConfigSheet(){
   document.getElementById('teamSizeSheet').textContent = state.teamSize||5;
   document.getElementById('matchDurationSheet').textContent = state.matchDuration||10;
+  document.getElementById('targetVeteranosSheet').textContent = targetVeteranos();
+  document.getElementById('targetBaseSheet').textContent = targetBase();
   document.getElementById('configSheet').style.display='block';
   document.getElementById('configSheetBackdrop').style.display='block';
 }
@@ -2961,12 +2991,12 @@ function abrirRegras(){
         <h3>Composição dos times <span class="regras-adj">ajustável</span></h3>
         <p>Com os ${ts} jogadores por time configurados hoje, cada time é montado preferencialmente com:</p>
         <div class="regras-chips">
-          <span class="regras-chip vet">${TARGET_VETERANOS} Veteranos</span>
-          <span class="regras-chip base">${TARGET_BASE} Base</span>
+          <span class="regras-chip vet">${targetVeteranos()} Veteranos</span>
+          <span class="regras-chip base">${targetBase()} Base</span>
           <span class="regras-chip extra">+1 Extra</span>
         </div>
         <p>O Extra só entra se sobrar alguém dessa categoria na fila — é uma vaga bônus, não tira o lugar de ninguém.</p>
-        <div class="regras-note">"Jogadores por time" muda esses números pra cima ou pra baixo — ajuste em Configurações. Se faltar Veterano ou Base na fila, o time completa com quem estiver disponível: é uma preferência, não uma regra fixa.</div>
+        <div class="regras-note">"Veteranos por time" e "Base por time" ajustam essas metas em Configurações. Se sobrar vaga além delas (ou faltar Veterano/Base na fila), o time completa com quem estiver disponível: é uma preferência, não uma regra fixa.</div>
       </div>
       <div class="regras-divider"></div>
       <div class="regras-sec">
@@ -3010,13 +3040,15 @@ function abrirRegras(){
 }
 function stepConfig(id, delta){
   const el=document.getElementById(id);
-  const limits={teamSizeSheet:[1,15],matchDurationSheet:[1,60]};
+  const limits={teamSizeSheet:[1,15],matchDurationSheet:[1,60],targetVeteranosSheet:[0,10],targetBaseSheet:[0,10]};
   const [min,max]=limits[id];
   const val=Math.min(max,Math.max(min,(parseInt(el.textContent)||0)+delta));
   el.textContent=val;
   // Apply to state immediately
   if(id==='teamSizeSheet'){ state.teamSize=val; syncCourtSizes(); }
   if(id==='matchDurationSheet'){ state.matchDuration=val; if(!timerState().running){ state.timer={...timerState(),secondsLeft:val*60}; } }
+  if(id==='targetVeteranosSheet'){ state.targetVeteranos=val; }
+  if(id==='targetBaseSheet'){ state.targetBase=val; }
   saveState(); render();
 }
 document.getElementById('headerConfigBtn').addEventListener('click', openConfigSheet);
