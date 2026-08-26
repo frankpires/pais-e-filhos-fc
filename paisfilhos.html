@@ -1990,15 +1990,38 @@ function loadState(){
   tryListen();
 }
 
+// O Firebase Realtime Database rejeita qualquer `undefined` na árvore de
+// dados (lança erro SÍNCRONO, antes até de devolver uma Promise). Dado
+// antigo (ex: membro cadastrado antes da categoria existir) pode ter
+// `categoria: undefined` e travar o save pra sempre — por isso limpamos
+// o objeto antes de cada gravação.
+function stripUndefined(value){
+  if(Array.isArray(value)) return value.map(stripUndefined);
+  if(value && typeof value === 'object'){
+    const out = {};
+    for(const k in value){ if(value[k] !== undefined) out[k] = stripUndefined(value[k]); }
+    return out;
+  }
+  return value;
+}
+
 function saveState(isRetry){
   _localChangePending = true;
   if(typeof window._fbSave !== 'function'){ setTimeout(() => saveState(false), 100); return; }
-  window._fbSave(state)
-    .then(() => { setTimeout(() => { _localChangePending = false; }, 1000); })
-    .catch(e => {
-      if(!isRetry){ console.warn('Retry save:', e); setTimeout(() => saveState(true), 1500); }
-      else { _localChangePending = false; console.warn('Sync failed:', e); }
-    });
+  try{
+    const clean = stripUndefined(state);
+    window._fbSave(clean)
+      .then(() => { setTimeout(() => { _localChangePending = false; }, 1000); })
+      .catch(e => {
+        if(!isRetry){ console.warn('Retry save:', e); setTimeout(() => saveState(true), 1500); }
+        else { _localChangePending = false; console.warn('Sync failed:', e); }
+      });
+  }catch(e){
+    // Nunca deixa uma falha aqui travar quem chamou saveState() (ex: o
+    // clique que também chamaria render() logo em seguida).
+    console.warn('Save failed synchronously:', e);
+    _localChangePending = false;
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -3214,7 +3237,7 @@ function confirmarPresenca(){
 
   // Insere os confirmados no INÍCIO da fila (antes dos convidados)
   state.queue = [
-    ...novos.map(m => ({ name: m.name, categoria: m.categoria })),
+    ...novos.map(m => ({ name: m.name, categoria: m.categoria || 'base' })),
     ...state.queue
   ];
 
