@@ -3259,9 +3259,9 @@ function confirmarPresenca(){
   const confirmados = membros.filter(m => presencasMarcadas.has(m.id));
   if(!confirmados.length) return;
 
-  // Remove membros confirmados que já estejam na fila (evita duplicata)
-  const nomesJaNaFila = new Set(state.queue.map(p => p.name.toLowerCase()));
-  const novos = confirmados.filter(m => !nomesJaNaFila.has(m.name.toLowerCase()));
+  // Remove membros confirmados que já estejam na fila OU em quadra (evita duplicata)
+  const nomesJaAtivos = new Set([...state.queue, ...state.courtA, ...state.courtB].map(p => p.name.toLowerCase()));
+  const novos = confirmados.filter(m => !nomesJaAtivos.has(m.name.toLowerCase()));
 
   // Insere os confirmados no INÍCIO da fila (antes dos convidados)
   state.queue = [
