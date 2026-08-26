@@ -662,6 +662,17 @@ body {
 .btn-tie  { background: var(--card); color: var(--ink-soft); border: none; width: 100%; border-radius: 100px !important; box-shadow: var(--shadow); }
 .btn-danger { background: var(--red); color: var(--white); }
 
+/* ── CONFIRMAÇÃO DE RESULTADO (evita toque acidental) ── */
+@keyframes btn-armed-pulse {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.18); }
+}
+.btn-win.btn-armed, .btn-tie.btn-armed {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  animation: btn-armed-pulse 0.9s ease-in-out infinite;
+}
+
 @keyframes btn-confirm {
   0%   { transform: scale(0.93); filter: brightness(0.75); }
   40%  { transform: scale(1.04); filter: brightness(1.25); }
@@ -2341,6 +2352,7 @@ function renderCourt(ts, target){
   const hintB = document.getElementById('hintB');
 
   if(isStale){
+    disarmResultBtn();
     // Dado de outro dia: nunca se passa por hoje — convite claro pra virar a página
     const dt = new Date(state.lastActivityAt);
     staleBannerDate.textContent = 'Isso é de ' + dt.toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
@@ -2388,6 +2400,7 @@ function renderCourt(ts, target){
       }
     } else {
       // quadra vazia ou parcialmente preenchida
+      disarmResultBtn();
       winRow.style.display   = 'none';
       tieBtn.style.display   = 'none';
       reviewBanner.style.display  = 'none';
@@ -2851,14 +2864,50 @@ document.getElementById('startBtn').addEventListener('click', e => {
     tryFillSlots(); state.lastActivityAt = Date.now(); timerReset(); saveState(); render();
   });
 });
+/* ── ARMAR/CONFIRMAR — toque acidental não decide o resultado sozinho ── */
+const ARM_TIMEOUT_MS = 2800;
+let _armedBtn = null;
+let _armedTimeout = null;
+
+function disarmResultBtn(){
+  if(_armedBtn){
+    _armedBtn.classList.remove('btn-armed');
+    const label = _armedBtn.querySelector('.btn-win-label');
+    if(label && _armedBtn._origLabel !== undefined) label.textContent = _armedBtn._origLabel;
+    else if(!label && _armedBtn._origLabel !== undefined) _armedBtn.textContent = _armedBtn._origLabel;
+    const hint = _armedBtn.querySelector('.btn-win-hint');
+    if(hint) hint.style.display = '';
+  }
+  clearTimeout(_armedTimeout);
+  _armedBtn = null;
+}
+
+function armOrConfirmResult(btn, armedText, action){
+  if(_armedBtn === btn){
+    disarmResultBtn();
+    confirmFeedback(btn, action);
+    return;
+  }
+  disarmResultBtn();
+  _armedBtn = btn;
+  const label = btn.querySelector('.btn-win-label');
+  if(label){ btn._origLabel = label.textContent; label.textContent = armedText; }
+  else { btn._origLabel = btn.textContent; btn.textContent = armedText; }
+  const hint = btn.querySelector('.btn-win-hint');
+  if(hint) hint.style.display = 'none';
+  btn.classList.add('btn-armed');
+  if(navigator.vibrate) navigator.vibrate(15);
+  _armedTimeout = setTimeout(disarmResultBtn, ARM_TIMEOUT_MS);
+}
+
 document.getElementById('tieBtn').addEventListener('click', e => {
-  confirmFeedback(e.currentTarget, tie);
+  armOrConfirmResult(e.currentTarget, 'Toque de novo: empate?', tie);
 });
 document.getElementById('winA').addEventListener('click', e => {
-  confirmFeedback(e.currentTarget, () => winTeam('A'));
+  armOrConfirmResult(e.currentTarget, 'Toque de novo: venceu?', () => winTeam('A'));
 });
 document.getElementById('winB').addEventListener('click', e => {
-  confirmFeedback(e.currentTarget, () => winTeam('B'));
+  armOrConfirmResult(e.currentTarget, 'Toque de novo: venceu?', () => winTeam('B'));
 });
 
 /* ── NAVEGAÇÃO GUIADA (nunca deixa a próxima ação por conta da intuição) ── */
