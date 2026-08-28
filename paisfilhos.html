@@ -93,6 +93,30 @@ body {
   font-style: italic;
   color: var(--amber);
 }
+.view-only-badge {
+  display: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+  text-transform: none;
+  color: var(--ink-soft);
+  background: var(--chalk);
+  border-radius: 100px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+}
+body.view-only .view-only-badge { display: inline-flex; align-items: center; }
+/* Modo visualização: ações ficam esmaecidas — o bloqueio de verdade é
+   o interceptor de clique global, isso é só o sinal visual */
+body.view-only .btn-win, body.view-only .btn-tie, body.view-only .btn-start,
+body.view-only .btn-confirmar:not(#adminLoginSubmit), body.view-only .config-sheet-stepper button,
+body.view-only .config-sheet-reset, body.view-only .court-timer-btn,
+body.view-only .membro-edit-btn, body.view-only .membro-item-add,
+body.view-only .fila-add-btn, body.view-only .su-player,
+body.view-only .membro-check {
+  opacity: 0.5;
+}
 .header-left { display:flex; flex-direction:column; gap:3px; }
 .header-status {
   font-size: 0.7rem;
@@ -1586,7 +1610,7 @@ body {
   <!-- HEADER -->
   <header class="app-header">
     <div class="header-left">
-      <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC</div>
+      <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC <span class="view-only-badge">👁 visualização</span></div>
       <button class="header-status" id="headerStatus" onclick="abrirProximoTime()">
         <span class="sync-dot"></span>
         <span id="headerStatusText">0 na fila</span>
@@ -1789,6 +1813,9 @@ body {
       <div class="config-sheet-divider"></div>
       <button class="config-sheet-link" id="regrasBtn" onclick="abrirRegras()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Regras do jogo <span class="chev">›</span></button>
       <div class="config-sheet-divider"></div>
+      <button class="config-sheet-link" id="loginAdminBtn" onclick="abrirLoginAdmin()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Entrar como admin <span class="chev">›</span></button>
+      <button class="config-sheet-link" id="logoutAdminBtn" onclick="logoutAdmin()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2" fill="#e8f5e9"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Modo admin ativo — sair</button>
+      <div class="config-sheet-divider"></div>
       <button class="config-sheet-reset" id="resetBtn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Limpar fila e quadra</button>
     </div>
   </div>
@@ -1844,6 +1871,107 @@ let swapSelection      = null;
 let substituteOpenFor  = null;
 let _fbReady            = false;
 let _localChangePending = false;
+
+/* ── MODO ADMIN (trava de conveniência, não segurança de verdade) ──
+   Sem login, o app é só visualização: cliques em ações (marcar
+   presença, escalar, resultado, editar, configurações etc.) são
+   bloqueados por um interceptor global. Não impede alguém técnico
+   de gravar direto no Firebase — a URL do banco já é pública no
+   código do app. É só pra evitar toque acidental de quem só está
+   olhando o placar. */
+const ADMIN_PIN = '7419';
+const ADMIN_STORAGE_KEY = 'pf_admin';
+function isAdmin(){ return localStorage.getItem(ADMIN_STORAGE_KEY) === '1'; }
+function loginAdmin(pin){
+  if(String(pin).trim() !== ADMIN_PIN) return false;
+  localStorage.setItem(ADMIN_STORAGE_KEY, '1');
+  applyAdminMode();
+  return true;
+}
+function logoutAdmin(){
+  localStorage.removeItem(ADMIN_STORAGE_KEY);
+  applyAdminMode();
+  const loginBtn = document.getElementById('loginAdminBtn');
+  const logoutBtn = document.getElementById('logoutAdminBtn');
+  if(loginBtn) loginBtn.style.display = 'flex';
+  if(logoutBtn) logoutBtn.style.display = 'none';
+}
+function applyAdminMode(){
+  document.body.classList.toggle('view-only', !isAdmin());
+}
+
+// Seletores que continuam funcionando sem login — navegação e
+// visualização, nunca uma ação que muda o estado do grupo.
+const VIEW_ONLY_ALLOWED_SELECTOR = [
+  '.tab-btn', '#headerConfigBtn', '#headerStatus',
+  '#toggleMembros', '#toggleFila',
+  '.membros-filter-btn', '.filter-chip', '#membrosFilterInput',
+  '#regrasBtn', '#loginAdminBtn', '#logoutAdminBtn',
+  '.sheet-option.cancel', '#closeRulesBtn', '#adminLoginSubmit', '#adminLoginInput',
+].join(', ');
+
+function abrirLoginAdmin(motivo){
+  openSheet('Entrar como admin', body => {
+    body.style.cssText = 'padding:16px 20px;display:flex;flex-direction:column;gap:12px';
+    if(motivo){
+      const msg = document.createElement('div');
+      msg.style.cssText = 'font-size:.82rem;color:var(--ink-soft);line-height:1.5';
+      msg.textContent = motivo;
+      body.appendChild(msg);
+    }
+    const input = document.createElement('input');
+    input.id = 'adminLoginInput';
+    input.type = 'tel';
+    input.inputMode = 'numeric';
+    input.placeholder = 'PIN de admin';
+    input.autocomplete = 'off';
+    input.style.cssText = 'width:100%;height:48px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:16px;font-family:Inter,sans-serif;background:var(--chalk);color:var(--ink);outline:none;letter-spacing:2px';
+    input.addEventListener('focus', () => input.style.borderColor = 'var(--green)');
+    input.addEventListener('blur', () => input.style.borderColor = '#ddd');
+    body.appendChild(input);
+
+    const errorHint = document.createElement('div');
+    errorHint.style.cssText = 'display:none;margin-top:-6px;font-size:.78rem;color:var(--red)';
+    errorHint.textContent = 'PIN incorreto.';
+    body.appendChild(errorHint);
+    input.addEventListener('input', () => { errorHint.style.display = 'none'; });
+
+    const submit = document.createElement('button');
+    submit.id = 'adminLoginSubmit';
+    submit.className = 'btn-confirmar';
+    submit.textContent = 'Entrar';
+    const trySubmit = () => {
+      if(loginAdmin(input.value)){ closeSheet(); render(); }
+      else { errorHint.style.display = 'block'; input.style.borderColor = 'var(--red)'; input.focus(); }
+    };
+    submit.addEventListener('click', trySubmit);
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') trySubmit(); });
+    body.appendChild(submit);
+
+    const cancel = document.createElement('button');
+    cancel.className = 'sheet-option cancel';
+    cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Cancelar</span>';
+    cancel.addEventListener('click', closeSheet);
+    body.appendChild(cancel);
+
+    setTimeout(() => input.focus(), 100);
+  });
+}
+
+// Interceptor global: em modo visualização, qualquer clique numa ação
+// (fora da lista de navegação permitida) é bloqueado e vira um convite
+// pra entrar como admin — nunca falha silenciosamente.
+document.addEventListener('click', function(e){
+  if(isAdmin()) return;
+  const allowed = e.target.closest(VIEW_ONLY_ALLOWED_SELECTOR);
+  if(allowed) return;
+  const actionable = e.target.closest('button, .membro-check, .membro-name, .membro-badge-tipo, .su-player, input, select, .membro-item-add, .sheet-option:not(.cancel)');
+  if(!actionable) return;
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
+  abrirLoginAdmin('Essa ação exige modo admin. Entre com o PIN do grupo pra continuar.');
+}, true);
 
 /* ── TIMER (sincronizado via Firebase) ──────────────────────────
    O estado do timer fica em state.timer e é salvo no Firebase.
@@ -2322,6 +2450,7 @@ function toggleSwapSelection(which,idx){
    RENDER
 ═══════════════════════════════════════════ */
 function render(){
+  applyAdminMode();
   clearGhosts();
   const ts=teamSize();
   // lucide icons re-initialized after render (see bottom)
@@ -3013,6 +3142,8 @@ function openConfigSheet(){
   document.getElementById('matchDurationSheet').textContent = state.matchDuration||10;
   document.getElementById('targetVeteranosSheet').textContent = targetVeteranos();
   document.getElementById('targetBaseSheet').textContent = targetBase();
+  document.getElementById('loginAdminBtn').style.display = isAdmin() ? 'none' : 'flex';
+  document.getElementById('logoutAdminBtn').style.display = isAdmin() ? 'flex' : 'none';
   document.getElementById('configSheet').style.display='block';
   document.getElementById('configSheetBackdrop').style.display='block';
 }
