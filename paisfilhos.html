@@ -106,7 +106,8 @@ body {
   padding: 3px 8px;
   flex-shrink: 0;
 }
-body.view-only .view-only-badge { display: inline-flex; align-items: center; }
+body.view-only .view-only-badge { display: inline-flex; align-items: center; gap: 3px; }
+.view-only-badge svg { flex-shrink: 0; }
 /* Modo visualização: ações ficam esmaecidas — o bloqueio de verdade é
    o interceptor de clique global, isso é só o sinal visual */
 body.view-only .btn-win, body.view-only .btn-tie, body.view-only .btn-start,
@@ -1610,7 +1611,7 @@ body.view-only .membro-check {
   <!-- HEADER -->
   <header class="app-header">
     <div class="header-left">
-      <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC <span class="view-only-badge">👁 visualização</span></div>
+      <div class="app-title">Pais <span class="amp">&amp;</span> Filhos FC <span class="view-only-badge"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>visualização</span></div>
       <button class="header-status" id="headerStatus" onclick="abrirProximoTime()">
         <span class="sync-dot"></span>
         <span id="headerStatusText">0 na fila</span>
