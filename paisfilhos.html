@@ -814,6 +814,11 @@ body.view-only .membro-check {
   border-color: var(--green);
   color: var(--white);
 }
+.membro-check-num {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 0.8rem;
+  line-height: 1;
+}
 .membro-name {
   flex: 1;
   font-size: 0.9rem;
@@ -904,6 +909,11 @@ body.view-only .membro-check {
   background: var(--green);
   border-color: var(--green);
   color: var(--white);
+}
+.membro-check-num {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 0.8rem;
+  line-height: 1;
 }
 .membro-name {
   flex: 1;
@@ -3497,6 +3507,10 @@ function renderMembros(){
   const membros = state.membros || [];
   list.innerHTML = '';
 
+  // Ordem de toque (mesma que vai pra fila ao confirmar) — usada pra
+  // numerar o círculo de quem já foi marcado.
+  const ordemToque = [...presencasMarcadas];
+
   // Orientação sempre presente por estado — nunca "aprende e some"
   const membrosNudge = document.getElementById('membrosNudge');
   if(membrosNudge) membrosNudge.style.display = presencasMarcadas.size === 0 ? 'flex' : 'none';
@@ -3607,7 +3621,7 @@ function renderMembros(){
       const jaAtivoHoje = status !== null;
       li.className = 'membro-item' + (presencasMarcadas.has(m.id) ? ' presente' : '') + (jaAtivoHoje ? ' ja-ativo' : '');
       const checkSvg = presencasMarcadas.has(m.id)
-        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
+        ? `<span class="membro-check-num">${ordemToque.indexOf(m.id) + 1}</span>`
         : '';
       const statusIcon = status === 'quadra'
         ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="8" height="8"><circle cx="12" cy="12" r="12" fill="currentColor"/></svg>'
