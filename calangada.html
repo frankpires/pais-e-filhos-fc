@@ -3391,9 +3391,12 @@ function togglePresenca(id){
 
 function confirmarPresenca(){
   const membros = state.membros || [];
-  // Membros confirmados formam o início da fila
-  // Mantém a ordem do cadastro
-  const confirmados = membros.filter(m => presencasMarcadas.has(m.id));
+  // Membros confirmados formam o início da fila, na ordem em que foram
+  // tocados em Membros (não a ordem de cadastro) — presencasMarcadas é um
+  // Set, que preserva a ordem de inserção; destocar e tocar de novo manda
+  // a pessoa pro fim dessa ordem.
+  const membrosById = new Map(membros.map(m => [m.id, m]));
+  const confirmados = [...presencasMarcadas].map(id => membrosById.get(id)).filter(Boolean);
   if(!confirmados.length) return;
 
   // Remove membros confirmados que já estejam na fila OU em quadra (evita duplicata)
