@@ -437,6 +437,15 @@ body.view-only .membro-check {
 }
 .su-player .pname{ flex:1; color:var(--ink); font-size:0.82rem; font-weight:500; line-height:1.2; }
 .su-player .ptap{ color:#ccc; font-size:0.75rem; }
+.su-player-ghost { opacity: 0.7; }
+.su-player-ghost:active { opacity: 1; }
+.su-avatar-ghost {
+  border: 1.5px dashed var(--ink-soft);
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+  font-size: 14px;
+}
+.su-ghost-text { color: var(--ink-soft); font-style: italic; }
 .su-empty{
   flex: 1;
   display: flex;
@@ -2439,6 +2448,47 @@ function substitutePlayer(which, idx, qi){
   substituteOpenFor=null; saveState(); render();
 }
 
+// Pessoa que saiu de vez do jogo (ex: se machucou, foi embora) — não volta
+// pra fila, e a vaga fica aberta até alguém escolher preenchê-la.
+function removePlayerNoSub(which, idx){
+  const team = which==='A' ? state.courtA : state.courtB;
+  team.splice(idx, 1);
+  saveState(); render();
+}
+
+// Preenche uma vaga aberta (time com menos gente que o tamanho configurado)
+// com alguém da fila, sem mexer no resto do time.
+function fillEmptySlot(which){
+  const team = which==='A' ? state.courtA : state.courtB;
+  openSheet(`Preencher vaga — Time ${which}`, body => {
+    if(state.queue.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'sheet-option';
+      empty.style.cssText = 'color:#aaa;cursor:default';
+      empty.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="opt-text">Fila vazia<span class="opt-sub">Adicione jogadores na aba Fila</span></span>';
+      body.appendChild(empty);
+    } else {
+      state.queue.forEach((qp, qi) => {
+        const opt = document.createElement('button');
+        opt.className = 'sheet-option';
+        opt.innerHTML = `<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="10" height="10" stroke-width="0"><circle cx="12" cy="12" r="6" fill="currentColor"/></svg></span><span class="opt-text">${qp.name}<span class="opt-sub">${catLabel(qp)} — posição ${qi+1} na fila</span></span>`;
+        opt.addEventListener('click', () => {
+          const incoming = state.queue[qi];
+          state.queue.splice(qi, 1);
+          team.push(incoming);
+          saveState(); render(); closeSheet();
+        });
+        body.appendChild(opt);
+      });
+    }
+    const cancel = document.createElement('button');
+    cancel.className = 'sheet-option cancel';
+    cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Cancelar</span>';
+    cancel.addEventListener('click', closeSheet);
+    body.appendChild(cancel);
+  });
+}
+
 function toggleSubstitutePicker(which,idx){
   substituteOpenFor=(substituteOpenFor&&substituteOpenFor.team===which&&substituteOpenFor.idx===idx)?null:{team:which,idx};
   render();
@@ -2632,6 +2682,35 @@ function openPlayerSheet(which, idx){
     body.appendChild(paneSubstitute);
     body.appendChild(paneSwap);
 
+    // ── Retirar sem substituto ──
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'sheet-option';
+    removeBtn.style.cssText = 'color:var(--red);font-weight:700;border-top:1px solid var(--line);margin-top:4px';
+    removeBtn.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5"/><path d="m22 8-5 5"/></svg></span><span class="opt-text">Retirar do jogo, sem substituto<span class="opt-sub">A vaga fica aberta pra preencher depois</span></span>';
+    removeBtn.addEventListener('click', () => {
+      closeSheet();
+      setTimeout(() => {
+        openSheet(`Retirar ${player.name}?`, confirmBody => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'padding:4px 20px 16px;font-size:.88rem;color:#666;line-height:1.5';
+          msg.textContent = `${player.name} sai do Time ${which} sem ninguém entrar no lugar agora. Dá pra preencher a vaga depois, quando alguém estiver disponível.`;
+          confirmBody.appendChild(msg);
+          const confirm = document.createElement('button');
+          confirm.className = 'sheet-option';
+          confirm.style.cssText = 'color:var(--red);font-weight:700';
+          confirm.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5"/><path d="m22 8-5 5"/></svg></span><span class="opt-text">Sim, retirar</span>';
+          confirm.addEventListener('click', () => { removePlayerNoSub(which, idx); closeSheet(); });
+          confirmBody.appendChild(confirm);
+          const cancel2 = document.createElement('button');
+          cancel2.className = 'sheet-option cancel';
+          cancel2.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Cancelar</span>';
+          cancel2.addEventListener('click', closeSheet);
+          confirmBody.appendChild(cancel2);
+        });
+      }, 50);
+    });
+    body.appendChild(removeBtn);
+
     // ── Cancelar ──
     const cancel=document.createElement('button');
     cancel.className='sheet-option cancel';
@@ -2822,6 +2901,20 @@ function renderCourt(ts){
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
       });
+      // Vaga(s) aberta(s): alguém saiu sem substituto e o time ficou
+      // menor que o tamanho configurado.
+      for(let i = team.length; i < ts; i++){
+        const ghost = document.createElement('div');
+        ghost.className = 'su-player su-player-ghost';
+        ghost.innerHTML = `
+          <div class="su-avatar su-avatar-ghost">+</div>
+          <div class="su-player-info">
+            <div class="su-player-name su-ghost-text">Vaga aberta</div>
+            <div class="su-player-tipo">Toque pra preencher</div>
+          </div>`;
+        ghost.addEventListener('click', () => fillEmptySlot(which));
+        col.appendChild(ghost);
+      }
     }
     col.appendChild(Object.assign(document.createElement('div'), {className:'su-spacer'}));
     return col;
