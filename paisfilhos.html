@@ -3413,10 +3413,11 @@ function confirmarPresenca(){
   const nomesJaAtivos = new Set([...state.queue, ...state.courtA, ...state.courtB].map(p => p.name.toLowerCase()));
   const novos = confirmados.filter(m => !nomesJaAtivos.has(m.name.toLowerCase()));
 
-  // Insere os confirmados no INÍCIO da fila (antes dos convidados)
+  // Insere os confirmados no FIM da fila — quem já estava esperando
+  // (inclusive convidados) continua na frente.
   state.queue = [
-    ...novos.map(m => ({ name: m.name, categoria: m.categoria || 'base' })),
-    ...state.queue
+    ...state.queue,
+    ...novos.map(m => ({ name: m.name, categoria: m.categoria || 'base' }))
   ];
 
   presencasMarcadas.clear();
