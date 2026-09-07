@@ -3288,6 +3288,7 @@ function abrirRegras(){
         </div>
         <p>O Extra só entra se sobrar alguém dessa categoria na fila — é uma vaga bônus, não tira o lugar de ninguém.</p>
         <div class="regras-note">"Veteranos por time" e "Base por time" ajustam essas metas em Configurações — e agora são obrigatórias: se faltar gente exata da categoria (ou gente suficiente no total) pra fechar o time, a vaga fica aberta na quadra pra preencher manualmente depois, em vez de completar com quem sobrar de outra categoria.</div>
+        <div class="regras-note">Pra escalar não precisa mais da fila cheia — dá pra montar o time com quem tiver, deixando "Vaga aberta" pro resto. Toque na vaga (ou em "Escalar times da fila") assim que sobrar gente.</div>
       </div>
       <div class="regras-divider"></div>
       <div class="regras-sec">
@@ -3321,11 +3322,19 @@ function abrirRegras(){
           <div class="regras-tie-rule"><span class="regras-tie-count">0</span><span class="regras-tie-desc"><b>Nenhum time completo</b> esperando → ninguém sai, os dois continuam até a fila ter gente.</span></div>
         </div>
         <div class="regras-note">Pra evitar toque sem querer, confirmar um resultado precisa de dois toques: o primeiro arma o botão, o segundo confirma.</div>
+        <p>Se alguém sair do jogo sem substituto (precisou ir embora, se machucou), dá pra tocar na pessoa e escolher "Retirar do jogo, sem substituto" — a vaga fica aberta na quadra até alguém da fila preencher.</p>
+        <div class="regras-note">Quando o time inteiro é trocado mas não há gente da categoria certa esperando na fila, quem acabou de sair pode ser escolhido de volta pro time "novo" — aparece "Permaneceu" do lado do nome pra deixar isso claro.</div>
       </div>
       <div class="regras-divider"></div>
       <div class="regras-sec">
         <h3>Dado de dia anterior</h3>
         <p>Se a quadra ainda mostrar o time de um dia que não é hoje, o app avisa e oferece limpar tudo pra começar o dia de hoje.</p>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Modo admin</h3>
+        <p>Sem entrar como admin, o app fica só pra visualizar — dá pra ver a fila, a quadra e o histórico, mas os botões de ação ficam bloqueados.</p>
+        <div class="regras-note">Pra marcar presença, escalar times, confirmar resultado ou mexer em qualquer coisa, entre como admin em Configurações com o PIN do grupo.</div>
       </div>`;
   });
 }
