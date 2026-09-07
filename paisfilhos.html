@@ -2029,6 +2029,7 @@ function timerStart(){
   // Sai do modo revisão ao iniciar
   state._reviewMode = false;
   state._lastWinner = null;
+  [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
   _lastAlerted = false;
   document.getElementById('timerAlertOverlay').classList.remove('active');
   saveState();
@@ -2320,6 +2321,11 @@ function winTeam(which){
 
   const loserIdx = which === 'A' ? 1 : 0;
   fadeScoreboard(loserIdx, () => {
+    [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
+    // Marca quem está saindo — se a fila não tiver reposição da categoria
+    // (ex: nenhum outro veterano esperando), essa mesma pessoa pode voltar
+    // pro time novo. A marca sobrevive nela pra sinalizar "permaneceu".
+    loser.forEach(p => { p._justLeft = true; });
     state.queue.push(...loser);
     state[loserKey] = [];
     // Forma o próximo time com quem tiver na fila, mesmo que não dê pra
@@ -2369,6 +2375,7 @@ function tie(){
     });
 
     setTimeout(() => {
+      [...state.courtA, ...state.courtB].forEach(p => { p._justLeft = true; });
       state.queue.push(...state.courtA, ...state.courtB);
       state.courtA = []; state.courtB = [];
       tryFillSlots();
@@ -2412,6 +2419,8 @@ function tie(){
 
     const leavesIdx = staysWhich === 'A' ? 1 : 0;
     fadeScoreboard(leavesIdx, () => {
+      [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
+      leaves.forEach(p => { p._justLeft = true; });
       state.queue.push(...leaves);
       state[leavesKey] = [];
       tryFillSlots();
@@ -2904,7 +2913,7 @@ function renderCourt(ts){
           <div class="su-avatar${catClass ? ` ${catClass}-av` : ''}">${initial}</div>
           <div class="su-player-info">
             <div class="su-player-name">${player.name}</div>
-            <div class="su-player-tipo${catClass ? ` ${catClass}-tipo` : ''}">${catLabel}${player.guest ? ' · Convidado' : ''}</div>
+            <div class="su-player-tipo${catClass ? ` ${catClass}-tipo` : ''}">${catLabel}${player.guest ? ' · Convidado' : ''}${player._justLeft ? ' · Permaneceu' : ''}</div>
           </div>`;
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
