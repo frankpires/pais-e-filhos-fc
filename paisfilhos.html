@@ -1766,7 +1766,7 @@ body.view-only .membro-check {
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
         <div>
           <b id="filaGapNudgeText"></b>
-          Volte em Membros pra marcar mais gente, ou chame um convidado abaixo.
+          Volte em Membros pra marcar mais gente, chame um convidado abaixo, ou já vá pra Em Quadra escalar parcial.
           <div class="go" id="filaGapNudgeGo">Ir pra Membros <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
         </div>
       </div>
@@ -2029,6 +2029,7 @@ function timerStart(){
   // Sai do modo revisão ao iniciar
   state._reviewMode = false;
   state._lastWinner = null;
+  [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
   _lastAlerted = false;
   document.getElementById('timerAlertOverlay').classList.remove('active');
   saveState();
@@ -2194,11 +2195,11 @@ function saveState(isRetry){
 function teamSize(){ return Math.max(1, parseInt(state.teamSize) || 1); }
 function catLabel(p){ return p.categoria==='veterano' ? 'Veterano' : p.categoria==='extra' ? 'Extra' : 'Base'; }
 
-// Composição preferencial de cada time: N Veteranos + N Base (ajustável em
+// Composição obrigatória de cada time: N Veteranos + N Base (ajustável em
 // Configurações, padrão 2+3 = teamSize padrão de 5), com 1 Extra como vaga
 // bônus quando sobrar alguém da categoria Extra na fila. Se faltar Veterano
-// ou Base pra bater a meta, completa com quem estiver disponível — a meta é
-// preferência, não regra dura.
+// ou Base na fila pra bater a meta, a vaga fica aberta (ninguém de outra
+// categoria entra no lugar) — dá pra preencher manualmente depois.
 function targetVeteranos(){
   const v = state.targetVeteranos;
   return (v===undefined || v===null || isNaN(v)) ? 2 : Math.max(0, parseInt(v));
@@ -2215,8 +2216,10 @@ function selectBaseTeam(q, ts){
   const tb = Math.min(targetBase(), ts - tv);
   for(let i=0; i<q.length && countCat('veterano')<tv; i++){ if(q[i].categoria==='veterano') idx.push(i); }
   for(let i=0; i<q.length && countCat('base')<tb; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
-  for(let i=0; i<q.length && idx.length<ts; i++){ if(!idx.includes(i)) idx.push(i); }
-  if(idx.length < ts) return null;
+  // Meta de categoria é obrigatória agora — não completa mais com quem
+  // sobrar de outra categoria. Se faltar Veterano ou Base na fila, o time
+  // forma incompleto (vagas abertas), em vez de forçar alguém errado.
+  if(idx.length === 0) return null;
   idx.sort((a,b)=>a-b);
   const chosen = idx.map(i=>q[i]);
   for(let i=idx.length-1;i>=0;i--) q.splice(idx[i],1);
@@ -2266,10 +2269,13 @@ function tryFillSlots(){
 
 function syncCourtSizes(){
   const ts=teamSize();
+  // Só encolhe times que passaram a exceder o novo tamanho (sobra volta
+  // pro fim da fila). Não completa mais times que ficaram menores que o
+  // novo tamanho — isso viraria vaga aberta, sem levar em conta categoria;
+  // preencher fica por conta do "Vaga aberta" manual.
   ['courtA','courtB'].forEach(key=>{
     const team=state[key]; if(!team.length) return;
-    if(team.length>ts){ state.queue.unshift(...team.splice(ts)); }
-    else if(team.length<ts){ state[key]=team.concat(state.queue.splice(0,ts-team.length)); }
+    if(team.length>ts){ state.queue.push(...team.splice(ts)); }
   });
 }
 
@@ -2315,10 +2321,16 @@ function winTeam(which){
 
   const loserIdx = which === 'A' ? 1 : 0;
   fadeScoreboard(loserIdx, () => {
-    const queueBefore = state.queue.length;
+    [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
+    // Marca quem está saindo — se a fila não tiver reposição da categoria
+    // (ex: nenhum outro veterano esperando), essa mesma pessoa pode voltar
+    // pro time novo. A marca sobrevive nela pra sinalizar "permaneceu".
+    loser.forEach(p => { p._justLeft = true; });
     state.queue.push(...loser);
     state[loserKey] = [];
-    if(queueBefore >= teamSize()) tryFillSlots();
+    // Forma o próximo time com quem tiver na fila, mesmo que não dê pra
+    // fechar o time inteiro (fica com vaga aberta pra completar depois).
+    if(state.queue.length > 0) tryFillSlots();
     state._reviewMode = true;
     state._lastWinner = which;
     state.lastActivityAt = Date.now();
@@ -2363,6 +2375,7 @@ function tie(){
     });
 
     setTimeout(() => {
+      [...state.courtA, ...state.courtB].forEach(p => { p._justLeft = true; });
       state.queue.push(...state.courtA, ...state.courtB);
       state.courtA = []; state.courtB = [];
       tryFillSlots();
@@ -2406,6 +2419,8 @@ function tie(){
 
     const leavesIdx = staysWhich === 'A' ? 1 : 0;
     fadeScoreboard(leavesIdx, () => {
+      [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
+      leaves.forEach(p => { p._justLeft = true; });
       state.queue.push(...leaves);
       state[leavesKey] = [];
       tryFillSlots();
@@ -2533,8 +2548,9 @@ function render(){
 
 function proximoTime(){
   // Retorna os próximos jogadores que formariam o próximo time (mesma
-  // preferência Veteranos + Base + 1 Extra bônus do selectTeamFromQueueCopy,
-  // só que sem tirar ninguém da fila de verdade — é só uma prévia).
+  // meta obrigatória Veteranos + Base + 1 Extra bônus do
+  // selectTeamFromQueueCopy, só que sem tirar ninguém da fila de
+  // verdade — é só uma prévia).
   const ts = teamSize();
   const q = [...state.queue];
   const idx = [];
@@ -2543,10 +2559,8 @@ function proximoTime(){
   const tb = Math.min(targetBase(), ts - tv);
   for(let i=0; i<q.length && countCat('veterano')<tv; i++){ if(q[i].categoria==='veterano') idx.push(i); }
   for(let i=0; i<q.length && countCat('base')<tb; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
-  for(let i=0; i<q.length && idx.length<ts; i++){ if(!idx.includes(i)) idx.push(i); }
-  if(idx.length >= ts){
-    for(let i=0; i<q.length; i++){ if(!idx.includes(i) && q[i].categoria==='extra'){ idx.push(i); break; } }
-  }
+  if(idx.length === 0) return [];
+  for(let i=0; i<q.length; i++){ if(!idx.includes(i) && q[i].categoria==='extra'){ idx.push(i); break; } }
   return idx.sort((a,b)=>a-b).map(i=>q[i]);
 }
 
@@ -2735,7 +2749,9 @@ function renderCourt(ts){
   const bothEmpty = !hasA && !hasB;
   const emptySlots = (!hasA?1:0) + (!hasB?1:0);
   const needed = emptySlots * ts;
-  const canStart = emptySlots > 0 && state.queue.length >= needed;
+  // Escalar não exige mais o time cheio — dá pra formar parcial (com vagas
+  // abertas) e completar depois, se o grupo assim desejar.
+  const canStart = emptySlots > 0 && state.queue.length > 0;
   const canTieBoth    = state.queue.length >= 2 * ts;
   const canTiePartial = !canTieBoth && state.queue.length >= ts && !!state._lastWinner;
   const enoughTie = canTieBoth || canTiePartial;
@@ -2829,16 +2845,17 @@ function renderCourt(ts){
         courtNudge.style.display = 'none';
         startCard.style.display = 'flex';
       } else if(bothEmpty){
-        // quadra vazia, fila em formação — botão sempre visível, com contador
+        // quadra vazia, fila em formação — botão sempre visível, com contador.
+        // Dá pra escalar mesmo sem o time cheio (fica com vagas abertas).
         startCard.style.display = 'none';
         startBtn.style.display = 'block';
         startBtn.disabled = !canStart;
         startBtnCount.textContent = `${Math.min(state.queue.length, needed)} de ${needed}`;
-        if(canStart){
+        if(state.queue.length >= needed || state.queue.length === 0){
           courtNudge.style.display = 'none';
         } else {
           courtNudge.style.display = 'flex';
-          courtNudgeText.textContent = `Faltam ${needed - state.queue.length} pessoa(s) confirmada(s)`;
+          courtNudgeText.textContent = `Só ${state.queue.length} de ${needed} confirmado(s) — dá pra escalar assim mesmo`;
         }
       } else {
         // uma vaga só (rotação em andamento) — comportamento já existente
@@ -2896,7 +2913,7 @@ function renderCourt(ts){
           <div class="su-avatar${catClass ? ` ${catClass}-av` : ''}">${initial}</div>
           <div class="su-player-info">
             <div class="su-player-name">${player.name}</div>
-            <div class="su-player-tipo${catClass ? ` ${catClass}-tipo` : ''}">${catLabel}${player.guest ? ' · Convidado' : ''}</div>
+            <div class="su-player-tipo${catClass ? ` ${catClass}-tipo` : ''}">${catLabel}${player.guest ? ' · Convidado' : ''}${player._justLeft ? ' · Permaneceu' : ''}</div>
           </div>`;
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
@@ -3090,7 +3107,7 @@ function renderQueue(ts){
   const readyNudge = document.getElementById('filaReadyNudge');
   if(bothEmpty && needed > 0 && state.queue.length > 0 && state.queue.length < needed){
     gapNudge.style.display = 'flex';
-    gapText.textContent = `Faltam ${needed - state.queue.length} pessoa(s) pra começar`;
+    gapText.textContent = `Só ${state.queue.length} de ${needed} confirmado(s) até agora`;
     readyNudge.style.display = 'none';
   } else if(bothEmpty && needed > 0 && state.queue.length >= needed){
     gapNudge.style.display = 'none';
@@ -3263,14 +3280,15 @@ function abrirRegras(){
     body.innerHTML = `
       <div class="regras-sec">
         <h3>Composição dos times <span class="regras-adj">ajustável</span></h3>
-        <p>Com os ${ts} jogadores por time configurados hoje, cada time é montado preferencialmente com:</p>
+        <p>Com os ${ts} jogadores por time configurados hoje, cada time é montado com:</p>
         <div class="regras-chips">
           <span class="regras-chip vet">${targetVeteranos()} Veteranos</span>
           <span class="regras-chip base">${targetBase()} Base</span>
           <span class="regras-chip extra">+1 Extra</span>
         </div>
         <p>O Extra só entra se sobrar alguém dessa categoria na fila — é uma vaga bônus, não tira o lugar de ninguém.</p>
-        <div class="regras-note">"Veteranos por time" e "Base por time" ajustam essas metas em Configurações. Se sobrar vaga além delas (ou faltar Veterano/Base na fila), o time completa com quem estiver disponível: é uma preferência, não uma regra fixa.</div>
+        <div class="regras-note">"Veteranos por time" e "Base por time" ajustam essas metas em Configurações — e agora são obrigatórias: se faltar gente exata da categoria (ou gente suficiente no total) pra fechar o time, a vaga fica aberta na quadra pra preencher manualmente depois, em vez de completar com quem sobrar de outra categoria.</div>
+        <div class="regras-note">Pra escalar não precisa mais da fila cheia — dá pra montar o time com quem tiver, deixando "Vaga aberta" pro resto. Toque na vaga (ou em "Escalar times da fila") assim que sobrar gente.</div>
       </div>
       <div class="regras-divider"></div>
       <div class="regras-sec">
@@ -3304,11 +3322,19 @@ function abrirRegras(){
           <div class="regras-tie-rule"><span class="regras-tie-count">0</span><span class="regras-tie-desc"><b>Nenhum time completo</b> esperando → ninguém sai, os dois continuam até a fila ter gente.</span></div>
         </div>
         <div class="regras-note">Pra evitar toque sem querer, confirmar um resultado precisa de dois toques: o primeiro arma o botão, o segundo confirma.</div>
+        <p>Se alguém sair do jogo sem substituto (precisou ir embora, se machucou), dá pra tocar na pessoa e escolher "Retirar do jogo, sem substituto" — a vaga fica aberta na quadra até alguém da fila preencher.</p>
+        <div class="regras-note">Quando o time inteiro é trocado mas não há gente da categoria certa esperando na fila, quem acabou de sair pode ser escolhido de volta pro time "novo" — aparece "Permaneceu" do lado do nome pra deixar isso claro.</div>
       </div>
       <div class="regras-divider"></div>
       <div class="regras-sec">
         <h3>Dado de dia anterior</h3>
         <p>Se a quadra ainda mostrar o time de um dia que não é hoje, o app avisa e oferece limpar tudo pra começar o dia de hoje.</p>
+      </div>
+      <div class="regras-divider"></div>
+      <div class="regras-sec">
+        <h3>Modo admin</h3>
+        <p>Sem entrar como admin, o app fica só pra visualizar — dá pra ver a fila, a quadra e o histórico, mas os botões de ação ficam bloqueados.</p>
+        <div class="regras-note">Pra marcar presença, escalar times, confirmar resultado ou mexer em qualquer coisa, entre como admin em Configurações com o PIN do grupo.</div>
       </div>`;
   });
 }
