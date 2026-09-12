@@ -636,6 +636,44 @@ body.view-only .membro-check {
 .stale-banner svg{ flex-shrink: 0; margin-top: 2px; color: var(--amber); }
 .stale-banner b{ display: block; font-size: .88rem; margin-bottom: 2px; }
 .stale-banner-text{ font-size: .78rem; line-height: 1.45; color: rgba(255,255,255,.82); }
+
+/* ── BANNER DE NOVA VERSÃO ── */
+.update-banner{
+  margin: 10px 16px 0;
+  background: var(--green);
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  box-shadow: var(--shadow);
+}
+.update-banner svg{ flex-shrink: 0; margin-top: 2px; color: var(--amber); }
+.update-banner-text{ flex: 1; min-width: 0; }
+.update-banner b{ display: block; font-size: .88rem; margin-bottom: 2px; }
+.update-banner-sub{ font-size: .78rem; line-height: 1.45; color: rgba(255,255,255,.82); }
+.update-banner-actions{ display: flex; align-items: center; gap: 14px; margin-top: 10px; }
+.update-banner-btn{
+  background: var(--amber);
+  color: #1c1c2e;
+  font-size: .8rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 100px;
+  padding: 7px 16px;
+  cursor: pointer;
+}
+.update-banner-btn:disabled{ opacity: .7; }
+.update-banner-dismiss{
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.7);
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
 .court-block.dimmed{ opacity: .5; }
 
 /* ── ETIQUETA DE CONVIDADO (avulso, não faz parte do cadastro do grupo) ── */
@@ -1627,6 +1665,19 @@ body.view-only .membro-check {
 <body>
 <div id="app">
 
+  <!-- Aviso de nova versão do app (fica em cima de qualquer aba) -->
+  <div class="update-banner" id="updateBanner" style="display:none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+    <div class="update-banner-text">
+      <b>Nova versão disponível</b>
+      <div class="update-banner-sub">Tem uma atualização do app esperando — atualize pra pegar as últimas mudanças.</div>
+      <div class="update-banner-actions">
+        <button class="update-banner-btn" id="updateBannerBtn">Atualizar</button>
+        <button class="update-banner-dismiss" id="updateBannerDismiss">Agora não</button>
+      </div>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header class="app-header">
     <div class="header-left">
@@ -1928,6 +1979,7 @@ const VIEW_ONLY_ALLOWED_SELECTOR = [
   '.membros-filter-btn', '.filter-chip', '#membrosFilterInput',
   '#regrasBtn', '#loginAdminBtn', '#logoutAdminBtn',
   '.sheet-option.cancel', '#closeRulesBtn', '#adminLoginSubmit', '#adminLoginInput',
+  '#updateBannerBtn', '#updateBannerDismiss',
 ].join(', ');
 
 function abrirLoginAdmin(motivo){
@@ -4026,10 +4078,61 @@ loadState();
 // Garante UI inicial mesmo sem Firebase (ex: primeira vez, offline)
 setTimeout(() => { render();  }, 150);
 
-// Registra Service Worker para PWA (funciona quando hospedado no Vercel)
+// Registra Service Worker para PWA (funciona quando hospedado no Vercel) e
+// avisa quando há uma versão nova esperando — em vez de trocar sozinho por
+// baixo dos panos (o que deixava gente com o app aberto preso numa versão
+// velha sem saber), mostra o banner e só atualiza de verdade quando a
+// pessoa toca em "Atualizar".
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      const banner = document.getElementById('updateBanner');
+      const updateBtn = document.getElementById('updateBannerBtn');
+      const dismissBtn = document.getElementById('updateBannerDismiss');
+      const showBanner = () => { if(banner) banner.style.display = 'flex'; };
+
+      // Já tinha uma atualização esperando de antes de abrir o app agora
+      if(reg.waiting && navigator.serviceWorker.controller) showBanner();
+
+      reg.addEventListener('updatefound', () => {
+        const novo = reg.installing;
+        if(!novo) return;
+        novo.addEventListener('statechange', () => {
+          if(novo.state === 'installed' && navigator.serviceWorker.controller) showBanner();
+        });
+      });
+
+      // PWA costuma ficar aberto por dias — força checar por versão nova
+      // de vez em quando, e sempre que a pessoa volta pro app.
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if(document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+
+      if(updateBtn) updateBtn.addEventListener('click', () => {
+        updateBtn.disabled = true;
+        updateBtn.textContent = 'Atualizando…';
+        caches.keys()
+          .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+          .catch(() => {})
+          .finally(() => {
+            if(reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+            else location.reload();
+          });
+      });
+      if(dismissBtn) dismissBtn.addEventListener('click', () => {
+        if(banner) banner.style.display = 'none';
+      });
+    }).catch(() => {});
+  });
+
+  // Assim que a versão nova assume o controle (depois do SKIP_WAITING),
+  // recarrega pra garantir que a página rodando é a mesma versão do cache.
+  let _swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(_swRefreshing) return;
+    _swRefreshing = true;
+    location.reload();
   });
 }
 </script>
