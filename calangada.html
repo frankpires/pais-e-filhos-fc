@@ -3019,9 +3019,17 @@ function renderCourt(ts){
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
       });
-      // Vaga(s) aberta(s): alguém saiu sem substituto e o time ficou
-      // menor que o tamanho configurado.
-      for(let i = team.length; i < ts; i++){
+      // Vaga(s) aberta(s): alguém saiu sem substituto e o time ficou menor
+      // que o tamanho configurado. Se a cota obrigatória (Veteranos + Base)
+      // já fechou mas não sobrou ninguém Extra pra ocupar o bônus, mostra
+      // mais uma vaga aberta pra esse lugar também poder ser preenchido
+      // na mão — mesmo quando isso passa do tamanho configurado do time.
+      const tvGhost = Math.min(targetVeteranos(), ts);
+      const tbGhost = Math.min(targetBase(), ts - tvGhost);
+      const mandatoryComplete = vCount === tvGhost && bCount === tbGhost;
+      const bonusSlotOpen = mandatoryComplete && eCount === 0;
+      const ghostUntil = Math.max(ts, team.length + (bonusSlotOpen ? 1 : 0));
+      for(let i = team.length; i < ghostUntil; i++){
         const ghost = document.createElement('div');
         ghost.className = 'su-player su-player-ghost';
         ghost.innerHTML = `
@@ -3387,7 +3395,7 @@ function abrirRegras(){
           <span class="regras-chip base">${targetBase()} Base</span>
           <span class="regras-chip extra">+1 Extra</span>
         </div>
-        <p>O Extra só entra se sobrar alguém dessa categoria na fila — é uma vaga bônus, não tira o lugar de ninguém.</p>
+        <p>O Extra só entra se sobrar alguém dessa categoria na fila — é uma vaga bônus, não tira o lugar de ninguém. Se ninguém Extra estiver disponível, essa vaga também aparece como "Vaga aberta" pra preencher na mão quando sobrar gente.</p>
         <div class="regras-note">"Veteranos por time" e "Base por time" ajustam essas metas em Configurações — e agora são obrigatórias: se faltar gente exata da categoria (ou gente suficiente no total) pra fechar o time, a vaga fica aberta na quadra pra preencher manualmente depois, em vez de completar com quem sobrar de outra categoria.</div>
         <div class="regras-note">Pra escalar não precisa mais da fila cheia — dá pra montar o time com quem tiver, deixando "Vaga aberta" pro resto. Toque na vaga (ou em "Escalar times da fila") assim que sobrar gente.</div>
       </div>
