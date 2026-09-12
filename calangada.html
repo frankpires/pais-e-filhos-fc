@@ -2478,6 +2478,16 @@ function removePlayerNoSub(which, idx){
   saveState(); render();
 }
 
+// Pessoa sai do time mas continua no dia — volta pro fim da fila (sem
+// substituto imediato) e pode ser escalada de novo mais tarde. A vaga
+// fica aberta até lá.
+function removePlayerToQueue(which, idx){
+  const team = which==='A' ? state.courtA : state.courtB;
+  const [player] = team.splice(idx, 1);
+  state.queue.push(player);
+  saveState(); render();
+}
+
 // Preenche uma vaga aberta (time com menos gente que o tamanho configurado)
 // com alguém da fila, sem mexer no resto do time.
 function fillEmptySlot(which){
@@ -2706,10 +2716,39 @@ function openPlayerSheet(which, idx){
     body.appendChild(paneSubstitute);
     body.appendChild(paneSwap);
 
+    // ── Retirar, volta pra fila ──
+    const requeueBtn = document.createElement('button');
+    requeueBtn.className = 'sheet-option';
+    requeueBtn.style.cssText = 'font-weight:700;border-top:1px solid var(--line);margin-top:4px';
+    requeueBtn.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></span><span class="opt-text">Retirar do jogo, volta pra fila<span class="opt-sub">A vaga fica aberta e ela entra no fim da fila</span></span>';
+    requeueBtn.addEventListener('click', () => {
+      closeSheet();
+      setTimeout(() => {
+        openSheet(`Retirar ${player.name}?`, confirmBody => {
+          const msg = document.createElement('div');
+          msg.style.cssText = 'padding:4px 20px 16px;font-size:.88rem;color:#666;line-height:1.5';
+          msg.textContent = `${player.name} sai do Time ${which} e volta pro fim da fila, pra ser escalado(a) de novo mais tarde. A vaga fica aberta até lá.`;
+          confirmBody.appendChild(msg);
+          const confirm = document.createElement('button');
+          confirm.className = 'sheet-option';
+          confirm.style.cssText = 'font-weight:700';
+          confirm.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></span><span class="opt-text">Sim, retirar</span>';
+          confirm.addEventListener('click', () => { removePlayerToQueue(which, idx); closeSheet(); });
+          confirmBody.appendChild(confirm);
+          const cancel2 = document.createElement('button');
+          cancel2.className = 'sheet-option cancel';
+          cancel2.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Cancelar</span>';
+          cancel2.addEventListener('click', closeSheet);
+          confirmBody.appendChild(cancel2);
+        });
+      }, 50);
+    });
+    body.appendChild(requeueBtn);
+
     // ── Retirar sem substituto ──
     const removeBtn = document.createElement('button');
     removeBtn.className = 'sheet-option';
-    removeBtn.style.cssText = 'color:var(--red);font-weight:700;border-top:1px solid var(--line);margin-top:4px';
+    removeBtn.style.cssText = 'color:var(--red);font-weight:700';
     removeBtn.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5"/><path d="m22 8-5 5"/></svg></span><span class="opt-text">Retirar do jogo, sem substituto<span class="opt-sub">A vaga fica aberta pra preencher depois</span></span>';
     removeBtn.addEventListener('click', () => {
       closeSheet();
@@ -3332,7 +3371,7 @@ function abrirRegras(){
           <div class="regras-tie-rule"><span class="regras-tie-count">0</span><span class="regras-tie-desc"><b>Nenhum time completo</b> esperando → ninguém sai, os dois continuam até a fila ter gente.</span></div>
         </div>
         <div class="regras-note">Pra evitar toque sem querer, confirmar um resultado precisa de dois toques: o primeiro arma o botão, o segundo confirma.</div>
-        <p>Se alguém sair do jogo sem substituto (precisou ir embora, se machucou), dá pra tocar na pessoa e escolher "Retirar do jogo, sem substituto" — a vaga fica aberta na quadra até alguém da fila preencher.</p>
+        <p>Se alguém precisar sair do time sem um substituto na hora, dá pra tocar na pessoa e escolher entre duas opções: "Retirar do jogo, volta pra fila" (ela entra no fim da fila e pode ser escalada de novo mais tarde) ou "Retirar do jogo, sem substituto" (ela está saindo de vez, não volta pra fila). Nos dois casos, a vaga fica aberta na quadra até alguém preencher.</p>
         <div class="regras-note">Quando o time inteiro é trocado mas não há gente da categoria certa esperando na fila, quem acabou de sair pode ser escolhido de volta pro time "novo" — aparece "Permaneceu" do lado do nome pra deixar isso claro.</div>
       </div>
       <div class="regras-divider"></div>
