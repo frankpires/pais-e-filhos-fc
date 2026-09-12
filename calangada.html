@@ -2223,13 +2223,20 @@ function selectBaseTeam(q, ts){
   idx.sort((a,b)=>a-b);
   const chosen = idx.map(i=>q[i]);
   for(let i=idx.length-1;i>=0;i--) q.splice(idx[i],1);
+  // Só libera o bônus de Extra quando a cota obrigatória fechou 100% —
+  // senão o Extra ocuparia a vaga que deveria ficar aberta pra Veterano/Base.
+  // (conta em cima de `chosen`, já extraído — `q` foi mutado pelo splice acima)
+  const vChosen = chosen.filter(p => p.categoria === 'veterano').length;
+  const bChosen = chosen.filter(p => p.categoria === 'base').length;
+  chosen._completo = (vChosen === tv && bChosen === tb);
   return chosen;
 }
 
-// 6ª vaga bônus: 1 Extra, só se sobrar alguém Extra na fila. Recebe um time
-// já formado (com a base completa) e tenta anexar 1 Extra a mais nele.
+// 6ª vaga bônus: 1 Extra, só se sobrar alguém Extra na fila E a cota
+// obrigatória de Veteranos + Base já tiver fechado (ver `_completo` acima).
+// Recebe um time já formado e tenta anexar 1 Extra a mais nele.
 function grantBonusExtra(team, q){
-  if(!team) return;
+  if(!team || !team._completo) return;
   const i = q.findIndex(p => p.categoria === 'extra');
   if(i === -1) return;
   team.push(q[i]);
@@ -2560,7 +2567,10 @@ function proximoTime(){
   for(let i=0; i<q.length && countCat('veterano')<tv; i++){ if(q[i].categoria==='veterano') idx.push(i); }
   for(let i=0; i<q.length && countCat('base')<tb; i++){ if(q[i].categoria==='base' && !idx.includes(i)) idx.push(i); }
   if(idx.length === 0) return [];
-  for(let i=0; i<q.length; i++){ if(!idx.includes(i) && q[i].categoria==='extra'){ idx.push(i); break; } }
+  // Bônus de Extra só entra se a cota obrigatória já fechou 100%.
+  if(countCat('veterano') === tv && countCat('base') === tb){
+    for(let i=0; i<q.length; i++){ if(!idx.includes(i) && q[i].categoria==='extra'){ idx.push(i); break; } }
+  }
   return idx.sort((a,b)=>a-b).map(i=>q[i]);
 }
 
