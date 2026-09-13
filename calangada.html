@@ -605,6 +605,17 @@ body.view-only .membro-check {
 .nudge.ready .go{ color: #2e7d32; }
 .nudge.top{ margin: 10px 16px 0; }
 
+/* Dica da lista de Membros — texto simples, sem cartão/ícone, como um
+   rodapé de seção de lista (padrão iOS, ex: Contatos, Lembretes). O
+   cartão com ícone que existia antes tomava espaço vertical demais bem
+   na hora de escolher os presentes — o próprio propósito da tela. */
+.membros-hint{
+  padding: 4px 16px 8px;
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
 /* ── CARTÃO DE INÍCIO (quadra + fila zeradas) ── */
 .start-card{
   background: var(--card);
@@ -1859,13 +1870,7 @@ body.view-only .membro-check {
           <button class="filter-chip" data-filter="colete">Sem colete</button>
         </div>
       </div>
-      <div class="nudge top" id="membrosNudge" style="display:none">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
-        <div>
-          <b>Toque nos nomes de quem está presente hoje</b>
-          Marca presença — o botão libera assim que tiver alguém.
-        </div>
-      </div>
+      <div class="membros-hint" id="membrosNudge" style="display:none">Toque nos nomes pra marcar quem está presente hoje</div>
       <ul class="membros-list" id="membrosList"></ul>
       <div class="membros-footer">
         <button class="btn-confirmar" id="confirmarPresencaBtn">
@@ -3909,7 +3914,7 @@ function renderMembros(){
 
   // Orientação sempre presente por estado — nunca "aprende e some"
   const membrosNudge = document.getElementById('membrosNudge');
-  if(membrosNudge) membrosNudge.style.display = presencasMarcadas.size === 0 ? 'flex' : 'none';
+  if(membrosNudge) membrosNudge.style.display = presencasMarcadas.size === 0 ? 'block' : 'none';
 
   // ── Resumo quantitativo ──
   if(membros.length > 0){
