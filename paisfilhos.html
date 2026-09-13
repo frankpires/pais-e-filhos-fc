@@ -1371,7 +1371,26 @@ body.view-only .membro-check {
   color: var(--ink);
   padding: 4px 20px 16px;
   border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
+/* Botão "Concluído" — a sheet de Configurações nunca teve um jeito
+   explícito de fechar (diferente das outras sheets, que sempre têm
+   "Cancelar" no fim); dependia só do toque no fundo escurecido (área
+   pequena, já que a sheet ocupa quase a tela toda) ou da alça no topo. */
+.config-sheet-close {
+  border: none;
+  background: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--amber);
+  cursor: pointer;
+  padding: 6px 0 6px 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+.config-sheet-close:active { opacity: 0.6; }
 .config-sheet-body {
   padding: 8px 0;
 }
@@ -1978,7 +1997,10 @@ body.view-only .membro-check {
   <div class="sheet-backdrop" id="configSheetBackdrop" style="display:none" onclick="closeConfigSheet()"></div>
   <div class="config-sheet" id="configSheet" style="display:none">
     <div class="sheet-handle"></div>
-    <div class="config-sheet-title">Configurações</div>
+    <div class="config-sheet-title">
+      <span>Configurações</span>
+      <button class="config-sheet-close" id="configSheetCloseBtn" onclick="closeConfigSheet()">Concluído</button>
+    </div>
     <div class="config-sheet-body">
       <div class="config-sheet-section-label">Partida</div>
       <div class="config-sheet-row">
@@ -2119,7 +2141,7 @@ const VIEW_ONLY_ALLOWED_SELECTOR = [
   '#toggleMembros', '#toggleFila',
   '.membros-filter-btn', '.filter-chip', '#membrosFilterInput',
   '#membrosFilterClear', '#membrosFilterCancel',
-  '#regrasBtn', '#loginAdminBtn', '#logoutAdminBtn',
+  '#regrasBtn', '#loginAdminBtn', '#logoutAdminBtn', '#configSheetCloseBtn',
   '.sheet-option.cancel', '#closeRulesBtn', '#adminLoginSubmit', '#adminLoginInput',
   '#updateBannerBtn', '#updateBannerDismiss',
 ].join(', ');
