@@ -2081,7 +2081,7 @@ function timerStart(){
   // Sai do modo revisão ao iniciar
   state._reviewMode = false;
   state._lastWinner = null;
-  [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
+  [...state.courtA, ...state.courtB, ...state.queue].forEach(p => { delete p._justLeft; });
   _lastAlerted = false;
   document.getElementById('timerAlertOverlay').classList.remove('active');
   saveState();
@@ -2380,7 +2380,11 @@ function winTeam(which){
 
   const loserIdx = which === 'A' ? 1 : 0;
   fadeScoreboard(loserIdx, () => {
-    [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
+    // Limpa em todo mundo (quadra + fila) — sem isso, alguém que ficou
+    // marcado numa rodada passada e não voltou logo pro time carregava a
+    // marca até ser escalado de novo, e aparecia "Permaneceu" numa
+    // substituição normal, sem ter nada a ver com essa rodada.
+    [...state.courtA, ...state.courtB, ...state.queue].forEach(p => { delete p._justLeft; });
     // Marca quem está saindo — se a fila não tiver reposição da categoria
     // (ex: nenhum outro veterano esperando), essa mesma pessoa pode voltar
     // pro time novo. A marca sobrevive nela pra sinalizar "permaneceu".
@@ -2434,6 +2438,11 @@ function tie(){
     });
 
     setTimeout(() => {
+      // Limpa fila antes de marcar — sem isso, quem ficou marcado numa
+      // rodada passada e ainda não tinha voltado carregava a marca até
+      // ser escalado de novo, aparecendo "Permaneceu" numa substituição
+      // normal, sem ter nada a ver com essa rodada.
+      state.queue.forEach(p => { delete p._justLeft; });
       [...state.courtA, ...state.courtB].forEach(p => { p._justLeft = true; });
       state.queue.push(...state.courtA, ...state.courtB);
       state.courtA = []; state.courtB = [];
@@ -2478,7 +2487,8 @@ function tie(){
 
     const leavesIdx = staysWhich === 'A' ? 1 : 0;
     fadeScoreboard(leavesIdx, () => {
-      [...state.courtA, ...state.courtB].forEach(p => { delete p._justLeft; });
+      // Limpa em todo mundo (quadra + fila) pelo mesmo motivo do winTeam().
+      [...state.courtA, ...state.courtB, ...state.queue].forEach(p => { delete p._justLeft; });
       leaves.forEach(p => { p._justLeft = true; });
       state.queue.push(...leaves);
       state[leavesKey] = [];
@@ -3019,16 +3029,17 @@ function renderCourt(ts){
         row.addEventListener('click', () => openPlayerSheet(which, idx));
         col.appendChild(row);
       });
-      // Vaga(s) aberta(s): alguém saiu sem substituto e o time ficou menor
-      // que o tamanho configurado. Se a cota obrigatória (Veteranos + Base)
-      // já fechou mas não sobrou ninguém Extra pra ocupar o bônus, mostra
-      // mais uma vaga aberta pra esse lugar também poder ser preenchido
-      // na mão — mesmo quando isso passa do tamanho configurado do time.
-      const tvGhost = Math.min(targetVeteranos(), ts);
-      const tbGhost = Math.min(targetBase(), ts - tvGhost);
-      const mandatoryComplete = vCount === tvGhost && bCount === tbGhost;
-      const bonusSlotOpen = mandatoryComplete && eCount === 0;
-      const ghostUntil = Math.max(ts, team.length + (bonusSlotOpen ? 1 : 0));
+      // Vaga(s) aberta(s): o total de vagas do time é sempre a meta de
+      // Veteranos + Base (configurada em Configurações) + 1 (a vaga bônus
+      // de Extra) — fixo, não depende de quem já está escalado ou de qual
+      // categoria ocupou cada lugar. Contar por categoria (em vez de só
+      // comparar o total com `ts`) evita vagas que "somem": antes, um
+      // Extra escalado numa vaga de Veterano/Base vaga (preenchimento
+      // manual) fazia o time parecer completo mesmo faltando gente, e a
+      // vaga aberta deixava de aparecer.
+      const tvSlots = Math.min(targetVeteranos(), ts);
+      const tbSlots = Math.min(targetBase(), ts - tvSlots);
+      const ghostUntil = tvSlots + tbSlots + 1;
       for(let i = team.length; i < ghostUntil; i++){
         const ghost = document.createElement('div');
         ghost.className = 'su-player su-player-ghost';
