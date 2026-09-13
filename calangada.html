@@ -71,24 +71,34 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(var(--safe-top) + 12px) 20px 10px;
+  padding: calc(var(--safe-top) + 16px) 20px 14px;
   min-height: calc(var(--header-h) + var(--safe-top));
   flex-shrink: 0;
   position: relative;
   z-index: 10;
   border-bottom: 1px solid var(--line);
+  transition: padding .2s ease;
+}
+/* "Large title" que encolhe ao rolar (padrão iOS) — vira compacto assim
+   que a lista da tela ativa rola além de um respiro pequeno. */
+.app-header.collapsed {
+  padding: calc(var(--safe-top) + 10px) 20px 8px;
 }
 .app-title {
   font-family: 'Anton', sans-serif;
-  font-size: clamp(1.35rem, 4.2vw, 1.6rem);
+  font-size: clamp(1.7rem, 5.8vw, 2.05rem);
   letter-spacing: 1px;
   line-height: 1;
+  transition: font-size .2s ease;
   display: flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
   flex-shrink: 0;
   color: var(--ink);
+}
+.app-header.collapsed .app-title {
+  font-size: clamp(1.3rem, 4.2vw, 1.5rem);
 }
 .app-title .amp {
   font-family: Georgia, serif;
@@ -3611,6 +3621,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       // conseguiu medir a altura real.
       renderCourt(teamSize());
     }
+    syncHeaderCollapse();
   });
 });
 
@@ -4167,6 +4178,7 @@ function switchFilaView(view){
     fecharFiltroMembros();
     renderQueue(teamSize());
   }
+  syncHeaderCollapse();
 }
 
 // Posiciona a pastilha do segmented control atrás do item ativo, por
@@ -4373,6 +4385,27 @@ loadState();
 setTimeout(() => { render();  }, 150);
 document.getElementById('appVersion').textContent = `Versão ${APP_VERSION}`;
 updateFilaToggleThumb();
+
+// "Large title" que encolhe ao rolar (padrão iOS) — escuta as quatro
+// listas com rolagem e também resincroniza ao trocar de aba/sub-aba, pra
+// não ficar "preso" no estado de rolagem da tela anterior.
+const HEADER_COLLAPSE_THRESHOLD = 24;
+function getActiveScroller(){
+  if(document.getElementById('screenQuadra').classList.contains('active')) return document.getElementById('scoreboardUnified');
+  if(document.getElementById('screenHistorico').classList.contains('active')) return document.getElementById('historicoList');
+  const emMembros = document.getElementById('viewMembros').style.display !== 'none';
+  return document.getElementById(emMembros ? 'membrosList' : 'queueList');
+}
+function syncHeaderCollapse(){
+  const header = document.querySelector('.app-header');
+  const scroller = getActiveScroller();
+  if(!header || !scroller) return;
+  header.classList.toggle('collapsed', scroller.scrollTop > HEADER_COLLAPSE_THRESHOLD);
+}
+['scoreboardUnified', 'membrosList', 'queueList', 'historicoList'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('scroll', syncHeaderCollapse, { passive: true });
+});
 
 // Registra Service Worker para PWA (funciona quando hospedado no Vercel) e
 // avisa quando há uma versão nova esperando — em vez de trocar sozinho por
