@@ -36,10 +36,12 @@ html { overscroll-behavior: none; height: 100%; }
   --ink-soft: #6b6b6b;
   --line:     rgba(0,0,0,0.08);
   --shadow:   0 2px 12px rgba(0,0,0,0.08);
-  --tab-h:    64px;
   --header-h: 56px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
+  /* Espaço reservado no fim de cada lista pra nada ficar escondido atrás
+     do menu flutuante (offset do chão + altura do menu + respiro). */
+  --tabbar-clearance: calc(84px + var(--safe-bot));
 }
 body {
   font-family: 'Inter', system-ui, sans-serif;
@@ -273,13 +275,23 @@ body.view-only .membro-check {
 }
 .screen.active { display: flex; }
 
-/* ── BOTTOM TAB BAR ── */
+/* ── MENU FLUTUANTE (estilo iOS) ──
+   Solto do rodapé (não docado na borda), compacto e com o mesmo recuo
+   lateral do conteúdo — fica por cima das telas, então cada lista com
+   rolagem reserva --tabbar-clearance no fim pra nada ficar escondido
+   atrás dele. */
 .tab-bar {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(14px + var(--safe-bot));
   display: flex;
-  background: var(--card);
-  border-top: 1px solid var(--line);
-  padding-bottom: var(--safe-bot);
-  flex-shrink: 0;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.06);
+  padding: 5px;
   z-index: 10;
 }
 .tab-btn {
@@ -288,31 +300,30 @@ body.view-only .membro-check {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 10px 0 8px;
+  gap: 2px;
+  padding: 5px 0;
   border: none;
   background: none;
+  border-radius: 19px;
   color: var(--ink-soft);
   font-family: 'Inter', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 600;
   letter-spacing: 0.3px;
   cursor: pointer;
   transition: color 0.15s;
-  min-height: var(--tab-h);
   -webkit-tap-highlight-color: transparent;
 }
 .tab-btn .tab-icon {
-  font-size: 1.2rem;
   line-height: 1;
-  width: 40px; height: 32px;
+  width: 32px; height: 24px;
   border-radius: 100px;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.2s;
 }
-.tab-btn .tab-icon svg { width: 22px; height: 22px; display: block; }
+.tab-btn .tab-icon svg { width: 18px; height: 18px; display: block; }
 .tab-btn.active { color: var(--accent); }
-.tab-btn.active .tab-icon { background: rgba(232,160,32,0.12); }
+.tab-btn.active .tab-icon { background: rgba(255,107,71,0.14); }
 
 /* ── SCOREBOARD UNIFICADO ── */
 .court-block{
@@ -331,7 +342,7 @@ body.view-only .membro-check {
   background: transparent;
   display: flex;
   gap: 10px;
-  padding: 12px 16px 0;
+  padding: 12px 16px var(--tabbar-clearance);
   align-items: flex-start;
   min-height: 0;
 }
@@ -843,7 +854,7 @@ body.view-only .membro-check {
   list-style: none;
   background: var(--bg);
   min-height: 0;
-  padding: 8px 16px 4px;
+  padding: 8px 16px var(--tabbar-clearance);
 }
 .membro-item {
   display: flex;
@@ -1177,7 +1188,7 @@ body.view-only .membro-check {
 .membros-footer {
   flex-shrink: 0;
   background: var(--bg);
-  padding: 10px 16px;
+  padding: 10px 16px var(--tabbar-clearance);
 }
 .membro-item-add {
   display: flex;
@@ -1431,7 +1442,7 @@ body.view-only .membro-check {
   -webkit-overflow-scrolling: touch;
   list-style: none;
   background: var(--bg);
-  padding: 8px 16px 4px;
+  padding: 8px 16px var(--tabbar-clearance);
 }
 .queue-item {
   display: flex;
@@ -1528,7 +1539,7 @@ body.view-only .membro-check {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: var(--bg);
-  padding: 12px 16px;
+  padding: 12px 16px var(--tabbar-clearance);
   display: block;
   min-height: 0;
 }
