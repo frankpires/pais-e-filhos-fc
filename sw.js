@@ -1,4 +1,4 @@
-const CACHE = 'paisfilhos-20260913150000';
+const CACHE = 'paisfilhos-20260913171500';
 const ASSETS = ['/'];
 
 self.addEventListener('install', e => {

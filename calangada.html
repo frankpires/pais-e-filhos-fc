@@ -1520,36 +1520,6 @@ body.view-only .membro-check {
 }
 .btn-reset:active{ border-color: var(--red); color: var(--red); }
 
-/* ── FILA — GRUPOS PRÓXIMO TIME / AGUARDANDO ── */
-.queue-group-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px 4px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: var(--primary);
-}
-.queue-group-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(28,43,30,.15);
-}
-.queue-group-label.rest {
-  color: #bbb;
-  padding-top: 10px;
-}
-.queue-group-label.rest::after { background: rgba(0,0,0,.07); }
-.queue-item.next {
-  box-shadow: 0 2px 10px rgba(28,43,30,.1);
-  border: 1px solid rgba(28,43,30,.07);
-}
-.queue-item.waiting .queue-num { background: #ddd; color: #aaa; }
-.queue-item.waiting .queue-name { color: #aaa; }
-.queue-item.waiting .cat-badge { background: #eee; color: #bbb; }
 
 /* ── RESULTADOS SCREEN ── */
 .results-list {
@@ -3379,29 +3349,9 @@ function renderQueue(ts){
     readyNudge.style.display = 'none';
   }
 
-  const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
-  const nextTeam = hasMatch ? proximoTime() : [];
-
-  if(hasMatch && nextTeam.length > 0 && state.queue.length > 0){
-    const lbl = document.createElement('li');
-    lbl.className = 'queue-group-label';
-    lbl.textContent = 'Próximo time';
-    list.appendChild(lbl);
-  }
-
   state.queue.forEach((player,i)=>{
-    const isNext = hasMatch && i < nextTeam.length;
-    const isWaiting = hasMatch && i >= nextTeam.length;
-
-    if(isWaiting && i === nextTeam.length){
-      const lbl = document.createElement('li');
-      lbl.className = 'queue-group-label rest';
-      lbl.textContent = 'Aguardando';
-      list.appendChild(lbl);
-    }
-
     const li=document.createElement('li');
-    li.className=`queue-item${isNext?' next':''}${isWaiting?' waiting':''}`;
+    li.className='queue-item';
     li.innerHTML=`
       <span class="queue-drag-handle" title="Segurar e arrastar para reordenar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
       <span class="queue-num">${i+1}</span>
