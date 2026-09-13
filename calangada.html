@@ -286,11 +286,12 @@ body.view-only .membro-check {
   right: 16px;
   bottom: calc(14px + var(--safe-bot));
   display: flex;
-  background: rgba(255,255,255,.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.5);
   border-radius: 24px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6);
   padding: 5px;
   z-index: 10;
 }
@@ -1386,6 +1387,12 @@ body.view-only .membro-check {
   font-weight: 600;
   cursor: pointer;
 }
+.config-sheet-version {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #bbb;
+  margin-top: 12px;
+}
 .config-sheet-link {
   width: 100%;
   display: flex;
@@ -1938,6 +1945,7 @@ body.view-only .membro-check {
       <button class="config-sheet-link" id="logoutAdminBtn" onclick="logoutAdmin()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2" fill="#e8f5e9"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Modo admin ativo — sair</button>
       <div class="config-sheet-divider"></div>
       <button class="config-sheet-reset" id="resetBtn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Limpar fila e quadra</button>
+      <div class="config-sheet-version" id="appVersion"></div>
     </div>
   </div>
 
@@ -1979,6 +1987,11 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 </script>
 
 <script>
+// Versão exibida em Configurações — bump manual a cada mudança visível
+// pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
+// conferir se o app abriu na versão esperada depois de uma atualização.
+const APP_VERSION = '1.0.0';
+
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
 ═══════════════════════════════════════════ */
@@ -4224,6 +4237,7 @@ document.getElementById('membrosList').addEventListener('click', (e) => {
 loadState();
 // Garante UI inicial mesmo sem Firebase (ex: primeira vez, offline)
 setTimeout(() => { render();  }, 150);
+document.getElementById('appVersion').textContent = `Versão ${APP_VERSION}`;
 
 // Registra Service Worker para PWA (funciona quando hospedado no Vercel) e
 // avisa quando há uma versão nova esperando — em vez de trocar sozinho por
