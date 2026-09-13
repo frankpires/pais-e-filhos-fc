@@ -1279,13 +1279,6 @@ body.view-only .membro-check {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: filter 0.08s, transform 0.08s;
-  /* Projeta um brilho suave por trás do vidro do menu flutuante logo
-     abaixo — sem isso, o vidro fica "chapado" nessa tela (nada colorido
-     por perto pra desfocar), diferente das listas, onde cards reais
-     aparecem borrados atrás do menu. Usar box-shadow em vez de
-     mask-image no rodapé: mask-image quebrava a composição do
-     backdrop-filter do menu (ver PR #40/#41). */
-  box-shadow: 0 46px 40px -16px rgba(28, 43, 30, .55);
 }
 .btn-confirmar:active { transform: scale(0.97); filter: brightness(0.85); }
 .btn-confirmar:disabled { opacity: 0.4; }
