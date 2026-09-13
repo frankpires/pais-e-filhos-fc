@@ -1005,11 +1005,20 @@ body.view-only .membro-check {
 }
 .membros-filter-btn.active { color: var(--accent); }
 .membros-filter-btn:active { opacity: 0.6; }
+/* Painel em duas linhas: busca (própria linha, cheia) + chips de categoria
+   (linha própria, rolável). Numa tela pequena, espremer os dois numa única
+   linha é o que deixava a busca praticamente inutilizável — cada elemento
+   agora tem o espaço que precisa, sem disputar largura com o outro. */
 .membros-filter-panel {
   flex-shrink: 0;
   background: var(--chalk);
   border-bottom: 1px solid var(--line);
   padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.membros-filter-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1017,46 +1026,85 @@ body.view-only .membro-check {
 .membros-filter-wrap {
   position: relative;
   flex: 1;
+  min-width: 0;
 }
 .membros-filter-wrap .filter-icon {
   position: absolute;
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  color: #bbb;
+  color: #8e8e93;
   pointer-events: none;
   display: flex;
 }
 .membros-filter-input {
   width: 100%;
-  height: 32px;
+  height: 36px;
   border: none;
-  border-radius: 8px;
-  padding: 0 10px 0 28px;
-  font-size: 0.82rem;
+  border-radius: 10px;
+  padding: 0 32px 0 32px;
+  font-size: 0.92rem;
   font-family: 'Inter', sans-serif;
-  background: var(--white);
+  background: rgba(118,118,128,0.12);
   color: var(--ink);
   outline: none;
+  -webkit-appearance: none;
 }
-.membros-filter-input::placeholder { color: #ccc; }
+.membros-filter-input::placeholder { color: #8e8e93; }
+.membros-filter-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #b6b6ba;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.membros-filter-clear:active { color: #8e8e93; }
+/* Botão "Cancelar" — padrão iOS: some com o teclado, some com o painel */
+.membros-filter-cancel {
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 4px 0 4px 2px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.membros-filter-cancel:active { opacity: 0.5; }
+/* Chips de categoria — rolam na horizontal, nunca espremem nem cortam */
 .membros-filter-chips {
   display: flex;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 -16px;
+  padding: 0 16px 2px;
 }
+.membros-filter-chips::-webkit-scrollbar { display: none; }
 .filter-chip {
   border: 1px solid var(--line);
   background: var(--white);
   border-radius: 100px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--ink-soft);
-  height: 32px;
-  padding: 0 10px;
+  height: 30px;
+  padding: 0 12px;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -1795,9 +1843,13 @@ body.view-only .membro-check {
     <!-- VIEW: MEMBROS DO GRUPO -->
     <div id="viewMembros" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
       <div class="membros-filter-panel" id="membrosFilterPanel" style="display:none">
-        <div class="membros-filter-wrap">
-          <span class="filter-icon"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
-          <input class="membros-filter-input" id="membrosFilterInput" type="text" placeholder="Buscar…" autocomplete="off">
+        <div class="membros-filter-row">
+          <div class="membros-filter-wrap">
+            <span class="filter-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+            <input class="membros-filter-input" id="membrosFilterInput" type="text" placeholder="Buscar membro" autocomplete="off" autocorrect="off" spellcheck="false">
+            <button class="membros-filter-clear" id="membrosFilterClear" title="Limpar" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9.5 9.5 5 5m0-5-5 5" stroke="var(--chalk)" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+          </div>
+          <button class="membros-filter-cancel" id="membrosFilterCancel">Cancelar</button>
         </div>
         <div class="membros-filter-chips">
           <button class="filter-chip active" data-filter="todos">Todos</button>
@@ -1989,6 +2041,7 @@ const VIEW_ONLY_ALLOWED_SELECTOR = [
   '.tab-btn', '#headerConfigBtn', '#headerStatus',
   '#toggleMembros', '#toggleFila',
   '.membros-filter-btn', '.filter-chip', '#membrosFilterInput',
+  '#membrosFilterClear', '#membrosFilterCancel',
   '#regrasBtn', '#loginAdminBtn', '#logoutAdminBtn',
   '.sheet-option.cancel', '#closeRulesBtn', '#adminLoginSubmit', '#adminLoginInput',
   '#updateBannerBtn', '#updateBannerDismiss',
@@ -3685,6 +3738,22 @@ let presencasMarcadas = new Set();
 let _filtroTexto = '';
 let _filtroTipo  = 'todos'; // 'todos' | 'veterano' | 'base' | 'extra' | 'colete'
 
+// Fecha e reseta o painel de busca/filtro de membros — usado pelo botão de
+// busca (pra fechar), pelo "Cancelar" e ao trocar de aba (Membros ↔ Fila).
+function fecharFiltroMembros(){
+  const panel = document.getElementById('membrosFilterPanel');
+  if(!panel || panel.style.display === 'none') return;
+  panel.style.display = 'none';
+  _filtroTexto = ''; _filtroTipo = 'todos';
+  const inp = document.getElementById('membrosFilterInput');
+  if(inp) inp.value = '';
+  const clearBtn = document.getElementById('membrosFilterClear');
+  if(clearBtn) clearBtn.style.display = 'none';
+  panel.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
+  const fb = document.getElementById('membrosFilterBtn');
+  if(fb) fb.classList.remove('active');
+}
+
 
 function membroComEsseNomeJaExiste(name, excludeId){
   const alvo = name.trim().toLowerCase();
@@ -3861,8 +3930,8 @@ function renderMembros(){
       <span class="msb-item"><strong>${extras}</strong> extras</span>
       <span class="msb-sep">·</span>
       <span class="msb-item msb-colete"><strong>${comColete}</strong> com colete${semColete > 0 ? ` <em>(${semColete} sem)</em>` : ' ✓'}</span>
-      <button class="membros-filter-btn" id="membrosFilterBtn" title="Filtrar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="2"/><line x1="3" y1="6" x2="7" y2="6"/><line x1="11" y1="6" x2="21" y2="6"/><circle cx="16" cy="12" r="2"/><line x1="3" y1="12" x2="14" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/><circle cx="7" cy="18" r="2"/><line x1="3" y1="18" x2="5" y2="18"/><line x1="9" y1="18" x2="21" y2="18"/></svg>
+      <button class="membros-filter-btn" id="membrosFilterBtn" title="Buscar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       </button>`;
     // Re-attach filter button listener after render
     setTimeout(() => {
@@ -3873,14 +3942,12 @@ function renderMembros(){
         fb.classList.toggle('active', panel.style.display !== 'none');
         fb.addEventListener('click', () => {
           const open = panel.style.display === 'none';
-          panel.style.display = open ? 'flex' : 'none';
-          fb.classList.toggle('active', open);
-          if(open) setTimeout(() => document.getElementById('membrosFilterInput').focus(), 50);
-          if(!open){
-            _filtroTexto = ''; _filtroTipo = 'todos';
-            document.getElementById('membrosFilterInput').value = '';
-            panel.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
-            renderMembros();
+          if(open){
+            panel.style.display = 'flex';
+            fb.classList.add('active');
+            setTimeout(() => document.getElementById('membrosFilterInput').focus(), 50);
+          } else {
+            fecharFiltroMembros();
           }
         });
       }
@@ -3994,14 +4061,7 @@ function switchFilaView(view){
   document.getElementById('toggleMembros').classList.toggle('active', isMembros);
   document.getElementById('toggleFila').classList.toggle('active', !isMembros);
   if(!isMembros){
-    const panel = document.getElementById('membrosFilterPanel');
-    if(panel && panel.style.display !== 'none'){
-      panel.style.display = 'none';
-      _filtroTexto = ''; _filtroTipo = 'todos';
-      const inp = document.getElementById('membrosFilterInput');
-      if(inp) inp.value = '';
-      panel.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
-    }
+    fecharFiltroMembros();
     renderQueue(teamSize());
   }
 }
@@ -4161,9 +4221,24 @@ function abrirAddMembro(){
 
 document.getElementById('confirmarPresencaBtn').addEventListener('click', confirmarPresenca);
 
-// Filtro de membros — input e chips (botão inicializado no renderMembros)
+// Filtro de membros — input, botão de limpar, "Cancelar" e chips (botão de
+// busca é reinicializado a cada renderMembros(), os outros são fixos)
 document.getElementById('membrosFilterInput').addEventListener('input', e => {
-  _filtroTexto = e.target.value; renderMembros();
+  _filtroTexto = e.target.value;
+  document.getElementById('membrosFilterClear').style.display = e.target.value ? 'flex' : 'none';
+  renderMembros();
+});
+document.getElementById('membrosFilterClear').addEventListener('click', () => {
+  _filtroTexto = '';
+  const inp = document.getElementById('membrosFilterInput');
+  inp.value = '';
+  inp.focus();
+  document.getElementById('membrosFilterClear').style.display = 'none';
+  renderMembros();
+});
+document.getElementById('membrosFilterCancel').addEventListener('click', () => {
+  fecharFiltroMembros();
+  renderMembros();
 });
 document.getElementById('membrosFilterPanel').querySelectorAll('.filter-chip').forEach(chip => {
   chip.addEventListener('click', () => {
