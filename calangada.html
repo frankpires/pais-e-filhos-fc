@@ -780,30 +780,53 @@ body.view-only .membro-check {
 
 /* ── FILA SCREEN ── */
 /* ── FILA TOGGLE ── */
+/* Segmented control (estilo iOS) — antes era uma faixa com sublinhado,
+   parecida com aba de navegador, fácil de confundir com outro nível de
+   navegação. Agora é um grupo com fundo neutro e uma "pastilha" que
+   desliza atrás do item ativo (calculada em JS por precisão de pixel). */
 .fila-toggle-bar {
+  position: relative;
   display: flex;
-  border-bottom: 1px solid var(--line);
-  background: var(--white);
+  background: rgba(118,118,128,.12);
+  border-radius: 10px;
+  padding: 2px;
+  margin: 10px 16px;
   flex-shrink: 0;
 }
+.fila-toggle-thumb {
+  position: absolute;
+  top: 2px; bottom: 2px;
+  left: 0;
+  width: 0;
+  background: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+  transition: transform .25s cubic-bezier(.4,0,.2,1), width .25s cubic-bezier(.4,0,.2,1);
+}
 .fila-toggle-btn {
+  position: relative;
+  z-index: 1;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   border: none;
   background: none;
+  border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 600;
+  font-size: 0.82rem;
   color: var(--ink-soft);
-  padding: 12px 8px;
+  padding: 8px 8px;
   cursor: pointer;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  transition: color .15s;
 }
 .fila-toggle-btn.active {
   color: var(--primary);
-  border-bottom-color: var(--primary);
+  font-weight: 700;
 }
 
 /* ── MEMBROS SUMMARY BAR ── */
@@ -1316,13 +1339,16 @@ body.view-only .membro-check {
 /* ── CONFIG SHEET ── */
 .config-sheet {
   position: fixed;
-  bottom: 0; left: 50%; transform: translateX(-50%);
+  bottom: 0; left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  transition: transform .32s cubic-bezier(.32,.72,0,1);
   width: 100%; max-width: 480px;
   background: var(--white);
   border-radius: 18px 18px 0 0;
   padding: 12px 0 calc(20px + env(safe-area-inset-bottom));
   z-index: 200;
 }
+.config-sheet.open { transform: translateX(-50%) translateY(0); }
 .config-sheet-title {
   font-weight: 700;
   font-size: 1rem;
@@ -1374,6 +1400,14 @@ body.view-only .membro-check {
   height: 8px;
   background: var(--bg);
   margin: 8px 0;
+}
+.config-sheet-section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #999;
+  padding: 10px 20px 4px;
 }
 .config-sheet-reset {
   width: 100%;
@@ -1642,10 +1676,15 @@ body.view-only .membro-check {
   position:fixed; inset:0;
   background:rgba(0,0,0,.45);
   z-index:50;
+  opacity: 0;
+  transition: opacity .28s ease;
 }
+.sheet-backdrop.open{ opacity: 1; }
 .action-sheet{
   position:fixed;
-  bottom:0; left:50%; transform:translateX(-50%);
+  bottom:0; left:50%;
+  transform: translateX(-50%) translateY(100%);
+  transition: transform .32s cubic-bezier(.32,.72,0,1);
   width:100%; max-width:480px;
   background:var(--white);
   border-radius:18px 18px 0 0;
@@ -1654,10 +1693,25 @@ body.view-only .membro-check {
   max-height:75dvh;
   overflow-y:auto;
 }
+.action-sheet.open{ transform: translateX(-50%) translateY(0); }
+/* Alça de arrastar-pra-fechar — a barrinha visível é só o ::before; a
+   área de toque (.sheet-handle) é bem maior, senão vira um alvo minúsculo
+   de acertar (padrão de sheet do iOS: dá pra arrastar por toda a faixa
+   do topo, não só o traço cinza). */
 .sheet-handle{
+  width: 100%;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -8px 0 6px;
+  touch-action: none;
+  cursor: grab;
+}
+.sheet-handle::before{
+  content: '';
   width:36px; height:4px;
   background:#ddd; border-radius:2px;
-  margin:0 auto 14px;
 }
 .sheet-title{
   font-weight:700; font-size:0.95rem;
@@ -1835,6 +1889,7 @@ body.view-only .membro-check {
 
     <!-- Toggle Membros / Fila -->
     <div class="fila-toggle-bar">
+      <div class="fila-toggle-thumb" id="filaToggleThumb"></div>
       <button class="fila-toggle-btn active" id="toggleMembros"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Membros</button>
       <button class="fila-toggle-btn" id="toggleFila"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="1.75"><path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg> Fila</button>
     </div>
@@ -1905,6 +1960,7 @@ body.view-only .membro-check {
     <div class="sheet-handle"></div>
     <div class="config-sheet-title">Configurações</div>
     <div class="config-sheet-body">
+      <div class="config-sheet-section-label">Partida</div>
       <div class="config-sheet-row">
         <label class="config-sheet-label">Jogadores por time</label>
         <div class="config-sheet-stepper">
@@ -1922,6 +1978,7 @@ body.view-only .membro-check {
         </div>
       </div>
       <div class="config-sheet-divider"></div>
+      <div class="config-sheet-section-label">Composição</div>
       <div class="config-sheet-row">
         <label class="config-sheet-label">Veteranos por time</label>
         <div class="config-sheet-stepper">
@@ -1990,7 +2047,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -2020,6 +2077,7 @@ function loginAdmin(pin){
   if(String(pin).trim() !== ADMIN_PIN) return false;
   localStorage.setItem(ADMIN_STORAGE_KEY, '1');
   applyAdminMode();
+  if(navigator.vibrate) navigator.vibrate(15);
   return true;
 }
 function logoutAdmin(){
@@ -2609,7 +2667,7 @@ function attachQueueDragHandlers(li){
     const items = [...list.querySelectorAll('.queue-item')];
     const startIndex = items.indexOf(li);
     if(startIndex === -1) return;
-    handle.setPointerCapture(e.pointerId);
+    try { handle.setPointerCapture(e.pointerId); } catch(_) {}
     _queueDrag = {
       pointerId: e.pointerId, li, items,
       startY: e.clientY,
@@ -2815,21 +2873,85 @@ function renderHeader(ts){
 /* ═══════════════════════════════════════════
    BOTTOM SHEET
 ═══════════════════════════════════════════ */
+// Mostra/esconde uma sheet com a transição deslizante do CSS (transform
+// translateY + opacity do backdrop), em vez do display:none/block seco de
+// antes — e permite arrastar pela alça pra fechar (ver makeSheetDraggable).
+function _showSheetEl(sheetId, backdropId){
+  const sheet = document.getElementById(sheetId);
+  const backdrop = document.getElementById(backdropId);
+  sheet.style.display = 'block';
+  backdrop.style.display = 'block';
+  // Força o navegador a "commitar" o estado fechado antes de pedir a
+  // transição pro estado aberto — sem isso, como display era 'none'
+  // até agora, não haveria estado anterior renderizado pra animar a partir.
+  void sheet.offsetHeight;
+  requestAnimationFrame(() => {
+    sheet.classList.add('open');
+    backdrop.classList.add('open');
+  });
+}
+function _hideSheetEl(sheetId, backdropId){
+  const sheet = document.getElementById(sheetId);
+  const backdrop = document.getElementById(backdropId);
+  sheet.classList.remove('open');
+  backdrop.classList.remove('open');
+  let done = false;
+  const finish = () => {
+    if(done) return;
+    done = true;
+    sheet.removeEventListener('transitionend', onEnd);
+    sheet.style.display = 'none';
+    backdrop.style.display = 'none';
+  };
+  const onEnd = (e) => { if(e.target === sheet) finish(); };
+  sheet.addEventListener('transitionend', onEnd);
+  setTimeout(finish, 400); // rede de segurança se a transição não disparar
+}
+
+// Segurar a alça e arrastar pra baixo fecha a sheet (padrão iOS). Só a
+// alça é arrastável — o corpo continua rolando normalmente.
+function makeSheetDraggable(sheetId, closeFn){
+  const sheet = document.getElementById(sheetId);
+  const handle = sheet.querySelector('.sheet-handle');
+  if(!handle) return;
+  let drag = null;
+
+  handle.addEventListener('pointerdown', (e) => {
+    try { handle.setPointerCapture(e.pointerId); } catch(_) {}
+    drag = { pointerId: e.pointerId, startY: e.clientY, dy: 0 };
+    sheet.style.transition = 'none';
+  });
+  handle.addEventListener('pointermove', (e) => {
+    if(!drag || e.pointerId !== drag.pointerId) return;
+    drag.dy = Math.max(0, e.clientY - drag.startY);
+    sheet.style.transform = `translateX(-50%) translateY(${drag.dy}px)`;
+  });
+  const endDrag = (e) => {
+    if(!drag || e.pointerId !== drag.pointerId) return;
+    const dy = drag.dy;
+    drag = null;
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    if(dy > sheet.offsetHeight * 0.28) closeFn();
+  };
+  handle.addEventListener('pointerup', endDrag);
+  handle.addEventListener('pointercancel', endDrag);
+}
+
 function openSheet(title, bodyFn){
   document.getElementById('sheetTitle').innerHTML=title;
   const body=document.getElementById('sheetBody');
   body.innerHTML='';
   bodyFn(body);
-  document.getElementById('sheetBackdrop').style.display='block';
-  document.getElementById('actionSheet').style.display='block';
+  _showSheetEl('actionSheet', 'sheetBackdrop');
 }
 function closeSheet(){
-  document.getElementById('sheetBackdrop').style.display='none';
-  document.getElementById('actionSheet').style.display='none';
+  _hideSheetEl('actionSheet', 'sheetBackdrop');
   swapSelection=null;
   substituteOpenFor=null;
 }
 document.getElementById('sheetBackdrop').addEventListener('click', closeSheet);
+makeSheetDraggable('actionSheet', closeSheet);
 
 function openPlayerSheet(which, idx){
   const team=which==='A'?state.courtA:state.courtB;
@@ -3503,13 +3625,12 @@ function openConfigSheet(){
   document.getElementById('targetBaseSheet').textContent = targetBase();
   document.getElementById('loginAdminBtn').style.display = isAdmin() ? 'none' : 'flex';
   document.getElementById('logoutAdminBtn').style.display = isAdmin() ? 'flex' : 'none';
-  document.getElementById('configSheet').style.display='block';
-  document.getElementById('configSheetBackdrop').style.display='block';
+  _showSheetEl('configSheet', 'configSheetBackdrop');
 }
 function closeConfigSheet(){
-  document.getElementById('configSheet').style.display='none';
-  document.getElementById('configSheetBackdrop').style.display='none';
+  _hideSheetEl('configSheet', 'configSheetBackdrop');
 }
+makeSheetDraggable('configSheet', closeConfigSheet);
 function abrirRegras(){
   closeConfigSheet();
   const ts = teamSize();
@@ -3753,6 +3874,7 @@ function addMembro(name, categoria){
 function removeMembro(id){
   state.membros = (state.membros||[]).filter(m => m.id !== id);
   presencasMarcadas.delete(id);
+  if(navigator.vibrate) navigator.vibrate(25);
   saveState();
   renderMembros();
 }
@@ -3770,6 +3892,7 @@ function membroStatusHoje(m){
 function togglePresenca(id){
   if(presencasMarcadas.has(id)) presencasMarcadas.delete(id);
   else presencasMarcadas.add(id);
+  if(navigator.vibrate) navigator.vibrate(10);
   renderMembros();
 }
 
@@ -4039,10 +4162,21 @@ function switchFilaView(view){
   document.getElementById('viewFilaContent').style.display = isMembros ? 'none' : 'flex';
   document.getElementById('toggleMembros').classList.toggle('active', isMembros);
   document.getElementById('toggleFila').classList.toggle('active', !isMembros);
+  updateFilaToggleThumb();
   if(!isMembros){
     fecharFiltroMembros();
     renderQueue(teamSize());
   }
+}
+
+// Posiciona a pastilha do segmented control atrás do item ativo, por
+// pixel exato (evita contar com frações de % quando o padding muda).
+function updateFilaToggleThumb(){
+  const activeBtn = document.querySelector('.fila-toggle-btn.active');
+  const thumb = document.getElementById('filaToggleThumb');
+  if(!activeBtn || !thumb) return;
+  thumb.style.width = activeBtn.offsetWidth + 'px';
+  thumb.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
 }
 
 document.getElementById('toggleMembros').addEventListener('click', () => switchFilaView('membros'));
@@ -4238,6 +4372,7 @@ loadState();
 // Garante UI inicial mesmo sem Firebase (ex: primeira vez, offline)
 setTimeout(() => { render();  }, 150);
 document.getElementById('appVersion').textContent = `Versão ${APP_VERSION}`;
+updateFilaToggleThumb();
 
 // Registra Service Worker para PWA (funciona quando hospedado no Vercel) e
 // avisa quando há uma versão nova esperando — em vez de trocar sozinho por
