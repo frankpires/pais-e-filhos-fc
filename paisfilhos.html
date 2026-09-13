@@ -1417,6 +1417,18 @@ body.view-only .membro-check {
   flex-shrink: 0;
 }
 .remove-btn:active { background: #fee2e2; color: var(--red); }
+.queue-drag-handle{
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 40px; flex-shrink: 0;
+  color: #ccc; cursor: grab;
+  touch-action: none;
+  margin-left: -6px;
+}
+.queue-drag-handle:active{ cursor: grabbing; color: #999; }
+.queue-item-dragging{
+  position: relative; z-index: 5;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
 
 .empty-state {
   padding: 40px 24px;
@@ -2525,6 +2537,78 @@ function tie(){
 function addToQueue(name, categoria, guest){ state.queue.push({name,categoria,guest:!!guest}); saveState(); render(); }
 function removeFromQueue(i){ state.queue.splice(i,1); saveState(); render(); }
 
+// Segurar e arrastar (mouse ou toque, via Pointer Events) pra reordenar a
+// fila na mão. A posição final é lida direto da ordem do DOM na hora de
+// soltar — não depende do índice original guardado no fechamento do loop,
+// que já pode estar desatualizado se a fila mudou por sincronização remota
+// enquanto a pessoa arrastava.
+let _queueDrag = null;
+function attachQueueDragHandlers(li){
+  const handle = li.querySelector('.queue-drag-handle');
+  if(!handle) return;
+
+  handle.addEventListener('pointerdown', (e) => {
+    if(!isAdmin()){
+      abrirLoginAdmin('Essa ação exige modo admin. Entre com o PIN do grupo pra continuar.');
+      return;
+    }
+    e.preventDefault();
+    const list = document.getElementById('queueList');
+    const items = [...list.querySelectorAll('.queue-item')];
+    const startIndex = items.indexOf(li);
+    if(startIndex === -1) return;
+    handle.setPointerCapture(e.pointerId);
+    _queueDrag = {
+      pointerId: e.pointerId, li, items,
+      startY: e.clientY,
+      startIndex, currentIndex: startIndex,
+      itemHeight: li.getBoundingClientRect().height + 8, // altura + margin-bottom
+    };
+    li.classList.add('queue-item-dragging');
+    if(navigator.vibrate) navigator.vibrate(12);
+  });
+
+  handle.addEventListener('pointermove', (e) => {
+    const d = _queueDrag;
+    if(!d || d.li !== li || e.pointerId !== d.pointerId) return;
+    const dy = e.clientY - d.startY;
+    li.style.transform = `translateY(${dy}px)`;
+
+    let newIndex = d.startIndex + Math.round(dy / d.itemHeight);
+    newIndex = Math.max(0, Math.min(d.items.length - 1, newIndex));
+    if(newIndex !== d.currentIndex){
+      // Abre espaço deslocando visualmente quem está entre a posição
+      // original e a posição alvo — sempre recalculado a partir de
+      // startIndex, nunca incremental, pra não acumular erro.
+      d.items.forEach((sib, i) => {
+        if(sib === li) return;
+        let shift = 0;
+        if(newIndex > d.startIndex && i > d.startIndex && i <= newIndex) shift = -1;
+        else if(newIndex < d.startIndex && i < d.startIndex && i >= newIndex) shift = 1;
+        sib.style.transform = shift ? `translateY(${shift * d.itemHeight}px)` : '';
+      });
+      d.currentIndex = newIndex;
+    }
+  });
+
+  const endDrag = (e) => {
+    const d = _queueDrag;
+    if(!d || d.li !== li || e.pointerId !== d.pointerId) return;
+    d.items.forEach(sib => { sib.style.transform = ''; });
+    li.style.transform = '';
+    li.classList.remove('queue-item-dragging');
+    _queueDrag = null;
+    if(d.currentIndex !== d.startIndex){
+      const [moved] = state.queue.splice(d.startIndex, 1);
+      state.queue.splice(d.currentIndex, 0, moved);
+      saveState();
+    }
+    render();
+  };
+  handle.addEventListener('pointerup', endDrag);
+  handle.addEventListener('pointercancel', endDrag);
+}
+
 function substitutePlayer(which, idx, qi){
   const team=which==='A'?state.courtA:state.courtB;
   const incoming=state.queue[qi]; if(!incoming) return;
@@ -3261,12 +3345,14 @@ function renderQueue(ts){
     const li=document.createElement('li');
     li.className=`queue-item${isNext?' next':''}${isWaiting?' waiting':''}`;
     li.innerHTML=`
+      <span class="queue-drag-handle" title="Segurar e arrastar para reordenar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
       <span class="queue-num">${i+1}</span>
       <span class="queue-name">${player.name}</span>
       <span class="cat-badge ${player.categoria}">${player.categoria==='veterano'?'VETERANO':player.categoria==='extra'?'EXTRA':'BASE'}</span>
       ${player.guest?'<span class="guest-badge">CONVIDADO</span>':''}
       <button class="remove-btn" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
     li.querySelector('.remove-btn').addEventListener('click',()=>removeFromQueue(i));
+    attachQueueDragHandlers(li);
     list.appendChild(li);
   });
 
@@ -3430,6 +3516,7 @@ function abrirRegras(){
       <div class="regras-sec">
         <h3>Fila e presença</h3>
         <p>Marque quem está presente hoje em Membros e confirme — isso monta a fila do dia, na ordem em que foi confirmado.</p>
+        <div class="regras-note">Precisou trocar a ordem de alguém? Segure e arraste pelo ícone de pontos ao lado do nome, na aba Fila, pra mudar a posição na mão.</div>
       </div>
       <div class="regras-divider"></div>
       <div class="regras-sec">
