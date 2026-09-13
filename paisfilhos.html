@@ -1229,6 +1229,20 @@ body.view-only .membro-check {
   flex-shrink: 0;
   background: var(--bg);
   padding: 10px 16px var(--tabbar-clearance);
+  overflow: hidden;
+  max-height: 200px;
+  transition: max-height .22s ease, padding-top .22s ease, opacity .18s ease;
+}
+/* Sem ninguém marcado ainda, o botão só mostra "Marque os presentes
+   acima" desabilitado — texto redundante com a dica logo no topo da
+   lista, mas ocupando um bloco alto (botão + respiro do menu
+   flutuante) o tempo todo. Encolhe até sumir nesse caso, devolvendo
+   esse espaço pra lista; reaparece assim que sobrar alguém marcado. */
+.membros-footer.collapsed {
+  max-height: 0;
+  padding-top: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 .membro-item-add {
   display: flex;
@@ -1954,7 +1968,7 @@ body.view-only .membro-check {
       </div>
       <div class="membros-hint" id="membrosNudge" style="display:none">Toque nos nomes pra marcar quem está presente hoje</div>
       <ul class="membros-list" id="membrosList"></ul>
-      <div class="membros-footer">
+      <div class="membros-footer" id="membrosFooter">
         <button class="btn-confirmar" id="confirmarPresencaBtn">
           Confirmar presença e ir para a fila →
         </button>
@@ -4196,6 +4210,11 @@ function renderMembros(){
     ? `Confirmar ${count} presente(s) e entrar na fila →`
     : 'Marque os presentes acima';
   confirmarBtn.disabled = count === 0;
+  // Sem ninguém marcado, o botão não faz nada além de repetir a dica já
+  // mostrada no topo da lista — encolhe o bloco inteiro (some com a
+  // animação) pra devolver esse espaço pra lista, em vez de ocupar uma
+  // faixa alta e desabilitada o tempo todo.
+  document.getElementById('membrosFooter').classList.toggle('collapsed', count === 0);
 }
 
 /* ── TOGGLE entre views da aba Fila ── */
