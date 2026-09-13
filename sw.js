@@ -1,4 +1,4 @@
-const CACHE = 'paisfilhos-20260913013000';
+const CACHE = 'paisfilhos-20260913110000';
 const ASSETS = ['/'];
 
 self.addEventListener('install', e => {
@@ -23,11 +23,22 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Rede primeiro para o Firebase (dados em tempo real), cache para o resto
+  // Rede primeiro para o Firebase (dados em tempo real) — deixa passar direto
   if(e.request.url.includes('firebaseio.com') || e.request.url.includes('googleapis.com')){
-    return; // deixa o Firebase passar direto
+    return;
   }
+  // Rede primeiro pro resto também, com o cache só como plano B pra quando
+  // estiver offline. Antes era "cache primeiro": mesmo fechando e abrindo
+  // o app de novo, uma página já em cache continuava sendo servida sem
+  // nem tentar a rede — o app podia ficar preso numa versão velha
+  // indefinidamente, sem relação nenhuma com o aviso de nova versão.
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request).then(res => {
+      if(res.ok){
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
+      }
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
