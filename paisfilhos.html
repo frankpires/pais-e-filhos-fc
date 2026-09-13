@@ -1231,7 +1231,7 @@ body.view-only .membro-check {
   padding: 10px 16px var(--tabbar-clearance);
   overflow: hidden;
   max-height: 200px;
-  transition: max-height .22s ease, padding-top .22s ease, opacity .18s ease;
+  transition: max-height .22s ease, padding-top .22s ease, padding-bottom .22s ease, opacity .18s ease;
 }
 /* Sem ninguém marcado ainda, o botão só mostra "Marque os presentes
    acima" desabilitado — texto redundante com a dica logo no topo da
@@ -1241,6 +1241,7 @@ body.view-only .membro-check {
 .membros-footer.collapsed {
   max-height: 0;
   padding-top: 0;
+  padding-bottom: 0;
   opacity: 0;
   pointer-events: none;
 }
