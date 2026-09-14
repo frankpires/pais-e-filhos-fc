@@ -1587,6 +1587,14 @@ body.view-only .membro-check {
   border-radius: 18px 18px 0 0;
   padding: 12px 0 calc(20px + env(safe-area-inset-bottom));
   z-index: 200;
+  /* Limite de altura + rolagem só no corpo (não no cabeçalho) — sem
+     isso, seções novas (ex: "Membros") podem deixar o conteúdo mais
+     alto que a tela, e rolar a página inteira empurra o botão
+     "Concluído" e a alça de arrastar pra fora da vista, sem jeito de
+     fechar a sheet. */
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
 }
 .config-sheet.open { transform: translateX(-50%) translateY(0); }
 .config-sheet-title {
@@ -1598,6 +1606,7 @@ body.view-only .membro-check {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 /* Botão "Concluído" — a sheet de Configurações nunca teve um jeito
    explícito de fechar (diferente das outras sheets, que sempre têm
@@ -1617,6 +1626,9 @@ body.view-only .membro-check {
 .config-sheet-close:active { opacity: 0.6; }
 .config-sheet-body {
   padding: 8px 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 .config-sheet-row {
   display: flex;
@@ -1968,6 +1980,7 @@ body.view-only .membro-check {
   margin: -8px 0 6px;
   touch-action: none;
   cursor: grab;
+  flex-shrink: 0;
 }
 .sheet-handle::before{
   content: '';
@@ -3175,10 +3188,10 @@ function renderHeader(ts){
 // Mostra/esconde uma sheet com a transição deslizante do CSS (transform
 // translateY + opacity do backdrop), em vez do display:none/block seco de
 // antes — e permite arrastar pela alça pra fechar (ver makeSheetDraggable).
-function _showSheetEl(sheetId, backdropId){
+function _showSheetEl(sheetId, backdropId, sheetDisplay){
   const sheet = document.getElementById(sheetId);
   const backdrop = document.getElementById(backdropId);
-  sheet.style.display = 'block';
+  sheet.style.display = sheetDisplay || 'block';
   backdrop.style.display = 'block';
   // Força o navegador a "commitar" o estado fechado antes de pedir a
   // transição pro estado aberto — sem isso, como display era 'none'
@@ -3906,7 +3919,7 @@ function openConfigSheet(){
   document.getElementById('targetBaseSheet').textContent = targetBase();
   document.getElementById('loginAdminBtn').style.display = isAdmin() ? 'none' : 'flex';
   document.getElementById('logoutAdminBtn').style.display = isAdmin() ? 'flex' : 'none';
-  _showSheetEl('configSheet', 'configSheetBackdrop');
+  _showSheetEl('configSheet', 'configSheetBackdrop', 'flex');
 }
 function closeConfigSheet(){
   _hideSheetEl('configSheet', 'configSheetBackdrop');
