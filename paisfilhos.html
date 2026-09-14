@@ -344,28 +344,38 @@ body.view-only .membro-check {
 .tab-btn.active { color: var(--amber); }
 .tab-btn.active .tab-icon { background: rgba(232,160,32,0.14); }
 
-/* ── SCOREBOARD UNIFICADO ── */
+/* ── SCOREBOARD UNIFICADO ──
+   .court-scroll é o único elemento que rola na tela Em Quadra — timer,
+   ações (que crescem conforme banners se acumulam) e os times, tudo
+   junto. Antes só o miolo dos times (.scoreboard-unified) rolava por
+   conta própria; quando os banners de ação empurravam tudo pra baixo,
+   não sobrava altura nenhuma pra essa rolagem interna resolver, e a
+   tela ficava travada sem jeito de ver/tocar o que passou do rodapé. */
+.court-scroll{
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--tabbar-clearance);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
+}
 .court-block{
   flex: 1;
   display: flex;
   flex-direction: column;
   background: var(--bg);
-  overflow: hidden;
-  min-height: 0;
   padding-top: clamp(6px, 1.8vw, 10px);
 }
 .scoreboard-unified{
   flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   background: transparent;
   display: flex;
   gap: 10px;
-  padding: 12px 16px var(--tabbar-clearance);
-  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
-  mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
+  padding: 12px 16px 0;
   align-items: flex-start;
-  min-height: 0;
 }
 .su-empty-court{
   flex: 1;
@@ -2104,6 +2114,8 @@ body.view-only .membro-check {
       </div>
     </div>
 
+    <!-- .court-scroll: rola timer + ações + times juntos, ver nota na CSS -->
+    <div class="court-scroll" id="courtScroll">
     <!-- 1. TIMER — protagonista -->
     <div class="court-timer-wrap">
       <div class="court-timer" id="courtTimer"></div>
@@ -2167,6 +2179,7 @@ body.view-only .membro-check {
     <!-- 3. TIMES — abaixo das ações -->
     <div class="court-block">
       <div class="scoreboard-unified" id="scoreboardUnified"></div>
+    </div>
     </div>
   </div>
 
@@ -2371,7 +2384,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.3.4';
+const APP_VERSION = '1.3.5';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -3203,6 +3216,12 @@ function renderHeader(ts){
 function _showSheetEl(sheetId, backdropId, sheetDisplay){
   const sheet = document.getElementById(sheetId);
   const backdrop = document.getElementById(backdropId);
+  // Cancela qualquer fechamento pendente desse mesmo sheet (ex: fechar e
+  // reabrir em seguida pra trocar de conteúdo, como no fluxo de retirar
+  // jogador) — sem isso, o timeout de segurança do fechamento anterior
+  // dispara depois e esconde à força o sheet recém-reaberto.
+  if(sheet._pendingHideTimer){ clearTimeout(sheet._pendingHideTimer); sheet._pendingHideTimer = null; }
+  if(sheet._pendingHideOnEnd){ sheet.removeEventListener('transitionend', sheet._pendingHideOnEnd); sheet._pendingHideOnEnd = null; }
   sheet.style.display = sheetDisplay || 'block';
   backdrop.style.display = 'block';
   // Força o navegador a "commitar" o estado fechado antes de pedir a
@@ -3224,12 +3243,15 @@ function _hideSheetEl(sheetId, backdropId){
     if(done) return;
     done = true;
     sheet.removeEventListener('transitionend', onEnd);
+    sheet._pendingHideTimer = null;
+    sheet._pendingHideOnEnd = null;
     sheet.style.display = 'none';
     backdrop.style.display = 'none';
   };
   const onEnd = (e) => { if(e.target === sheet) finish(); };
   sheet.addEventListener('transitionend', onEnd);
-  setTimeout(finish, 400); // rede de segurança se a transição não disparar
+  sheet._pendingHideOnEnd = onEnd;
+  sheet._pendingHideTimer = setTimeout(finish, 400); // rede de segurança se a transição não disparar
 }
 
 // Segurar a alça e arrastar pra baixo fecha a sheet (padrão iOS). Só a
