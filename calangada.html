@@ -304,6 +304,14 @@ body.view-only .membro-check {
   box-shadow: 0 8px 24px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6);
   padding: 5px;
   z-index: 10;
+  transition: transform .42s cubic-bezier(.32,.72,0,1), opacity .3s ease;
+}
+/* Some quando uma subpágina em tela cheia abre por cima (ver
+   .fullscreen-sheet) — sinaliza "modo tarefa", fora da navegação normal. */
+.tab-bar.risen {
+  transform: translateY(30px) scale(.94);
+  opacity: 0;
+  pointer-events: none;
 }
 .tab-btn {
   flex: 1;
@@ -720,14 +728,19 @@ body.view-only .membro-check {
 }
 #startBtn:disabled #startBtnCount{ background: rgba(0,0,0,.06); color: var(--ink); }
 .guest-badge{
+  font-family: 'Inter', sans-serif;
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   background: var(--cement);
   color: var(--ink-soft);
+  border: none;
   border-radius: 4px;
   padding: 2px 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
+.guest-badge:active{ background: #d8d3c8; }
 
 /* ── COURT ACTIONS (fixed below scoreboard) ── */
 .court-actions {
@@ -793,55 +806,251 @@ body.view-only .membro-check {
 /* ── COURT HINT ── */
 
 /* ── FILA SCREEN ── */
-/* ── FILA TOGGLE ── */
-/* Segmented control (estilo iOS) — antes era uma faixa com sublinhado,
-   parecida com aba de navegador, fácil de confundir com outro nível de
-   navegação. Agora é um grupo com fundo neutro e uma "pastilha" que
-   desliza atrás do item ativo (calculada em JS por precisão de pixel). */
-.fila-toggle-bar {
+
+/* ── PRÓXIMO TIME (card fixo no topo da Fila) ── */
+.next-team-card{
+  background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+  color: #fff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin: 10px 16px 4px;
   position: relative;
-  display: flex;
-  background: rgba(118,118,128,.12);
-  border-radius: 10px;
-  padding: 2px;
-  margin: 10px 16px;
+  overflow: hidden;
   flex-shrink: 0;
 }
-.fila-toggle-thumb {
-  position: absolute;
-  top: 2px; bottom: 2px;
-  left: 0;
-  width: 0;
-  background: var(--card);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.15);
-  transition: transform .25s cubic-bezier(.4,0,.2,1), width .25s cubic-bezier(.4,0,.2,1);
+.next-team-card::after{
+  content:'';
+  position:absolute; right:-30px; top:-30px;
+  width:120px; height:120px; border-radius:50%;
+  background: radial-gradient(circle, rgba(232,160,32,.3), transparent 70%);
 }
-.fila-toggle-btn {
+.next-team-card .ntc-label{
+  font-size: 0.66rem; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--accent); font-weight: 800; margin-bottom: 5px;
+}
+.next-team-card .ntc-names{
+  font-size: 0.88rem; font-weight: 600; line-height: 1.5;
   position: relative;
-  z-index: 1;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+}
+.next-team-card .ntc-sub{
+  margin-top: 6px; font-size: 0.72rem; color: rgba(255,255,255,.65);
+  position: relative;
+}
+
+/* ── BOTÃO "ADICIONAR À FILA" ── */
+.add-fila-btn{
+  flex-shrink: 0;
+  margin: 8px 16px var(--tabbar-clearance);
+  height: 48px;
+  border-radius: 100px;
+  background: var(--primary);
+  color: #fff;
   border: none;
-  background: none;
-  border-radius: 8px;
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-  padding: 8px 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex; align-items:center; justify-content:center; gap: 8px;
+  box-shadow: 0 6px 16px rgba(28,43,30,.25);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: filter 0.08s, transform 0.08s;
+}
+.add-fila-btn:active{ transform: scale(0.97); filter: brightness(0.9); }
+
+/* ── SUBPÁGINA EM TELA CHEIA ──
+   Cobre a tela inteira (inclusive por cima de onde o menu flutuante
+   ficaria) e some com ele — sinaliza "modo tarefa", diferente das
+   sheets parciais (.action-sheet/.config-sheet) que ficam grudadas
+   embaixo. Reaproveita o mesmo padrão de transição/mostrar-esconder
+   (ver _showSheetEl/_hideSheetEl). */
+.fullscreen-sheet{
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform .46s cubic-bezier(.32,.72,0,1);
+}
+.fullscreen-sheet.open{ transform: translateY(0); }
+.fs-header{
+  padding: calc(var(--safe-top) + 16px) 18px 14px;
+  display: flex; align-items:center; justify-content:space-between;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.fs-header h2{
+  font-family: 'Anton', sans-serif;
+  font-size: 1.4rem; margin:0; letter-spacing:.3px; color: var(--ink);
+}
+.fs-close{
+  width: 30px; height:30px; border-radius:50%;
+  background: var(--chalk); border:none; color: var(--ink-soft);
+  display:flex; align-items:center; justify-content:center; font-size:1rem;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.fs-body{
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+.fs-hint{
+  padding: 10px 18px 4px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+/* ── CHIPS DE SELEÇÃO (seletor rápido "Adicionar à fila") ── */
+.fs-chip-grid{
+  list-style: none;
+  margin: 0;
+  padding: 6px 14px var(--tabbar-clearance);
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.fs-chip{
+  padding: 9px 14px;
+  border-radius: 100px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem; font-weight: 600;
+  color: var(--ink);
+  display:flex; align-items:center; gap:6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.fs-chip .fs-chip-dot{
+  width: 16px; height:16px; border-radius:50%;
+  border: 1.5px solid #ccc;
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size: .6rem; color: transparent;
+  transition: all .15s ease;
+}
+.fs-chip.sel{
+  background: #fdf3df;
+  border-color: var(--accent);
+  color: #7a5410;
+}
+.fs-chip.sel .fs-chip-dot{
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.fs-chip.disabled{
+  opacity: .45;
+  cursor: default;
+}
+.fs-chip .fs-chip-tag{
+  font-size: 0.64rem; font-weight: 700; color: var(--ink-soft);
+}
+.fs-chip.guest{
+  border-style: dashed;
+  border-color: var(--ink-soft);
+}
+.fs-chip.guest.sel{ border-color: var(--accent); }
+
+/* ── CONVIDADO AVULSO (inline, dentro da subpágina) ── */
+.fs-guest-toggle{
+  margin: 4px 18px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--ink-soft);
+  color: var(--ink-soft);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem; font-weight: 700;
+  display: flex; align-items:center; gap: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.fs-guest-toggle:active{ background: var(--chalk); }
+.fs-guest-toggle .plus{ font-size: 1rem; color: var(--accent); }
+.fs-guest-form{
+  margin: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  flex-shrink: 0;
+  transition: max-height .25s ease, opacity .2s ease, margin .25s ease;
+}
+.fs-guest-form.open{
+  max-height: 170px;
+  opacity: 1;
+  margin: 8px 18px 0;
+}
+.fs-guest-form-inner{
+  background: var(--chalk);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.fs-guest-input{
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  padding: 0 12px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  color: var(--ink);
   outline: none;
-  transition: color .15s;
 }
-.fila-toggle-btn.active {
-  color: var(--primary);
-  font-weight: 700;
+.fs-guest-input:focus{ border-color: var(--primary); }
+.fs-cat-pills{ display:flex; gap: 6px; }
+.fs-cat-pill{
+  flex: 1;
+  text-align: center;
+  padding: 7px 0;
+  border-radius: 100px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.74rem; font-weight: 700;
+  background: #fff; border: 1.5px solid var(--line);
+  color: var(--ink-soft);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
+.fs-cat-pill.sel{ background: var(--primary); border-color: var(--primary); color: #fff; }
+.fs-guest-add-btn{
+  height: 38px; border-radius: 100px; border: none;
+  background: var(--accent); color: #fff;
+  font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.8rem;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+
+.fs-footer{
+  flex-shrink: 0;
+  padding: 12px 18px calc(12px + var(--safe-bot));
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+
+/* ── GERENCIAR MEMBROS (dentro de Configurações) ── */
+.gm-row{
+  background: var(--card);
+  margin: 0 16px 8px;
+  border-radius: 14px;
+  padding: 11px 14px;
+  display:flex; align-items:center; gap: 10px;
+}
+.gm-row .gm-name{ flex:1; font-size:0.86rem; font-weight:600; color: var(--ink); }
+.gm-add-row{
+  margin: 10px 16px 14px;
+  padding: 12px 15px;
+  border-radius: 14px;
+  border: 1.5px dashed var(--ink-soft);
+  color: var(--ink-soft);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem; font-weight: 700;
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.gm-add-row .plus{ color: var(--accent); font-size: 1rem; }
 
 /* ── MEMBROS SUMMARY BAR ── */
 .membros-summary-bar {
@@ -1533,9 +1742,7 @@ body.view-only .membro-check {
   -webkit-overflow-scrolling: touch;
   list-style: none;
   background: var(--bg);
-  padding: 8px 16px var(--tabbar-clearance);
-  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
-  mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
+  padding: 8px 16px 10px;
 }
 .queue-item {
   display: flex;
@@ -1916,7 +2123,7 @@ body.view-only .membro-check {
         <div>
           <b id="courtNudgeText"></b>
           Confirme presença de mais gente na fila pra liberar os times.
-          <div class="go" id="courtNudgeGo">Ir pra Membros <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+          <div class="go" id="courtNudgeGo">Adicionar à fila <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
         </div>
       </div>
 
@@ -1941,50 +2148,20 @@ body.view-only .membro-check {
   <!-- TELA 2: FILA -->
   <div class="screen active" id="screenFila" style="background:var(--bg)">
 
-    <!-- Toggle Membros / Fila -->
-    <div class="fila-toggle-bar">
-      <div class="fila-toggle-thumb" id="filaToggleThumb"></div>
-      <button class="fila-toggle-btn active" id="toggleMembros"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Membros</button>
-      <button class="fila-toggle-btn" id="toggleFila"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" stroke-width="1.75"><path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg> Fila</button>
+    <div class="next-team-card" id="nextTeamCard" style="display:none">
+      <div class="ntc-label">Próximo time</div>
+      <div class="ntc-names" id="nextTeamNames"></div>
+      <div class="ntc-sub" id="nextTeamSub"></div>
     </div>
 
-    <!-- VIEW: MEMBROS DO GRUPO -->
-    <div id="viewMembros" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
-      <div class="membros-filter-panel" id="membrosFilterPanel" style="display:none">
-        <div class="membros-filter-row">
-          <div class="membros-filter-wrap">
-            <span class="filter-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
-            <input class="membros-filter-input" id="membrosFilterInput" type="text" placeholder="Buscar membro" autocomplete="off" autocorrect="off" spellcheck="false">
-            <button class="membros-filter-clear" id="membrosFilterClear" title="Limpar" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9.5 9.5 5 5m0-5-5 5" stroke="var(--chalk)" stroke-width="1.8" stroke-linecap="round"/></svg></button>
-          </div>
-          <button class="membros-filter-cancel" id="membrosFilterCancel">Cancelar</button>
-        </div>
-        <div class="membros-filter-chips">
-          <button class="filter-chip active" data-filter="todos">Todos</button>
-          <button class="filter-chip" data-filter="veterano">Veteranos</button>
-          <button class="filter-chip" data-filter="base">Base</button>
-          <button class="filter-chip" data-filter="extra">Extra</button>
-          <button class="filter-chip" data-filter="colete">Sem colete</button>
-        </div>
-      </div>
-      <div class="membros-hint" id="membrosNudge" style="display:none">Toque nos nomes pra marcar quem está presente hoje</div>
-      <ul class="membros-list" id="membrosList"></ul>
-      <div class="membros-footer" id="membrosFooter">
-        <button class="btn-confirmar" id="confirmarPresencaBtn">
-          Confirmar presença e ir para a fila →
-        </button>
-      </div>
-    </div>
-
-    <!-- VIEW: FILA (convidados + manual) -->
-    <div id="viewFilaContent" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
       <div class="fila-meta" id="queueMeta"></div>
       <div class="nudge top" id="filaGapNudge" style="display:none">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
         <div>
           <b id="filaGapNudgeText"></b>
-          Volte em Membros pra marcar mais gente, chame um convidado abaixo, ou já vá pra Em Quadra escalar parcial.
-          <div class="go" id="filaGapNudgeGo">Ir pra Membros <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
+          Toque em Adicionar à fila pra marcar mais gente ou chamar um convidado, ou já vá pra Em Quadra escalar parcial.
+          <div class="go" id="filaGapNudgeGo">Adicionar à fila <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></div>
         </div>
       </div>
       <div class="nudge top ready" id="filaReadyNudge" style="display:none">
@@ -1997,6 +2174,11 @@ body.view-only .membro-check {
       </div>
       <ul class="queue-list" id="queueList"></ul>
     </div>
+
+    <button class="add-fila-btn" id="addFilaBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+      Adicionar à fila
+    </button>
 
     <!-- Config inputs (hidden) -->
     <input type="number" id="teamSize" min="1" max="15" value="5" style="display:none">
@@ -2053,6 +2235,9 @@ body.view-only .membro-check {
         </div>
       </div>
       <div class="config-sheet-divider"></div>
+      <div class="config-sheet-section-label">Membros</div>
+      <button class="config-sheet-link" id="gerenciarMembrosBtn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Gerenciar membros <span class="chev" id="gerenciarMembrosCount">›</span></button>
+      <div class="config-sheet-divider"></div>
       <button class="config-sheet-link" id="regrasBtn" onclick="abrirRegras()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Regras do jogo <span class="chev">›</span></button>
       <div class="config-sheet-divider"></div>
       <button class="config-sheet-link" id="loginAdminBtn" onclick="abrirLoginAdmin()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Entrar como admin <span class="chev">›</span></button>
@@ -2072,6 +2257,63 @@ body.view-only .membro-check {
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="sheetTitle"></div>
     <div class="sheet-body" id="sheetBody"></div>
+  </div>
+
+  <!-- SUBPÁGINA: ADICIONAR À FILA -->
+  <div class="fullscreen-sheet" id="addFilaSheet" style="display:none">
+    <div class="fs-header">
+      <h2>Adicionar à fila</h2>
+      <button class="fs-close" id="addFilaCloseBtn">✕</button>
+    </div>
+    <div class="fs-body">
+      <div class="membros-filter-panel" id="membrosFilterPanel" style="display:flex">
+        <div class="membros-filter-row">
+          <div class="membros-filter-wrap">
+            <span class="filter-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+            <input class="membros-filter-input" id="membrosFilterInput" type="text" placeholder="Buscar por nome" autocomplete="off" autocorrect="off" spellcheck="false">
+            <button class="membros-filter-clear" id="membrosFilterClear" title="Limpar" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9.5 9.5 5 5m0-5-5 5" stroke="var(--chalk)" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+          </div>
+        </div>
+        <div class="membros-filter-chips">
+          <button class="filter-chip active" data-filter="todos">Todos</button>
+          <button class="filter-chip" data-filter="veterano">Veteranos</button>
+          <button class="filter-chip" data-filter="base">Base</button>
+          <button class="filter-chip" data-filter="extra">Extra</button>
+          <button class="filter-chip" data-filter="colete">Sem colete</button>
+        </div>
+      </div>
+
+      <div class="fs-guest-toggle" id="fsGuestToggle"><span class="plus">＋</span> Adicionar convidado (avulso, só por hoje)</div>
+      <div class="fs-guest-form" id="fsGuestForm">
+        <div class="fs-guest-form-inner">
+          <input class="fs-guest-input" id="fsGuestInput" placeholder="Nome do convidado" autocomplete="off" />
+          <div class="fs-cat-pills" id="fsCatPills">
+            <div class="fs-cat-pill" data-cat="veterano">Veterano</div>
+            <div class="fs-cat-pill sel" data-cat="base">Base</div>
+            <div class="fs-cat-pill" data-cat="extra">Extra</div>
+          </div>
+          <button class="fs-guest-add-btn" id="fsGuestAddBtn">Adicionar convidado</button>
+        </div>
+      </div>
+
+      <div class="fs-hint" id="filaPickerHint">Toque nos nomes pra marcar quem está presente hoje</div>
+      <ul class="fs-chip-grid" id="filaPickerGrid"></ul>
+    </div>
+    <div class="fs-footer">
+      <button class="btn-confirmar" id="confirmarPresencaBtn">Marque os presentes acima</button>
+    </div>
+  </div>
+
+  <!-- SUBPÁGINA: GERENCIAR MEMBROS (via Configurações) -->
+  <div class="fullscreen-sheet" id="gerenciarMembrosSheet" style="display:none;z-index:16">
+    <div class="fs-header">
+      <h2>Gerenciar membros</h2>
+      <button class="fs-close" id="gerenciarMembrosCloseBtn">✕</button>
+    </div>
+    <div class="fs-body">
+      <div class="gm-add-row" id="gmAddRow"><span class="plus">＋</span> Novo membro do grupo</div>
+      <ul id="gmList" style="list-style:none;margin:0;padding:0 0 20px"></ul>
+    </div>
   </div>
 
   <!-- BOTTOM TAB BAR -->
@@ -2104,7 +2346,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -2153,9 +2395,8 @@ function applyAdminMode(){
 // visualização, nunca uma ação que muda o estado do grupo.
 const VIEW_ONLY_ALLOWED_SELECTOR = [
   '.tab-btn', '#headerConfigBtn', '#headerStatus',
-  '#toggleMembros', '#toggleFila',
-  '.membros-filter-btn', '.filter-chip', '#membrosFilterInput',
-  '#membrosFilterClear', '#membrosFilterCancel',
+  '#addFilaBtn', '#addFilaCloseBtn', '#gerenciarMembrosBtn', '#gerenciarMembrosCloseBtn',
+  '.filter-chip', '#membrosFilterInput', '#membrosFilterClear',
   '#regrasBtn', '#loginAdminBtn', '#logoutAdminBtn', '#configSheetCloseBtn',
   '.sheet-option.cancel', '#closeRulesBtn', '#adminLoginSubmit', '#adminLoginInput',
   '#updateBannerBtn', '#updateBannerDismiss',
@@ -2216,7 +2457,7 @@ document.addEventListener('click', function(e){
   if(isAdmin()) return;
   const allowed = e.target.closest(VIEW_ONLY_ALLOWED_SELECTOR);
   if(allowed) return;
-  const actionable = e.target.closest('button, .membro-check, .membro-name, .membro-badge-tipo, .su-player, input, select, .membro-item-add, .sheet-option:not(.cancel)');
+  const actionable = e.target.closest('button, .membro-check, .membro-name, .membro-badge-tipo, .su-player, input, select, .membro-item-add, .sheet-option:not(.cancel), .fs-chip, .gm-add-row, .fs-guest-toggle, .fs-cat-pill');
   if(!actionable) return;
   e.preventDefault();
   e.stopPropagation();
@@ -2867,7 +3108,8 @@ function render(){
   const tss=document.getElementById('teamSizeSheet'); if(tss) tss.textContent=state.teamSize||5;
   const mds=document.getElementById('matchDurationSheet'); if(mds) mds.textContent=state.matchDuration||10;
   if(!state.membros) state.membros=[];
-  renderMembros();
+  renderFilaPicker();
+  renderGerenciarMembros();
   renderCourt(ts);
   renderTimerBlock();
   renderQueue(ts);
@@ -3425,12 +3667,12 @@ function abrirProximoTime(){
     openSheet('Ainda ninguém na fila', body => {
       const msg = document.createElement('div');
       msg.style.cssText = 'padding:8px 20px 16px;font-size:.88rem;color:#999';
-      msg.textContent = 'Confirme quem está presente hoje em Membros pra começar a formar os times.';
+      msg.textContent = 'Confirme quem está presente hoje pra começar a formar os times.';
       body.appendChild(msg);
       const goBtn = document.createElement('button');
       goBtn.className = 'sheet-option';
       goBtn.style.cssText = 'color:var(--primary);font-weight:700';
-      goBtn.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span><span class="opt-text">Ir pra Membros</span>';
+      goBtn.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span><span class="opt-text">Adicionar à fila</span>';
       goBtn.addEventListener('click', () => { closeSheet(); goToMembros(); });
       body.appendChild(goBtn);
       const cancel = document.createElement('button');
@@ -3482,51 +3724,30 @@ function abrirProximoTime(){
   });
 }
 
-function abrirAddConvidado(){
-  openSheet('Adicionar convidado', body => {
-    body.style.cssText = 'padding:16px 20px;display:flex;flex-direction:column;gap:12px';
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Nome do convidado';
-    input.autocomplete = 'off';
-    input.style.cssText = 'width:100%;height:48px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:16px;font-family:Inter,sans-serif;background:var(--chalk);color:var(--ink);outline:none';
-    input.addEventListener('focus', () => input.style.borderColor = 'var(--primary)');
-    input.addEventListener('blur', () => input.style.borderColor = '#ddd');
-    body.appendChild(input);
-    const btns = document.createElement('div');
-    btns.style.cssText = 'display:flex;gap:6px';
-    const addBtn = (label, categoria) => {
-      const b = document.createElement('button');
-      b.className = `fila-add-btn fila-add-${categoria}`;
-      b.style.cssText = 'flex:1;height:48px;font-size:.82rem;padding:0 4px';
-      b.textContent = label;
-      b.addEventListener('click', () => {
-        const name = input.value.trim();
-        if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
-        addToQueue(name, categoria, true); saveState(); render();
-        input.value = ''; input.style.borderColor = '#ddd'; input.focus();
-        b.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg> ' + label;
-        setTimeout(() => b.textContent = label, 1000);
-      });
-      return b;
-    };
-    btns.appendChild(addBtn('+ Veterano', 'veterano'));
-    btns.appendChild(addBtn('+ Base', 'base'));
-    btns.appendChild(addBtn('+ Extra', 'extra'));
-    body.appendChild(btns);
-    const cancel = document.createElement('button');
-    cancel.className = 'sheet-option cancel';
-    cancel.innerHTML = '<span class="opt-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\" stroke-width=\"2\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg></span><span class="opt-text">Fechar</span>';
-    cancel.addEventListener('click', closeSheet);
-    body.appendChild(cancel);
-    setTimeout(() => input.focus(), 100);
-  });
+// Card "Próximo time", sempre visível no topo da Fila — mostra pra quem
+// olha a lista o motivo dela existir (alimentar a escalação), sem
+// precisar tocar em nada pra ver essa prévia.
+function renderNextTeamCard(){
+  const card = document.getElementById('nextTeamCard');
+  const next = proximoTime();
+  if(next.length === 0){ card.style.display = 'none'; return; }
+  const ts = teamSize();
+  const tv = Math.min(targetVeteranos(), ts);
+  const tb = Math.min(targetBase(), ts - tv);
+  const completo = next.filter(p=>p.categoria==='veterano').length >= tv
+    && next.filter(p=>p.categoria==='base').length >= tb;
+  card.style.display = 'block';
+  document.getElementById('nextTeamNames').textContent = next.map(p=>p.name).join(' · ');
+  document.getElementById('nextTeamSub').textContent = completo
+    ? 'Time completo — pronto pra entrar assim que houver vaga'
+    : 'Ainda falta gente pra fechar esse time';
 }
 
 function renderQueue(ts){
   const list=document.getElementById('queueList');
   const meta=document.getElementById('queueMeta');
   list.innerHTML='';
+  renderNextTeamCard();
   const veteranos=state.queue.filter(p=>p.categoria==='veterano').length;
   const bases=state.queue.filter(p=>p.categoria==='base').length;
   const teams=Math.floor(state.queue.length/ts);
@@ -3560,18 +3781,26 @@ function renderQueue(ts){
       <span class="queue-num">${i+1}</span>
       <span class="queue-name">${player.name}</span>
       <span class="cat-badge ${player.categoria}">${player.categoria==='veterano'?'VETERANO':player.categoria==='extra'?'EXTRA':'BASE'}</span>
-      ${player.guest?'<span class="guest-badge">CONVIDADO</span>':''}
+      ${player.guest?'<button class="guest-badge" title="Salvar no grupo">CONVIDADO ☆</button>':''}
       <button class="remove-btn" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
     li.querySelector('.remove-btn').addEventListener('click',()=>removeFromQueue(i));
+    const guestBtn = li.querySelector('.guest-badge');
+    if(guestBtn) guestBtn.addEventListener('click', (e) => { e.stopPropagation(); promoverConvidado(player); });
     attachQueueDragHandlers(li);
     list.appendChild(li);
   });
+}
 
-  const addLi=document.createElement('li');
-  addLi.className='membro-item-add';
-  addLi.innerHTML=`<span class="membro-item-add-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><span>Adicionar convidado</span>`;
-  addLi.addEventListener('click', abrirAddConvidado);
-  list.appendChild(addLi);
+// Convidado avulso vira membro permanente com um toque — some a etiqueta
+// e ele passa a aparecer no seletor "Adicionar à fila" e em Gerenciar
+// membros, sem precisar recadastrar do zero.
+function promoverConvidado(player){
+  if(!player.guest) return;
+  addMembro(player.name, player.categoria);
+  player.guest = false;
+  saveState();
+  if(navigator.vibrate) navigator.vibrate(20);
+  renderQueue(teamSize());
 }
 
 function renderResults(){
@@ -3656,12 +3885,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(btn.dataset.screen).classList.add('active');
-    if(btn.id === 'tabFila'){
-      // Com partida já escalada, a fila é o que importa agora — não força
-      // passar por Membros de novo toda vez que a aba é aberta.
-      const hasMatch = state.courtA.length > 0 || state.courtB.length > 0;
-      switchFilaView(hasMatch ? 'fila' : 'membros');
-    }
     if(btn.id === 'tabQuadra'){
       // Reequaliza a altura dos times agora que a tela ficou visível —
       // qualquer atualização enquanto ela estava em segundo plano não
@@ -3726,7 +3949,7 @@ function abrirRegras(){
       <div class="regras-divider"></div>
       <div class="regras-sec">
         <h3>Fila e presença</h3>
-        <p>Marque quem está presente hoje em Membros e confirme — isso monta a fila do dia, na ordem em que foi confirmado.</p>
+        <p>Toque em "Adicionar à fila", marque quem está presente e confirme — isso monta a fila do dia, na ordem em que foi confirmado.</p>
         <div class="regras-note">Precisou trocar a ordem de alguém? Segure e arraste pelo ícone de pontos ao lado do nome, na aba Fila, pra mudar a posição na mão.</div>
       </div>
       <div class="regras-divider"></div>
@@ -3869,7 +4092,7 @@ document.getElementById('winB').addEventListener('click', e => {
 /* ── NAVEGAÇÃO GUIADA (nunca deixa a próxima ação por conta da intuição) ── */
 function goToMembros(){
   document.getElementById('tabFila').click();
-  switchFilaView('membros');
+  openAddFilaSheet();
 }
 function goToQuadra(){
   document.getElementById('tabQuadra').click();
@@ -3898,18 +4121,15 @@ let _filtroTipo  = 'todos'; // 'todos' | 'veterano' | 'base' | 'extra' | 'colete
 
 // Fecha e reseta o painel de busca/filtro de membros — usado pelo botão de
 // busca (pra fechar), pelo "Cancelar" e ao trocar de aba (Membros ↔ Fila).
+// Reseta a busca/filtro do seletor "Adicionar à fila" pro estado
+// padrão — chamado ao fechar a subpágina, pra abrir limpa da próxima vez.
 function fecharFiltroMembros(){
-  const panel = document.getElementById('membrosFilterPanel');
-  if(!panel || panel.style.display === 'none') return;
-  panel.style.display = 'none';
   _filtroTexto = ''; _filtroTipo = 'todos';
   const inp = document.getElementById('membrosFilterInput');
   if(inp) inp.value = '';
   const clearBtn = document.getElementById('membrosFilterClear');
   if(clearBtn) clearBtn.style.display = 'none';
-  panel.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
-  const fb = document.getElementById('membrosFilterBtn');
-  if(fb) fb.classList.remove('active');
+  document.querySelectorAll('#membrosFilterPanel .filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'todos'));
 }
 
 
@@ -3925,7 +4145,7 @@ function addMembro(name, categoria){
   const id = Date.now() + '_' + Math.random().toString(36).slice(2,6);
   state.membros.push({ id, name: name.trim(), categoria });
   saveState();
-  renderMembros();
+  renderMembrosViews();
   return true;
 }
 
@@ -3934,7 +4154,7 @@ function removeMembro(id){
   presencasMarcadas.delete(id);
   if(navigator.vibrate) navigator.vibrate(25);
   saveState();
-  renderMembros();
+  renderMembrosViews();
 }
 
 // A fila/quadra guarda só nome+categoria (não o id do membro), então o
@@ -3951,7 +4171,7 @@ function togglePresenca(id){
   if(presencasMarcadas.has(id)) presencasMarcadas.delete(id);
   else presencasMarcadas.add(id);
   if(navigator.vibrate) navigator.vibrate(10);
-  renderMembros();
+  renderFilaPicker();
 }
 
 function confirmarPresenca(){
@@ -3978,8 +4198,7 @@ function confirmarPresenca(){
   presencasMarcadas.clear();
   saveState();
   render();
-  // Muda para a view da fila para mostrar o resultado
-  switchFilaView('fila');
+  closeAddFilaSheet();
 }
 
 /* ── SWIPE GESTURE ── */
@@ -4058,62 +4277,19 @@ function addSwipeGesture(wrap, item){
   });
 }
 
-function renderMembros(){
-  const list = document.getElementById('membrosList');
+function renderMembrosViews(){
+  renderFilaPicker();
+  renderGerenciarMembros();
+}
+
+/* ── SELETOR "ADICIONAR À FILA" (chips) ──
+   Uso diário: escolher quem chegou. Sem edição/remoção aqui — isso é
+   tarefa rara, mora em Configurações → Gerenciar membros. */
+function renderFilaPicker(){
+  const grid = document.getElementById('filaPickerGrid');
+  if(!grid) return;
   const membros = state.membros || [];
-  list.innerHTML = '';
-
-  // Ordem de toque (mesma que vai pra fila ao confirmar) — usada pra
-  // numerar o círculo de quem já foi marcado.
-  const ordemToque = [...presencasMarcadas];
-
-  // Orientação sempre presente por estado — nunca "aprende e some"
-  const membrosNudge = document.getElementById('membrosNudge');
-  if(membrosNudge) membrosNudge.style.display = presencasMarcadas.size === 0 ? 'block' : 'none';
-
-  // ── Resumo quantitativo ──
-  if(membros.length > 0){
-    const veteranos = membros.filter(m => m.categoria==='veterano').length;
-    const bases     = membros.filter(m => m.categoria==='base').length;
-    const extras    = membros.filter(m => m.categoria==='extra').length;
-    const comColete = membros.filter(m => m.temColete).length;
-    const semColete = membros.length - comColete;
-    const summary = document.createElement('li');
-    summary.className = 'membros-summary-bar';
-    summary.innerHTML = `
-      <span class="msb-item"><strong>${membros.length}</strong> membros</span>
-      <span class="msb-sep">·</span>
-      <span class="msb-item"><strong>${veteranos}</strong> veteranos</span>
-      <span class="msb-sep">·</span>
-      <span class="msb-item"><strong>${bases}</strong> base</span>
-      <span class="msb-sep">·</span>
-      <span class="msb-item"><strong>${extras}</strong> extras</span>
-      <span class="msb-sep">·</span>
-      <span class="msb-item msb-colete"><strong>${comColete}</strong> com colete${semColete > 0 ? ` <em>(${semColete} sem)</em>` : ' ✓'}</span>
-      <button class="membros-filter-btn" id="membrosFilterBtn" title="Buscar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      </button>`;
-    // Re-attach filter button listener after render
-    setTimeout(() => {
-      const fb = document.getElementById('membrosFilterBtn');
-      if(fb && !fb._bound){
-        fb._bound = true;
-        const panel = document.getElementById('membrosFilterPanel');
-        fb.classList.toggle('active', panel.style.display !== 'none');
-        fb.addEventListener('click', () => {
-          const open = panel.style.display === 'none';
-          if(open){
-            panel.style.display = 'flex';
-            fb.classList.add('active');
-            setTimeout(() => document.getElementById('membrosFilterInput').focus(), 50);
-          } else {
-            fecharFiltroMembros();
-          }
-        });
-      }
-    }, 0);
-    list.appendChild(summary);
-  }
+  grid.innerHTML = '';
 
   const filtered = membros.filter(m => {
     const textoOk = !_filtroTexto || m.name.toLowerCase().includes(_filtroTexto.toLowerCase());
@@ -4122,88 +4298,28 @@ function renderMembros(){
     return textoOk && tipoOk;
   });
 
-  if(filtered.length === 0 && membros.length > 0){
+  if(filtered.length === 0){
     const empty = document.createElement('li');
     empty.className = 'empty-state';
-    empty.innerHTML = '<div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="48" height="48" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>Nenhum membro encontrado.';
-    list.appendChild(empty);
-  } else if(membros.length === 0){
-    const empty = document.createElement('li');
-    empty.className = 'empty-state';
-    empty.innerHTML = '<div class="icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"48\" height=\"48\" stroke-width=\"1.5\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg></div>Nenhum membro cadastrado.<br>Toque abaixo para adicionar o primeiro.';
-    list.appendChild(empty);
+    empty.innerHTML = membros.length === 0
+      ? '<div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="48" height="48" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>Nenhum membro cadastrado ainda.'
+      : '<div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="48" height="48" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>Nenhum membro encontrado.';
+    grid.appendChild(empty);
   } else {
     filtered.forEach(m => {
-      const wrap = document.createElement('li');
-      wrap.className = 'membro-swipe-wrap';
-
-      // Reveal buttons behind
-      const actions = document.createElement('div');
-      actions.className = 'membro-actions-reveal';
-      const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
-      const delSvg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
-      const btnDel = document.createElement('button');
-      btnDel.className = 'membro-action-btn delete';
-      btnDel.innerHTML = delSvg;
-      btnDel.addEventListener('click', (e) => {
-        e.stopPropagation();
-        resetSwipe(wrap);
-        openSheet(`Excluir ${m.name}?`, body => {
-          const msg = document.createElement('div');
-          msg.style.cssText = 'padding:4px 20px 16px;font-size:.88rem;color:#666;line-height:1.5';
-          msg.textContent = 'Esta ação não pode ser desfeita.';
-          body.appendChild(msg);
-          const confirm = document.createElement('button');
-          confirm.className = 'sheet-option';
-          confirm.style.cssText = 'color:var(--red);font-weight:700';
-          confirm.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></span><span class="opt-text">Sim, excluir</span>';
-          confirm.addEventListener('click', () => { removeMembro(m.id); closeSheet(); });
-          body.appendChild(confirm);
-          const cancel = document.createElement('button');
-          cancel.className = 'sheet-option cancel';
-          cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Cancelar</span>';
-          cancel.addEventListener('click', closeSheet);
-          body.appendChild(cancel);
-        });
-      });
-      actions.appendChild(btnDel);
-      wrap.appendChild(actions);
-
-      // Main row
-      const li = document.createElement('div');
       const status = membroStatusHoje(m);
       const jaAtivoHoje = status !== null;
-      li.className = 'membro-item' + (presencasMarcadas.has(m.id) ? ' presente' : '') + (jaAtivoHoje ? ' ja-ativo' : '');
-      const checkSvg = presencasMarcadas.has(m.id)
-        ? `<span class="membro-check-num">${ordemToque.indexOf(m.id) + 1}</span>`
-        : '';
-      const statusIcon = status === 'quadra'
-        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="8" height="8"><circle cx="12" cy="12" r="12" fill="currentColor"/></svg>'
-        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="9" height="9"><path d="M20 6 9 17l-5-5"/></svg>';
-      const statusTag = status ? `<span class="membro-status-tag ${status}">${statusIcon}${status==='quadra'?'Em quadra':'Na fila'}</span>` : '';
-      li.innerHTML = `
-        <div class="membro-check">${checkSvg}</div>
-        <span class="membro-name">${m.name}</span>
-        ${statusTag}
-        <span class="membro-badge-tipo ${m.categoria}">${m.categoria==='veterano'?'Veterano':m.categoria==='extra'?'Extra':'Base'}${m.temColete?'':' · sem colete'}</span>
-        <button class="membro-edit-btn" title="Editar membro">${editSvg}</button>`;
-      if(!jaAtivoHoje){
-        li.querySelector('.membro-check').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
-        li.querySelector('.membro-name').addEventListener('click',  () => { resetSwipe(wrap); togglePresenca(m.id); });
-        li.querySelector('.membro-badge-tipo').addEventListener('click', () => { resetSwipe(wrap); togglePresenca(m.id); });
-      }
-      li.querySelector('.membro-edit-btn').addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); editarMembro(m.id); });
-      addSwipeGesture(wrap, li);
-      wrap.appendChild(li);
-      list.appendChild(wrap);
+      const chip = document.createElement('li');
+      chip.className = 'fs-chip' + (presencasMarcadas.has(m.id) ? ' sel' : '') + (jaAtivoHoje ? ' disabled' : '');
+      const tag = jaAtivoHoje ? `<span class="fs-chip-tag">· ${status === 'quadra' ? 'Em quadra' : 'Na fila'}</span>` : '';
+      chip.innerHTML = `<span class="fs-chip-dot">✓</span><span>${m.name}</span>${tag}`;
+      if(!jaAtivoHoje) chip.addEventListener('click', () => togglePresenca(m.id));
+      grid.appendChild(chip);
     });
   }
 
-  const addLi = document.createElement('li');
-  addLi.className = 'membro-item-add';
-  addLi.innerHTML = `<span class="membro-item-add-icon"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"11\" height=\"11\" stroke-width=\"2.5\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></span><span>Adicionar membro</span>`;
-  addLi.addEventListener('click', abrirAddMembro);
-  list.appendChild(addLi);
+  const hint = document.getElementById('filaPickerHint');
+  if(hint) hint.style.display = membros.length === 0 ? 'none' : 'block';
 
   const confirmarBtn = document.getElementById('confirmarPresencaBtn');
   const count = presencasMarcadas.size;
@@ -4211,42 +4327,156 @@ function renderMembros(){
     ? `Confirmar ${count} presente(s) e entrar na fila →`
     : 'Marque os presentes acima';
   confirmarBtn.disabled = count === 0;
-  // Sem ninguém marcado, o botão não faz nada além de repetir a dica já
-  // mostrada no topo da lista — encolhe o bloco inteiro (some com a
-  // animação) pra devolver esse espaço pra lista, em vez de ocupar uma
-  // faixa alta e desabilitada o tempo todo.
-  document.getElementById('membrosFooter').classList.toggle('collapsed', count === 0);
 }
 
-/* ── TOGGLE entre views da aba Fila ── */
-function switchFilaView(view){
-  const isMembros = view === 'membros';
-  document.getElementById('viewMembros').style.display = isMembros ? 'flex' : 'none';
-  document.getElementById('viewFilaContent').style.display = isMembros ? 'none' : 'flex';
-  document.getElementById('toggleMembros').classList.toggle('active', isMembros);
-  document.getElementById('toggleFila').classList.toggle('active', !isMembros);
-  updateFilaToggleThumb();
-  if(!isMembros){
-    fecharFiltroMembros();
-    renderQueue(teamSize());
+/* ── GERENCIAR MEMBROS (dentro de Configurações) ──
+   Cadastro/manutenção do grupo: adicionar de vez, editar, remover. Não
+   mostra status de presença — isso é tarefa da Fila, não daqui. */
+function renderGerenciarMembros(){
+  const list = document.getElementById('gmList');
+  if(!list) return;
+  const membros = state.membros || [];
+  list.innerHTML = '';
+  const countEl = document.getElementById('gerenciarMembrosCount');
+  if(countEl) countEl.textContent = membros.length > 0 ? `${membros.length} ›` : '›';
+
+  if(membros.length === 0){
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.innerHTML = '<div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="48" height="48" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>Nenhum membro cadastrado.<br>Toque abaixo para adicionar o primeiro.';
+    list.appendChild(empty);
+    return;
   }
-  syncHeaderCollapse();
+
+  membros.forEach(m => {
+    const wrap = document.createElement('li');
+    wrap.className = 'membro-swipe-wrap';
+
+    const actions = document.createElement('div');
+    actions.className = 'membro-actions-reveal';
+    const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
+    const delSvg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+    const btnDel = document.createElement('button');
+    btnDel.className = 'membro-action-btn delete';
+    btnDel.innerHTML = delSvg;
+    btnDel.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetSwipe(wrap);
+      openSheet(`Excluir ${m.name}?`, body => {
+        const msg = document.createElement('div');
+        msg.style.cssText = 'padding:4px 20px 16px;font-size:.88rem;color:#666;line-height:1.5';
+        msg.textContent = 'Esta ação não pode ser desfeita.';
+        body.appendChild(msg);
+        const confirm = document.createElement('button');
+        confirm.className = 'sheet-option';
+        confirm.style.cssText = 'color:var(--red);font-weight:700';
+        confirm.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></span><span class="opt-text">Sim, excluir</span>';
+        confirm.addEventListener('click', () => { removeMembro(m.id); closeSheet(); });
+        body.appendChild(confirm);
+        const cancel = document.createElement('button');
+        cancel.className = 'sheet-option cancel';
+        cancel.innerHTML = '<span class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="opt-text">Cancelar</span>';
+        cancel.addEventListener('click', closeSheet);
+        body.appendChild(cancel);
+      });
+    });
+    actions.appendChild(btnDel);
+    wrap.appendChild(actions);
+
+    const li = document.createElement('div');
+    li.className = 'membro-item';
+    li.innerHTML = `
+      <span class="membro-name">${m.name}</span>
+      <span class="membro-badge-tipo ${m.categoria}">${m.categoria==='veterano'?'Veterano':m.categoria==='extra'?'Extra':'Base'}${m.temColete?'':' · sem colete'}</span>
+      <button class="membro-edit-btn" title="Editar membro">${editSvg}</button>`;
+    li.querySelector('.membro-edit-btn').addEventListener('click', (e) => { e.stopPropagation(); resetSwipe(wrap); editarMembro(m.id); });
+    addSwipeGesture(wrap, li);
+    wrap.appendChild(li);
+    list.appendChild(wrap);
+  });
 }
 
-// Posiciona a pastilha do segmented control atrás do item ativo, por
-// pixel exato (evita contar com frações de % quando o padding muda).
-function updateFilaToggleThumb(){
-  const activeBtn = document.querySelector('.fila-toggle-btn.active');
-  const thumb = document.getElementById('filaToggleThumb');
-  if(!activeBtn || !thumb) return;
-  thumb.style.width = activeBtn.offsetWidth + 'px';
-  thumb.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
-}
-
-document.getElementById('toggleMembros').addEventListener('click', () => switchFilaView('membros'));
-document.getElementById('toggleFila').addEventListener('click', () => switchFilaView('fila'));
-document.getElementById('filaGapNudgeGo').addEventListener('click', () => switchFilaView('membros'));
+document.getElementById('filaGapNudgeGo').addEventListener('click', () => openAddFilaSheet());
 document.getElementById('filaReadyNudgeGo').addEventListener('click', goToQuadra);
+
+/* ── SUBPÁGINAS EM TELA CHEIA ──
+   Abrir/fechar a "Adicionar à fila" e o "Gerenciar membros" — o menu
+   flutuante some enquanto qualquer uma está aberta (ver .tab-bar.risen),
+   sinalizando que a pessoa saiu do modo navegação pra uma tarefa focada. */
+function riseTabBar(){ document.querySelector('.tab-bar').classList.add('risen'); }
+function lowerTabBar(){ document.querySelector('.tab-bar').classList.remove('risen'); }
+
+// Mesma lógica de _showSheetEl/_hideSheetEl (display:none→block, força
+// reflow, RAF, transitionend), sem backdrop — a subpágina já cobre a
+// tela inteira com fundo opaco, não precisa escurecer nada atrás.
+function _showFullscreenSheet(id){
+  const sheet = document.getElementById(id);
+  sheet.style.display = 'flex';
+  void sheet.offsetHeight;
+  requestAnimationFrame(() => sheet.classList.add('open'));
+}
+function _hideFullscreenSheet(id){
+  const sheet = document.getElementById(id);
+  sheet.classList.remove('open');
+  let done = false;
+  const finish = () => { if(done) return; done = true; sheet.removeEventListener('transitionend', onEnd); sheet.style.display = 'none'; };
+  const onEnd = (e) => { if(e.target === sheet) finish(); };
+  sheet.addEventListener('transitionend', onEnd);
+  setTimeout(finish, 500);
+}
+
+function openAddFilaSheet(){
+  riseTabBar();
+  renderFilaPicker();
+  _showFullscreenSheet('addFilaSheet');
+}
+function closeAddFilaSheet(){
+  _hideFullscreenSheet('addFilaSheet');
+  lowerTabBar();
+  fecharFiltroMembros();
+  document.getElementById('fsGuestForm').classList.remove('open');
+  renderFilaPicker();
+}
+document.getElementById('addFilaBtn').addEventListener('click', openAddFilaSheet);
+document.getElementById('addFilaCloseBtn').addEventListener('click', closeAddFilaSheet);
+
+function openGerenciarMembros(){
+  riseTabBar();
+  renderGerenciarMembros();
+  _showFullscreenSheet('gerenciarMembrosSheet');
+}
+function closeGerenciarMembros(){
+  _hideFullscreenSheet('gerenciarMembrosSheet');
+  lowerTabBar();
+}
+document.getElementById('gerenciarMembrosBtn').addEventListener('click', () => { closeConfigSheet(); openGerenciarMembros(); });
+document.getElementById('gerenciarMembrosCloseBtn').addEventListener('click', closeGerenciarMembros);
+document.getElementById('gmAddRow').addEventListener('click', abrirAddMembro);
+
+/* ── CONVIDADO AVULSO (inline, dentro de "Adicionar à fila") ── */
+let _fsGuestCat = 'base';
+document.getElementById('fsGuestToggle').addEventListener('click', () => {
+  const form = document.getElementById('fsGuestForm');
+  form.classList.toggle('open');
+  if(form.classList.contains('open')) setTimeout(() => document.getElementById('fsGuestInput').focus(), 200);
+});
+document.getElementById('fsCatPills').querySelectorAll('.fs-cat-pill').forEach(p => {
+  p.addEventListener('click', () => {
+    document.getElementById('fsCatPills').querySelectorAll('.fs-cat-pill').forEach(x => x.classList.remove('sel'));
+    p.classList.add('sel');
+    _fsGuestCat = p.dataset.cat;
+  });
+});
+function adicionarConvidadoInline(){
+  const input = document.getElementById('fsGuestInput');
+  const name = input.value.trim();
+  if(!name){ input.focus(); return; }
+  addToQueue(name, _fsGuestCat, true);
+  input.value = '';
+  document.getElementById('fsGuestForm').classList.remove('open');
+}
+document.getElementById('fsGuestAddBtn').addEventListener('click', adicionarConvidadoInline);
+document.getElementById('fsGuestInput').addEventListener('keydown', e => { if(e.key === 'Enter') adicionarConvidadoInline(); });
 
 // Adicionar membro
 function editarMembro(id){
@@ -4319,7 +4549,7 @@ function editarMembro(id){
       m.categoria = categoria;
       m.temColete = temColete;
       saveState();
-      renderMembros();
+      renderMembrosViews();
       closeSheet();
     });
     body.appendChild(saveBtn);
@@ -4371,7 +4601,6 @@ function abrirAddMembro(){
         input.value = '';
         input.style.borderColor = '#ddd';
         input.focus();
-        renderMembros();
         // Show a brief confirmation and keep sheet open for adding more
         b.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg> ' + label;
         setTimeout(() => b.textContent = label, 1000);
@@ -4398,12 +4627,11 @@ function abrirAddMembro(){
 
 document.getElementById('confirmarPresencaBtn').addEventListener('click', confirmarPresenca);
 
-// Filtro de membros — input, botão de limpar, "Cancelar" e chips (botão de
-// busca é reinicializado a cada renderMembros(), os outros são fixos)
+// Filtro do seletor "Adicionar à fila" — input, botão de limpar e chips
 document.getElementById('membrosFilterInput').addEventListener('input', e => {
   _filtroTexto = e.target.value;
   document.getElementById('membrosFilterClear').style.display = e.target.value ? 'flex' : 'none';
-  renderMembros();
+  renderFilaPicker();
 });
 document.getElementById('membrosFilterClear').addEventListener('click', () => {
   _filtroTexto = '';
@@ -4411,11 +4639,7 @@ document.getElementById('membrosFilterClear').addEventListener('click', () => {
   inp.value = '';
   inp.focus();
   document.getElementById('membrosFilterClear').style.display = 'none';
-  renderMembros();
-});
-document.getElementById('membrosFilterCancel').addEventListener('click', () => {
-  fecharFiltroMembros();
-  renderMembros();
+  renderFilaPicker();
 });
 document.getElementById('membrosFilterPanel').querySelectorAll('.filter-chip').forEach(chip => {
   chip.addEventListener('click', () => {
@@ -4423,12 +4647,12 @@ document.getElementById('membrosFilterPanel').querySelectorAll('.filter-chip').f
     document.getElementById('membrosFilterPanel').querySelectorAll('.filter-chip')
       .forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
-    renderMembros();
+    renderFilaPicker();
   });
 });
 
-// Fecha swipe aberto ao tocar fora de um item
-document.getElementById('membrosList').addEventListener('click', (e) => {
+// Fecha swipe aberto ao tocar fora de um item (só existe em Gerenciar Membros)
+document.getElementById('gmList').addEventListener('click', (e) => {
   if(_activeSwipe && !_activeSwipe.contains(e.target)) resetSwipe(_activeSwipe);
 }, true);
 
@@ -4436,17 +4660,17 @@ loadState();
 // Garante UI inicial mesmo sem Firebase (ex: primeira vez, offline)
 setTimeout(() => { render();  }, 150);
 document.getElementById('appVersion').textContent = `Versão ${APP_VERSION}`;
-updateFilaToggleThumb();
 
-// "Large title" que encolhe ao rolar (padrão iOS) — escuta as quatro
-// listas com rolagem e também resincroniza ao trocar de aba/sub-aba, pra
-// não ficar "preso" no estado de rolagem da tela anterior.
+// "Large title" que encolhe ao rolar (padrão iOS) — escuta as listas com
+// rolagem das três telas e também resincroniza ao trocar de aba, pra não
+// ficar "preso" no estado de rolagem da tela anterior. As subpáginas em
+// tela cheia (Adicionar à fila, Gerenciar membros) têm cabeçalho próprio
+// (.fs-header), sem esse comportamento de encolher.
 const HEADER_COLLAPSE_THRESHOLD = 24;
 function getActiveScroller(){
   if(document.getElementById('screenQuadra').classList.contains('active')) return document.getElementById('scoreboardUnified');
   if(document.getElementById('screenHistorico').classList.contains('active')) return document.getElementById('historicoList');
-  const emMembros = document.getElementById('viewMembros').style.display !== 'none';
-  return document.getElementById(emMembros ? 'membrosList' : 'queueList');
+  return document.getElementById('queueList');
 }
 function syncHeaderCollapse(){
   const header = document.querySelector('.app-header');
@@ -4454,7 +4678,7 @@ function syncHeaderCollapse(){
   if(!header || !scroller) return;
   header.classList.toggle('collapsed', scroller.scrollTop > HEADER_COLLAPSE_THRESHOLD);
 }
-['scoreboardUnified', 'membrosList', 'queueList', 'historicoList'].forEach(id => {
+['scoreboardUnified', 'queueList', 'historicoList'].forEach(id => {
   const el = document.getElementById(id);
   if(el) el.addEventListener('scroll', syncHeaderCollapse, { passive: true });
 });
