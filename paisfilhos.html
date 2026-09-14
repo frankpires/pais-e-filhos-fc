@@ -2359,7 +2359,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.3.2';
+const APP_VERSION = '1.3.3';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -4151,12 +4151,12 @@ function membroComEsseNomeJaExiste(name, excludeId){
   return (state.membros||[]).some(m => m.id !== excludeId && m.name.trim().toLowerCase() === alvo);
 }
 
-function addMembro(name, categoria){
+function addMembro(name, categoria, temColete){
   if(!name.trim()) return false;
   if(membroComEsseNomeJaExiste(name)) return false;
   if(!state.membros) state.membros = [];
   const id = Date.now() + '_' + Math.random().toString(36).slice(2,6);
-  state.membros.push({ id, name: name.trim(), categoria });
+  state.membros.push({ id, name: name.trim(), categoria, temColete: !!temColete });
   saveState();
   renderMembrosViews();
   return true;
@@ -4597,6 +4597,21 @@ function abrirAddMembro(){
     body.appendChild(errorHint);
     input.addEventListener('input', () => { errorHint.style.display = 'none'; });
 
+    // Colete (já comprou ou não) — mesmo padrão do sheet de editar membro.
+    // Fica marcado antes de tocar numa categoria, já que cada botão de
+    // categoria já confirma e adiciona na hora.
+    let temColete = false;
+    const coleteBtn = document.createElement('button');
+    coleteBtn.type = 'button';
+    coleteBtn.style.cssText = 'display:flex;align-items:center;justify-content:space-between;width:100%;height:48px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:.86rem;font-weight:600;background:var(--chalk);color:var(--ink);cursor:pointer';
+    const renderColeteBtn = () => {
+      coleteBtn.style.borderColor = temColete ? 'var(--amber)' : '#ddd';
+      coleteBtn.innerHTML = `<span>Colete</span><span style="font-weight:800;color:${temColete ? 'var(--amber-dim)' : '#999'}">${temColete ? 'Comprou' : 'Não comprou'}</span>`;
+    };
+    renderColeteBtn();
+    coleteBtn.addEventListener('click', () => { temColete = !temColete; renderColeteBtn(); });
+    body.appendChild(coleteBtn);
+
     const btns = document.createElement('div');
     btns.style.cssText = 'display:flex;gap:6px';
 
@@ -4610,10 +4625,12 @@ function abrirAddMembro(){
         if(!name){ input.focus(); input.style.borderColor='var(--red)'; errorHint.style.display='none'; return; }
         if(membroComEsseNomeJaExiste(name)){ input.focus(); input.style.borderColor='var(--red)'; errorHint.style.display='block'; return; }
         errorHint.style.display = 'none';
-        addMembro(name, categoria);
+        addMembro(name, categoria, temColete);
         input.value = '';
         input.style.borderColor = '#ddd';
         input.focus();
+        temColete = false;
+        renderColeteBtn();
         // Show a brief confirmation and keep sheet open for adding more
         b.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"13\" height=\"13\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg> ' + label;
         setTimeout(() => b.textContent = label, 1000);
