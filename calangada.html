@@ -39,9 +39,10 @@ html { overscroll-behavior: none; height: 100%; }
   --header-h: 56px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
-  /* Espaço reservado no fim de cada lista pra nada ficar escondido atrás
-     do menu flutuante (offset do chão + altura do menu + respiro). */
-  --tabbar-clearance: calc(84px + var(--safe-bot));
+  /* Respiro no fim de cada lista rolável — não precisa mais reservar a
+     altura do menu (ele ocupa espaço de verdade no layout agora, não
+     flutua mais por cima do conteúdo). */
+  --tabbar-clearance: 20px;
 }
 body {
   font-family: 'Inter', system-ui, sans-serif;
@@ -285,16 +286,21 @@ body.view-only .membro-check {
 }
 .screen.active { display: flex; }
 
-/* ── MENU FLUTUANTE (estilo iOS) ──
-   Solto do rodapé (não docado na borda), compacto e com o mesmo recuo
-   lateral do conteúdo — fica por cima das telas, então cada lista com
-   rolagem reserva --tabbar-clearance no fim pra nada ficar escondido
-   atrás dele. */
+/* ── MENU ENCAIXADO (estilo iOS/Nubank) ──
+   Visual de pill idêntico ao de antes (cantos arredondados, vidro,
+   sombra, recuo lateral) — mas agora ocupando uma fatia real do
+   layout flex de #app, em vez de position:absolute flutuando por cima
+   do conteúdo. Sem isso, toda lista rolável do app precisava calcular
+   uma reserva manual (--tabbar-clearance) pra não ficar escondida
+   atrás dele — uma conta frágil que furou repetidamente. Com o menu
+   ocupando espaço de verdade, .screen (flex:1) encolhe sozinho pra
+   sobrar espaço, e não existe mais "atrás do menu" do ponto de vista
+   do layout. */
+.tab-bar-dock{
+  flex-shrink: 0;
+  padding: 0 16px calc(14px + var(--safe-bot));
+}
 .tab-bar {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: calc(14px + var(--safe-bot));
   display: flex;
   background: rgba(255,255,255,.55);
   backdrop-filter: blur(24px) saturate(180%);
@@ -303,7 +309,6 @@ body.view-only .membro-check {
   border-radius: 24px;
   box-shadow: 0 8px 24px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.6);
   padding: 5px;
-  z-index: 10;
   transition: transform .42s cubic-bezier(.32,.72,0,1), opacity .3s ease;
 }
 /* Some quando uma subpágina em tela cheia abre por cima (ver
@@ -628,28 +633,21 @@ body.view-only .membro-check {
   line-height: 1.4;
 }
 
-/* ── BANNER REVISÃO ── */
+/* ── SELO DE REVISÃO ── selo compacto em vez de banner cheio, pra não
+   empilhar/empurrar o resto do conteúdo de .court-actions. */
 .review-banner {
-  background: var(--chalk);
-  border-radius: 14px;
-  border-left: 4px solid var(--primary);
-  padding: 10px 14px 10px 12px;
-  display: flex;
+  display: none;
   align-items: center;
-  gap: 10px;
-  overflow: hidden;
-}
-.review-banner-icon { flex-shrink: 0; display: flex; align-items: center; }
-.review-banner-title {
-  font-size: 0.82rem;
+  gap: 6px;
+  width: fit-content;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 100px;
+  padding: 5px 12px 5px 10px;
+  font-size: .72rem;
   font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 1px;
 }
-.review-banner-sub {
-  font-size: 0.7rem;
-  color: var(--ink-soft);
-}
+.review-banner-dot { width: 5px; height: 5px; border-radius: 50%; background: #8fd39a; flex-shrink: 0; }
 
 /* ── NUDGE (orientação contextual — nunca deixa a próxima ação por conta da intuição) ── */
 .nudge{
@@ -2180,13 +2178,9 @@ body.view-only .membro-check {
 
       <!-- limpar quadra de dia anterior -->
       <button class="btn btn-start" id="staleClearBtn" style="display:none">Limpar quadra e fila — começar hoje</button>
-      <!-- banner revisão (pausa intencional após resultado) -->
+      <!-- selo revisão (pausa intencional após resultado) -->
       <div class="review-banner" id="reviewBanner" style="display:none">
-        <div class="review-banner-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
-        <div class="review-banner-text">
-          <div class="review-banner-title">Revise o time antes de iniciar</div>
-          <div class="review-banner-sub">Toque num jogador para substituir</div>
-        </div>
+        <span class="review-banner-dot"></span>Revise o time — toque num jogador pra substituir
       </div>
     </div>
 
@@ -2369,17 +2363,19 @@ body.view-only .membro-check {
   </div>
 
   <!-- BOTTOM TAB BAR -->
-  <nav class="tab-bar">
-    <button class="tab-btn active" data-screen="screenFila" id="tabFila">
-      <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></span>Fila
-    </button>
-    <button class="tab-btn" data-screen="screenQuadra" id="tabQuadra">
-      <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11.1 7.1a16.55 16.55 0 0 1 10.9 4"/><path d="M12 12a12.6 12.6 0 0 1-8.7 5"/><path d="M16.8 13.6a16.55 16.55 0 0 1-9 7.5"/><path d="M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10"/><path d="M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5"/><circle cx="12" cy="12" r="10"/></svg></span>Em Quadra
-    </button>
-    <button class="tab-btn" data-screen="screenHistorico" id="tabHistorico">
-      <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>Histórico
-    </button>
-  </nav>
+  <div class="tab-bar-dock">
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-screen="screenFila" id="tabFila">
+        <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></span>Fila
+      </button>
+      <button class="tab-btn" data-screen="screenQuadra" id="tabQuadra">
+        <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11.1 7.1a16.55 16.55 0 0 1 10.9 4"/><path d="M12 12a12.6 12.6 0 0 1-8.7 5"/><path d="M16.8 13.6a16.55 16.55 0 0 1-9 7.5"/><path d="M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10"/><path d="M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5"/><circle cx="12" cy="12" r="10"/></svg></span>Em Quadra
+      </button>
+      <button class="tab-btn" data-screen="screenHistorico" id="tabHistorico">
+        <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>Histórico
+      </button>
+    </nav>
+  </div>
 </div>
 
 <!-- Firebase SDK -->
@@ -2398,7 +2394,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.3.11';
+const APP_VERSION = '1.4.0';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
