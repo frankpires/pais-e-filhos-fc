@@ -354,7 +354,12 @@ body.view-only .membro-check {
 .court-scroll{
   flex: 1;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  /* SEM -webkit-overflow-scrolling:touch de propósito — essa propriedade
+     é legado de iOS pré-13 (rolagem nativa por toque já funciona sem
+     ela) e bate com um bug conhecido do WebKit: um contêiner com essa
+     propriedade pode simplesmente não ficar rolável depois que o
+     conteúdo muda de tamanho dinamicamente, exatamente o padrão de
+     travamento relatado aqui. Ver https://bugs.webkit.org/show_bug.cgi?id=158342 */
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -2384,7 +2389,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.3.9';
+const APP_VERSION = '1.3.10';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -2869,7 +2874,7 @@ function winTeam(which){
         requestAnimationFrame(() => {
           newCard.style.transition = 'opacity 0.45s ease';
           newCard.style.opacity = '1';
-          setTimeout(() => { newCard.style.transition = ''; newCard.style.opacity = ''; nudgeCourtScroll(); }, 500);
+          setTimeout(() => { newCard.style.transition = ''; newCard.style.opacity = ''; }, 500);
         });
       }
     });
@@ -2921,7 +2926,7 @@ function tie(){
           requestAnimationFrame(() => {
             t.style.transition = 'opacity 0.45s ease';
             t.style.opacity = '1';
-            setTimeout(() => { t.style.transition = ''; t.style.opacity = ''; nudgeCourtScroll(); }, 500);
+            setTimeout(() => { t.style.transition = ''; t.style.opacity = ''; }, 500);
           });
         });
       });
@@ -2967,7 +2972,7 @@ function tie(){
           requestAnimationFrame(() => {
             newCard.style.transition = 'opacity 0.45s ease';
             newCard.style.opacity = '1';
-            setTimeout(() => { newCard.style.transition = ''; newCard.style.opacity = ''; nudgeCourtScroll(); }, 500);
+            setTimeout(() => { newCard.style.transition = ''; newCard.style.opacity = ''; }, 500);
           });
         }
       });
@@ -3478,17 +3483,6 @@ function sameDay(t1, t2){
   return a.toDateString() === b.toDateString();
 }
 
-// Reconstruir a lista de Em Quadra (innerHTML) ou animar opacity num card
-// dela, dentro de um contêiner com -webkit-overflow-scrolling:touch, às
-// vezes deixa o iOS "esquecido" de que o conteúdo mudou e trava a rolagem
-// até algo forçar o WebKit a reavaliar. Alternar a propriedade força esse
-// recálculo, sem efeito nenhum nos demais navegadores.
-function nudgeCourtScroll(){
-  const scroller = document.getElementById('courtScroll');
-  if(!scroller) return;
-  scroller.style.webkitOverflowScrolling = 'auto';
-  requestAnimationFrame(() => { scroller.style.webkitOverflowScrolling = 'touch'; });
-}
 
 function renderCourt(ts){
   const container = document.getElementById('scoreboardUnified');
@@ -3751,7 +3745,6 @@ function renderCourt(ts){
     // navegador já limita sozinho ao máximo válido pro conteúdo novo
     // (ex: se agora tudo cabe na tela, cai pra 0 de qualquer jeito).
     if(scrollerForRestore) scrollerForRestore.scrollTop = savedScrollTop;
-    nudgeCourtScroll();
   });
 }
 
