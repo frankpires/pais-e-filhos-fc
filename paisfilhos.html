@@ -368,7 +368,16 @@ body.view-only .membro-check {
   mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
 }
 .court-block{
-  flex: 1;
+  /* SEM flex:1 de propósito — com flex:1 aqui, sempre que o conteúdo dos
+     times fosse mais baixo que o espaço disponível, este bloco crescia
+     pra preencher esse espaço sozinho, "engolindo" a reserva de
+     --tabbar-clearance do .court-scroll (ver CSS dele) antes que ela
+     virasse sobra rolável de verdade. Resultado: bem na fronteira em que
+     o conteúdo já quase alcança o menu flutuante — cenário relatado —,
+     a conta fechava exatamente na altura da tela, sem overflow nenhum
+     pra rolar até sair de trás do menu. Sem flex:1, este bloco só ocupa
+     a altura que o conteúdo dele realmente precisa, e a reserva do
+     .court-scroll fica sempre disponível como sobra de verdade. */
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -2389,7 +2398,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.3.10';
+const APP_VERSION = '1.3.11';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
