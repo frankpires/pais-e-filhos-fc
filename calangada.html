@@ -43,6 +43,8 @@ html { overscroll-behavior: none; height: 100%; }
      altura do menu (ele ocupa espaço de verdade no layout agora, não
      flutua mais por cima do conteúdo). */
   --tabbar-clearance: 20px;
+  --tabbar-h: 60px;
+  --dock-h: calc(var(--tabbar-h) + 14px + var(--safe-bot));
 }
 body {
   font-family: 'Inter', system-ui, sans-serif;
@@ -296,11 +298,30 @@ body.view-only .membro-check {
    ocupando espaço de verdade, .screen (flex:1) encolhe sozinho pra
    sobrar espaço, e não existe mais "atrás do menu" do ponto de vista
    do layout. */
+/* Menu flutuante: fica por cima do conteúdo (visual de vidro
+   com a lista passando por baixo), mas a folga NÃO é padding do contêiner
+   (que o flex engolia) — é uma caixa real (::after) no fim de cada lista
+   rolável, com a MESMA variável (--dock-h) que define a altura do menu —
+   menu e folga não têm como divergir, e não depende de medir via JS.
+   Garantia: test/varredura-menu.mjs. */
 .tab-bar-dock{
-  flex-shrink: 0;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 10;
+  pointer-events: none;
   padding: 0 16px calc(14px + var(--safe-bot));
 }
+.court-scroll::after,
+.results-list::after{
+  content: '';
+  display: block;
+  flex: none;
+  height: var(--dock-h);
+}
 .tab-bar {
+  pointer-events: auto;
+  height: var(--tabbar-h);
+  box-sizing: border-box;
   display: flex;
   background: rgba(255,255,255,.55);
   backdrop-filter: blur(24px) saturate(180%);
@@ -865,7 +886,7 @@ body.view-only .membro-check {
 /* ── BOTÃO "ADICIONAR À FILA" ── */
 .add-fila-btn{
   flex-shrink: 0;
-  margin: 8px 16px var(--tabbar-clearance);
+  margin: 8px 16px calc(var(--dock-h) + 4px);
   height: 48px;
   border-radius: 100px;
   background: var(--primary);
@@ -2369,7 +2390,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.4.3';
+const APP_VERSION = '1.5.0';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
