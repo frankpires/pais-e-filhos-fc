@@ -853,41 +853,24 @@ body.view-only .membro-check {
 
 /* ── FILA SCREEN ── */
 
-/* ── PRÓXIMO TIME (card fixo no topo da Fila) ── */
-.next-team-card{
-  background: linear-gradient(135deg, var(--green), var(--green-mid));
-  color: #fff;
-  border-radius: 18px;
-  padding: 14px 16px;
-  margin: 10px 16px 4px;
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
+/* ── PRÓXIMO TIME ── marcação na própria lista (sem card repetindo os
+   mesmos nomes): uma linha de rótulo + destaque nas linhas que entram. */
+.queue-group-label{
+  flex-shrink: 0; display: none; align-items: center; gap: 6px;
+  padding: 8px 16px 0;
+  font-size: .62rem; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--green-lit);
 }
-.next-team-card::after{
-  content:'';
-  position:absolute; right:-30px; top:-30px;
-  width:120px; height:120px; border-radius:50%;
-  background: radial-gradient(circle, rgba(232,160,32,.3), transparent 70%);
-}
-.next-team-card .ntc-label{
-  font-size: 0.66rem; text-transform: uppercase; letter-spacing: .8px;
-  color: var(--amber); font-weight: 800; margin-bottom: 5px;
-}
-.next-team-card .ntc-names{
-  font-size: 0.88rem; font-weight: 600; line-height: 1.5;
-  position: relative;
-}
-.next-team-card .ntc-sub{
-  margin-top: 6px; font-size: 0.72rem; color: rgba(255,255,255,.65);
-  position: relative;
-}
+.queue-group-label .sub{ font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
+.queue-item.nxt{ background: #f4faf5; border-left: 3px solid var(--green-lit); }
 
-/* ── BOTÃO "ADICIONAR À FILA" ── */
+/* ── BOTÃO "ADICIONAR À FILA" ── redondo, flutuando no canto; mostra o
+   texto enquanto a lista está no topo e encolhe pro "+" ao rolar. Com a
+   fila vazia some — o botão grande do estado vazio assume. */
+#screenFila{ position: relative; }
 .add-fila-btn{
-  flex-shrink: 0;
-  margin: 8px 16px calc(var(--dock-h) + 4px);
-  height: 48px;
+  position: absolute; right: 16px; bottom: calc(var(--dock-h) + 10px); z-index: 5;
+  height: 48px; padding: 0 18px 0 16px;
   border-radius: 100px;
   background: var(--green);
   color: #fff;
@@ -895,13 +878,30 @@ body.view-only .membro-check {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 0.9rem;
-  display: flex; align-items:center; justify-content:center; gap: 8px;
+  display: flex; align-items:center; gap: 8px;
   box-shadow: 0 6px 16px rgba(28,43,30,.25);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: filter 0.08s, transform 0.08s;
+  transition: filter 0.08s, transform 0.08s, padding .25s ease, gap .25s ease;
 }
 .add-fila-btn:active{ transform: scale(0.97); filter: brightness(0.9); }
+.add-fila-lbl{ overflow: hidden; white-space: nowrap; max-width: 140px; transition: max-width .25s ease, opacity .2s ease; }
+.add-fila-btn.mini{ padding: 0 15px; gap: 0; }
+.add-fila-btn.mini .add-fila-lbl{ max-width: 0; opacity: 0; }
+.queue-list::after{ content: ''; display: block; height: calc(var(--dock-h) + 64px); }
+.fila-empty{
+  flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 8px; padding: 0 32px calc(var(--dock-h) + 16px);
+}
+.fila-empty-ic{ width: 56px; height: 56px; border-radius: 50%; background: var(--cement); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; }
+.fila-empty-t{ font-size: 1rem; font-weight: 800; color: var(--ink); }
+.fila-empty-s{ font-size: .8rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 6px; }
+.fila-empty-btn{
+  height: 48px; padding: 0 24px; border-radius: 100px; background: var(--green); color: #fff; border: none;
+  font-family: 'Inter', sans-serif; font-weight: 700; font-size: .9rem;
+  display: flex; align-items: center; gap: 8px; box-shadow: 0 6px 16px rgba(28,43,30,.25); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* ── SUBPÁGINA EM TELA CHEIA ──
    Cobre a tela inteira (inclusive por cima de onde o menu flutuante
@@ -2200,12 +2200,6 @@ body.view-only .membro-check {
   <!-- TELA 2: FILA -->
   <div class="screen active" id="screenFila" style="background:var(--bg)">
 
-    <div class="next-team-card" id="nextTeamCard" style="display:none">
-      <div class="ntc-label">Próximo time</div>
-      <div class="ntc-names" id="nextTeamNames"></div>
-      <div class="ntc-sub" id="nextTeamSub"></div>
-    </div>
-
     <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
       <div class="fila-meta" id="queueMeta"></div>
       <div class="nudge top" id="filaGapNudge" style="display:none">
@@ -2214,13 +2208,18 @@ body.view-only .membro-check {
       <div class="nudge top ready" id="filaReadyNudge" style="display:none">
         <span class="nudge-dot"></span>Já dá pra montar os times <span class="go" id="filaReadyNudgeGo">Ir pra Em Quadra →</span>
       </div>
+      <div class="queue-group-label" id="queueGroupLabel">Próximo time <span class="sub" id="queueGroupSub"></span></div>
       <ul class="queue-list" id="queueList"></ul>
+      <div class="fila-empty" id="filaEmpty">
+        <div class="fila-empty-ic"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="fila-empty-t">Ninguém na fila ainda</div>
+        <div class="fila-empty-s">Marque quem chegou pra montar os times de hoje.</div>
+        <button class="fila-empty-btn" id="addFilaEmptyBtn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Adicionar à fila</button>
+      </div>
     </div>
 
-    <button class="add-fila-btn" id="addFilaBtn">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-      Adicionar à fila
-    </button>
+    <button class="add-fila-btn" id="addFilaBtn" aria-label="Adicionar à fila">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span class="add-fila-lbl">Adicionar à fila</span></button>
 
     <!-- Config inputs (hidden) -->
     <input type="number" id="teamSize" min="1" max="15" value="5" style="display:none">
@@ -2390,7 +2389,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -2439,7 +2438,7 @@ function applyAdminMode(){
 // visualização, nunca uma ação que muda o estado do grupo.
 const VIEW_ONLY_ALLOWED_SELECTOR = [
   '.tab-btn', '#headerConfigBtn', '#headerStatus',
-  '#addFilaBtn', '#addFilaCloseBtn', '#gerenciarMembrosBtn', '#gerenciarMembrosCloseBtn',
+  '#addFilaBtn', '#addFilaEmptyBtn', '#addFilaCloseBtn', '#gerenciarMembrosBtn', '#gerenciarMembrosCloseBtn',
   '.filter-chip', '#membrosFilterInput', '#membrosFilterClear',
   '#regrasBtn', '#loginAdminBtn', '#logoutAdminBtn', '#configSheetCloseBtn',
   '.sheet-option.cancel', '#closeRulesBtn', '#adminLoginSubmit', '#adminLoginInput',
@@ -3815,30 +3814,34 @@ function abrirProximoTime(){
   });
 }
 
-// Card "Próximo time", sempre visível no topo da Fila — mostra pra quem
-// olha a lista o motivo dela existir (alimentar a escalação), sem
-// precisar tocar em nada pra ver essa prévia.
-function renderNextTeamCard(){
-  const card = document.getElementById('nextTeamCard');
-  const next = proximoTime();
-  if(next.length === 0){ card.style.display = 'none'; return; }
+// Rótulo "Próximo time" acima da lista — as linhas que entram ganham
+// destaque em renderQueue (mesmos objetos que proximoTime() devolve).
+function renderQueueGroup(next){
+  const el = document.getElementById('queueGroupLabel');
+  if(next.length === 0){ el.style.display = 'none'; return; }
   const ts = teamSize();
   const tv = Math.min(targetVeteranos(), ts);
   const tb = Math.min(targetBase(), ts - tv);
   const completo = next.filter(p=>p.categoria==='veterano').length >= tv
     && next.filter(p=>p.categoria==='base').length >= tb;
-  card.style.display = 'block';
-  document.getElementById('nextTeamNames').textContent = next.map(p=>p.name).join(' · ');
-  document.getElementById('nextTeamSub').textContent = completo
-    ? 'Time completo — pronto pra entrar assim que houver vaga'
-    : 'Ainda falta gente pra fechar esse time';
+  document.getElementById('queueGroupSub').textContent = completo
+    ? '· time completo, pronto pra entrar'
+    : '· ainda falta gente pra fechar';
+  el.style.display = 'flex';
 }
 
 function renderQueue(ts){
   const list=document.getElementById('queueList');
   const meta=document.getElementById('queueMeta');
   list.innerHTML='';
-  renderNextTeamCard();
+  const next = proximoTime();
+  renderQueueGroup(next);
+  const vazia = state.queue.length === 0;
+  list.style.display = vazia ? 'none' : '';
+  document.getElementById('filaEmpty').style.display = vazia ? 'flex' : '';
+  const fab = document.getElementById('addFilaBtn');
+  fab.style.display = vazia ? 'none' : '';
+  fab.classList.remove('mini');
   const veteranos=state.queue.filter(p=>p.categoria==='veterano').length;
   const bases=state.queue.filter(p=>p.categoria==='base').length;
   const teams=Math.floor(state.queue.length/ts);
@@ -3866,7 +3869,7 @@ function renderQueue(ts){
 
   state.queue.forEach((player,i)=>{
     const li=document.createElement('li');
-    li.className='queue-item';
+    li.className='queue-item' + (next.includes(player) ? ' nxt' : '');
     li.innerHTML=`
       <span class="queue-drag-handle" title="Segurar e arrastar para reordenar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
       <span class="queue-num">${i+1}</span>
@@ -4529,6 +4532,10 @@ function closeAddFilaSheet(){
   renderFilaPicker();
 }
 document.getElementById('addFilaBtn').addEventListener('click', openAddFilaSheet);
+document.getElementById('addFilaEmptyBtn').addEventListener('click', openAddFilaSheet);
+document.getElementById('queueList').addEventListener('scroll', () => {
+  document.getElementById('addFilaBtn').classList.toggle('mini', document.getElementById('queueList').scrollTop > 8);
+});
 document.getElementById('addFilaCloseBtn').addEventListener('click', closeAddFilaSheet);
 
 function openGerenciarMembros(){
