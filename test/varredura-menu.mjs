@@ -96,17 +96,28 @@ async function checkFila(p, label) {
   for (let n = 0; n <= 25; n++) {
     const r = await p.evaluate((n) => {
       state.courtA = []; state.courtB = [];
-      state.queue = Array.from({ length: n }, (_, i) => ({ id: 'q' + i, name: 'Fila ' + i, categoria: 'base' }));
+      state.queue = Array.from({ length: n }, (_, i) => ({ id: 'q' + i, name: 'Fila ' + i, categoria: i % 3 === 0 ? 'veterano' : 'base' }));
       render();
       const l = document.getElementById('queueList'); l.scrollTop = l.scrollHeight;
       const bar = document.querySelector('.tab-bar').getBoundingClientRect().top;
-      const btn = document.getElementById('addFilaBtn').getBoundingClientRect();
+      const shown = (id) => { const e = document.getElementById(id); return getComputedStyle(e).display !== 'none'; };
+      const fab = document.getElementById('addFilaBtn').getBoundingClientRect();
+      const emp = document.getElementById('addFilaEmptyBtn').getBoundingClientRect();
       const li = l.querySelector('li:last-of-type');
-      return { btn: btn.bottom - bar, li: li ? li.getBoundingClientRect().bottom - btn.top : -1 };
+      return { n, fabShown: shown('addFilaBtn'), empShown: shown('filaEmpty'), fabBottom: fab.bottom - bar, fabTop: fab.top,
+               li: li ? li.getBoundingClientRect().bottom - fab.top : -1, empBottom: emp.bottom - bar };
     }, n);
     checks += 2;
-    if (r.btn > TOL) fail(`${label} fila n=${n}: botão ${r.btn.toFixed(1)}px atrás do menu`);
-    if (r.li > TOL) fail(`${label} fila n=${n}: último item ${r.li.toFixed(1)}px atrás do botão`);
+    if (n === 0) {
+      if (r.fabShown) fail(`${label} fila vazia: botão redondo deveria sumir`);
+      if (!r.empShown) fail(`${label} fila vazia: estado vazio não apareceu`);
+      if (r.empBottom > TOL) fail(`${label} fila vazia: botão do estado vazio ${r.empBottom.toFixed(1)}px atrás do menu`);
+    } else {
+      if (!r.fabShown) fail(`${label} fila n=${n}: botão redondo não apareceu`);
+      if (r.empShown) fail(`${label} fila n=${n}: estado vazio não deveria aparecer`);
+      if (r.fabBottom > TOL) fail(`${label} fila n=${n}: botão ${r.fabBottom.toFixed(1)}px atrás do menu`);
+      if (r.li > TOL) fail(`${label} fila n=${n}: último item ${r.li.toFixed(1)}px atrás do botão`);
+    }
   }
 }
 
