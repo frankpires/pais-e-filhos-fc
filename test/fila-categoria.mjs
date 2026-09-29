@@ -156,7 +156,7 @@ const fails = await p.evaluate(() => {
   if (nomes() !== 'V2,B1,V1,E1,V3,B2,B3,V4,B4') fail(`teclado ↓ no fim do bloco não deveria mexer: ${nomes()}`);
   tecla('B1', 'ArrowDown');
   if (nomes() !== 'V2,B2,V1,E1,V3,B1,B3,V4,B4') fail(`teclado ↓ na base: ${nomes()}`);
-  const pressed = [...document.querySelectorAll('#filaViewToggle .filter-chip')].map(bt => bt.dataset.view + '=' + bt.getAttribute('aria-pressed')).join(',');
+  const pressed = [...document.querySelectorAll('#filaViewToggle button')].map(bt => bt.dataset.view + '=' + bt.getAttribute('aria-pressed')).join(',');
   if (pressed !== 'ordem=false,categoria=true') fail(`alternador: aria-pressed ${pressed}`);
   return fails;
 });
