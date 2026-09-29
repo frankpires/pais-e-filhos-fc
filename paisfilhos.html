@@ -878,6 +878,18 @@ body.view-only .membro-check {
 }
 .cat-section-label:first-child{ padding-top: 0; }
 .cat-section-label .count{ font-weight: 600; letter-spacing: 0; text-transform: none; opacity: .75; }
+.cat-section-label .count.falta{ color: var(--amber-dim); opacity: 1; }
+/* Linha de corte dentro do bloco: quem entra no próximo time é sempre um
+   prefixo contínuo de cada categoria, então um corte só explica a cota. */
+.cat-cut{
+  display: flex; align-items: center; gap: 8px;
+  margin: -2px 2px 6px;
+  font-size: .6rem; font-weight: 700; letter-spacing: .4px; color: var(--ink-soft);
+}
+.cat-cut::before, .cat-cut::after{ content: ''; flex: 1; border-top: 1px dashed currentColor; opacity: .4; }
+.queue-list.dragging .cat-cut{ visibility: hidden; }
+.queue-item.wait{ min-height: 44px; }
+.queue-item.wait .queue-name{ font-size: .85rem; }
 
 /* ── BOTÃO "ADICIONAR À FILA" ── redondo, flutuando no canto; mostra o
    texto enquanto a lista está no topo e encolhe pro "+" ao rolar. Com a
@@ -2408,7 +2420,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.8.0';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -3056,13 +3068,19 @@ function attachQueueDragHandlers(li, sectionPlayers, commit){
     const startIndex = items.indexOf(li);
     if(startIndex === -1) return;
     try { handle.setPointerCapture(e.pointerId); } catch(_) {}
+    // Bordas reais de cada linha (não uma altura fixa): na visão por
+    // categoria as linhas de quem espera são mais baixas e a linha de corte
+    // fica no meio do bloco.
+    const rects = items.map(el => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; });
     _queueDrag = {
-      pointerId: e.pointerId, li, items,
+      pointerId: e.pointerId, li, items, rects, list,
       startY: e.clientY,
+      startCenter: (rects[startIndex].top + rects[startIndex].bottom) / 2,
       startIndex, currentIndex: startIndex,
       itemHeight: li.getBoundingClientRect().height + 8, // altura + margin-bottom
     };
     li.classList.add('queue-item-dragging');
+    list.classList.add('dragging');
     if(navigator.vibrate) navigator.vibrate(12);
   });
 
@@ -3072,8 +3090,14 @@ function attachQueueDragHandlers(li, sectionPlayers, commit){
     const dy = e.clientY - d.startY;
     li.style.transform = `translateY(${dy}px)`;
 
-    let newIndex = d.startIndex + Math.round(dy / d.itemHeight);
-    newIndex = Math.max(0, Math.min(d.items.length - 1, newIndex));
+    // Passa de um vizinho assim que o centro da linha arrastada cruza a
+    // borda mais próxima dele.
+    const c = d.startCenter + dy;
+    let newIndex = 0;
+    d.rects.forEach((r, i) => {
+      if(i < d.startIndex && c >= r.bottom) newIndex++;
+      else if(i > d.startIndex && c > r.top) newIndex++;
+    });
     if(newIndex !== d.currentIndex){
       // Abre espaço deslocando visualmente quem está entre a posição
       // original e a posição alvo — sempre recalculado a partir de
@@ -3095,6 +3119,7 @@ function attachQueueDragHandlers(li, sectionPlayers, commit){
     d.items.forEach(sib => { sib.style.transform = ''; });
     li.style.transform = '';
     li.classList.remove('queue-item-dragging');
+    d.list.classList.remove('dragging');
     _queueDrag = null;
     if(d.currentIndex !== d.startIndex){
       const newOrder = [...sectionPlayers];
@@ -3843,9 +3868,8 @@ let filaView = 'ordem';
 
 // Rótulo "Próximo time" acima da lista — as linhas que entram ganham
 // destaque em renderQueue (mesmos objetos que proximoTime() devolve). Só
-// existe na visão Ordem: na visão Por categoria o mesmo destaque .nxt já
-// aparece espalhado nos blocos, um rótulo "Próximo time" à parte seria
-// informação duplicada.
+// existe na visão Ordem: na visão Por categoria o resumo de cada bloco e a
+// linha de corte já dizem quem entra e quanto falta.
 function renderQueueGroup(next){
   const el = document.getElementById('queueGroupLabel');
   if(filaView === 'categoria' || next.length === 0){ el.style.display = 'none'; return; }
@@ -3860,17 +3884,19 @@ function renderQueueGroup(next){
   el.style.display = 'flex';
 }
 
-// Uma linha da fila — mesmo template nas duas visões, só muda a posição
-// mostrada (índice na visão Ordem, posição real na visão Por categoria).
-function queueItemHtml(player, pos, isNext){
+// Uma linha da fila — mesmo template nas duas visões. Na visão Ordem o
+// número é a posição na fila; na visão Por categoria é a posição dentro da
+// categoria (é ela que decide quando a pessoa joga), o selo de categoria
+// sai (o bloco já diz) e quem está esperando ganha uma linha mais baixa.
+function queueItemHtml(player, pos, isNext, porCategoria, espera){
   const li=document.createElement('li');
-  li.className='queue-item' + (isNext ? ' nxt' : '');
+  li.className='queue-item' + (isNext ? ' nxt' : '') + (espera ? ' wait' : '');
   li.dataset.cat = player.categoria;
   li.innerHTML=`
     <span class="queue-drag-handle" title="Segurar e arrastar para reordenar"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
     <span class="queue-num">${pos}</span>
     <span class="queue-name">${player.name}</span>
-    <span class="cat-badge ${player.categoria}">${player.categoria==='veterano'?'VETERANO':player.categoria==='extra'?'EXTRA':'BASE'}</span>
+    ${porCategoria ? '' : `<span class="cat-badge ${player.categoria}">${player.categoria==='veterano'?'VETERANO':player.categoria==='extra'?'EXTRA':'BASE'}</span>`}
     ${player.guest?'<button class="guest-badge" title="Salvar no grupo">CONVIDADO ☆</button>':''}
     <button class="remove-btn" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
   const guestBtn = li.querySelector('.guest-badge');
@@ -3911,19 +3937,47 @@ function renderOrdem(list, next){
   });
 }
 
+// Texto ao lado do nome do bloco: quantos da categoria entram no próximo
+// time e, se a cota não fecha, quantos faltam (a vaga fica aberta — ninguém
+// de outra categoria cobre).
+function resumoCategoria(cat, n, entram){
+  const ts = teamSize();
+  const tv = Math.min(targetVeteranos(), ts);
+  const cota = cat === 'veterano' ? tv : cat === 'base' ? Math.min(targetBase(), ts - tv) : null;
+  if(cota === null){
+    return { texto: entram ? `bônus · ${entram} de ${n} entra` : 'bônus · 1 entra quando as cotas fecharem' };
+  }
+  if(cota === 0) return { texto: `${n} na fila · sem vaga no time` };
+  if(n < cota){
+    const f = cota - n;
+    return { texto: `${n} de ${cota} da cota · falta${f > 1 ? 'm' : ''} ${f}`, falta: true };
+  }
+  return { texto: `${entram} de ${n} entra${entram > 1 ? 'm' : ''}` };
+}
+
 function renderCategoria(list, next){
   const pos = new Map(state.queue.map((p,i)=>[p,i+1]));
   const CATS = [['veterano','VETERANOS'],['base','BASE'],['extra','EXTRA']];
   CATS.forEach(([cat, label]) => {
     const players = state.queue.filter(p => p.categoria === cat);
     if(players.length === 0) return;
+    // Quem entra é sempre um prefixo de cada categoria (proximoTime pega os
+    // primeiros de cada uma), então um corte depois do k-ésimo explica tudo.
+    const entram = players.filter(p => next.includes(p)).length;
+    const resumo = resumoCategoria(cat, players.length, entram);
     const sectionLabel = document.createElement('li');
     sectionLabel.className = 'cat-section-label';
-    sectionLabel.innerHTML = `${label} <span class="count">· ${players.length}</span>`;
+    sectionLabel.innerHTML = `${label} <span class="count${resumo.falta ? ' falta' : ''}">· ${resumo.texto}</span>`;
     list.appendChild(sectionLabel);
-    players.forEach(player => {
+    players.forEach((player, k) => {
+      if(k === entram && entram > 0){
+        const cut = document.createElement('li');
+        cut.className = 'cat-cut';
+        cut.textContent = 'próximo time ↑ · esperam ↓';
+        list.appendChild(cut);
+      }
       const realIndex = pos.get(player) - 1;
-      const li = queueItemHtml(player, pos.get(player), next.includes(player));
+      const li = queueItemHtml(player, k + 1, next.includes(player), true, k >= entram);
       li.querySelector('.remove-btn').addEventListener('click',()=>confirmRemoveFromQueue(realIndex));
       attachQueueDragHandlers(li, players, (newOrder) => commitCategoria(cat, newOrder));
       list.appendChild(li);
@@ -3946,8 +4000,9 @@ function renderQueue(ts){
   fab.classList.remove('mini');
   const veteranos=state.queue.filter(p=>p.categoria==='veterano').length;
   const bases=state.queue.filter(p=>p.categoria==='base').length;
+  const extras=state.queue.filter(p=>p.categoria==='extra').length;
   const teams=Math.floor(state.queue.length/ts);
-  meta.textContent=`${state.queue.length} jogador(es) · ${veteranos} veterano(s) · ${bases} base(s) · ${teams} time(s) completo(s)`;
+  meta.textContent=`${state.queue.length} jogador(es) · ${veteranos} veterano(s) · ${bases} base(s)${extras ? ` · ${extras} extra(s)` : ''} · ${teams} time(s) completo(s)`;
 
   const hasA = state.courtA.length > 0;
   const hasB = state.courtB.length > 0;

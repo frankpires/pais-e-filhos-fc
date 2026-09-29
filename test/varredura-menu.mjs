@@ -91,12 +91,14 @@ async function checkHistorico(p, label) {
   }
 }
 
-async function checkFila(p, label) {
+async function checkFila(p, baseLabel) {
   await p.evaluate(() => document.getElementById('tabFila').click());
-  for (let n = 0; n <= 25; n++) {
-    const r = await p.evaluate((n) => {
+  for (const view of ['ordem', 'categoria']) for (let n = 0; n <= 25; n++) {
+    const label = `${baseLabel} [${view}]`;
+    const r = await p.evaluate(([n, view]) => {
+      document.querySelector(`#filaViewToggle [data-view="${view}"]`).click();
       state.courtA = []; state.courtB = [];
-      state.queue = Array.from({ length: n }, (_, i) => ({ id: 'q' + i, name: 'Fila ' + i, categoria: i % 3 === 0 ? 'veterano' : 'base' }));
+      state.queue = Array.from({ length: n }, (_, i) => ({ id: 'q' + i, name: 'Fila ' + i, categoria: i % 5 === 4 ? 'extra' : i % 3 === 0 ? 'veterano' : 'base' }));
       render();
       const l = document.getElementById('queueList'); l.scrollTop = l.scrollHeight;
       const bar = document.querySelector('.tab-bar').getBoundingClientRect().top;
@@ -106,7 +108,7 @@ async function checkFila(p, label) {
       const li = l.querySelector('li:last-of-type');
       return { n, fabShown: shown('addFilaBtn'), empShown: shown('filaEmpty'), fabBottom: fab.bottom - bar, fabTop: fab.top,
                li: li ? li.getBoundingClientRect().bottom - fab.top : -1, empBottom: emp.bottom - bar };
-    }, n);
+    }, [n, view]);
     checks += 2;
     if (n === 0) {
       if (r.fabShown) fail(`${label} fila vazia: botão redondo deveria sumir`);
