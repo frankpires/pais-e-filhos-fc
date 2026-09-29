@@ -106,19 +106,27 @@ async function checkFila(p, baseLabel) {
       const fab = document.getElementById('addFilaBtn').getBoundingClientRect();
       const emp = document.getElementById('addFilaEmptyBtn').getBoundingClientRect();
       const li = l.querySelector('li:last-of-type');
+      const meta = document.getElementById('queueMeta');
+      const tog = document.getElementById('filaViewToggle').getBoundingClientRect();
       return { n, fabShown: shown('addFilaBtn'), empShown: shown('filaEmpty'), fabBottom: fab.bottom - bar, fabTop: fab.top,
-               li: li ? li.getBoundingClientRect().bottom - fab.top : -1, empBottom: emp.bottom - bar };
+               li: li ? li.getBoundingClientRect().bottom - fab.top : -1, empBottom: emp.bottom - bar,
+               topoShown: shown('filaTopo'), topoH: document.getElementById('filaTopo').getBoundingClientRect().height,
+               metaCortado: meta.scrollWidth > meta.clientWidth + 1 || meta.getBoundingClientRect().right > innerWidth - 16 + 0.5,
+               sobrepoe: tog.right > meta.getBoundingClientRect().left + 0.5 };
     }, [n, view]);
     checks += 2;
     if (n === 0) {
       if (r.fabShown) fail(`${label} fila vazia: botão redondo deveria sumir`);
       if (!r.empShown) fail(`${label} fila vazia: estado vazio não apareceu`);
       if (r.empBottom > TOL) fail(`${label} fila vazia: botão do estado vazio ${r.empBottom.toFixed(1)}px atrás do menu`);
+      if (r.topoShown) fail(`${label} fila vazia: alternador e resumo deveriam sumir`);
     } else {
       if (!r.fabShown) fail(`${label} fila n=${n}: botão redondo não apareceu`);
       if (r.empShown) fail(`${label} fila n=${n}: estado vazio não deveria aparecer`);
       if (r.fabBottom > TOL) fail(`${label} fila n=${n}: botão ${r.fabBottom.toFixed(1)}px atrás do menu`);
       if (r.li > TOL) fail(`${label} fila n=${n}: último item ${r.li.toFixed(1)}px atrás do botão`);
+      if (r.topoH > 44) fail(`${label} fila n=${n}: alternador e resumo não couberam numa linha (${r.topoH.toFixed(0)}px)`);
+      if (r.metaCortado || r.sobrepoe) fail(`${label} fila n=${n}: resumo cortado ou encostando no alternador`);
     }
   }
 }
