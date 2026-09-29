@@ -127,9 +127,49 @@ const fails = await p.evaluate(() => {
   drag('V1', (r.top + r.bottom) / 2 + 15);
   if (nomes() !== 'V1,B1,V2,E1,V3,B2,B3,V4,B4') fail(`arraste pequeno não deveria trocar: ${nomes()}`);
 
+  // 4. Atualização de outro aparelho no meio do arraste: a fila remota
+  //    prevalece e a lista não fica presa em "arrastando".
   document.querySelector('#filaViewToggle [data-view="ordem"]').click();
+  const remota = () => [{ name: 'A', categoria: 'base' }, { name: 'B', categoria: 'base' }, { name: 'D', categoria: 'base' }, { name: 'E', categoria: 'base' }];
+  for (const soltaEm of ['linha antiga', 'linha nova']) {
+    state.queue = ['A', 'B', 'C', 'D'].map(n => ({ name: n, categoria: 'base' })); render();
+    const velho = byName('A'), h = velho.querySelector('.queue-drag-handle'), r0 = velho.getBoundingClientRect(), y = (r0.top + r0.bottom) / 2;
+    fire(h, 'pointerdown', y); fire(h, 'pointermove', y + 130);
+    state = Object.assign(state, { queue: remota() }); render();
+    fire(soltaEm === 'linha antiga' ? h : byName('D').querySelector('.queue-drag-handle'), 'pointerup', y + 130);
+    if (nomes() !== 'A,B,D,E') fail(`arraste durante atualização remota (solta na ${soltaEm}): fila virou ${nomes()}`);
+    if (document.getElementById('queueList').classList.contains('dragging')) fail(`arraste durante atualização remota (solta na ${soltaEm}): lista presa em "arrastando"`);
+  }
+
+  // 5. Teclado: setas movem uma posição dentro do bloco e o foco acompanha
+  document.querySelector('#filaViewToggle [data-view="categoria"]').click();
+  semear();
+  const tecla = (name, key) => byName(name).querySelector('.queue-drag-handle').dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+  const alca = byName('V2').querySelector('.queue-drag-handle');
+  if (alca.tabIndex !== 0 || alca.getAttribute('role') !== 'button' || !/V2/.test(alca.getAttribute('aria-label') || '')) fail('teclado: alça não é focável ou não tem rótulo');
+  tecla('V2', 'ArrowUp');
+  if (nomes() !== 'V2,B1,V1,E1,V3,B2,B3,V4,B4') fail(`teclado ↑: ${nomes()}`);
+  if (document.activeElement !== byName('V2').querySelector('.queue-drag-handle')) fail('teclado: foco não voltou pra alça de quem foi movido');
+  tecla('V2', 'ArrowUp');
+  if (nomes() !== 'V2,B1,V1,E1,V3,B2,B3,V4,B4') fail(`teclado ↑ no topo do bloco não deveria mexer: ${nomes()}`);
+  tecla('V4', 'ArrowDown');
+  if (nomes() !== 'V2,B1,V1,E1,V3,B2,B3,V4,B4') fail(`teclado ↓ no fim do bloco não deveria mexer: ${nomes()}`);
+  tecla('B1', 'ArrowDown');
+  if (nomes() !== 'V2,B2,V1,E1,V3,B1,B3,V4,B4') fail(`teclado ↓ na base: ${nomes()}`);
+  const pressed = [...document.querySelectorAll('#filaViewToggle .filter-chip')].map(bt => bt.dataset.view + '=' + bt.getAttribute('aria-pressed')).join(',');
+  if (pressed !== 'ordem=false,categoria=true') fail(`alternador: aria-pressed ${pressed}`);
   return fails;
 });
+
+// 6. A visão escolhida sobrevive a recarregar a página
+await p.reload();
+await p.waitForFunction(() => typeof render === 'function' && typeof state === 'object');
+const lembrada = await p.evaluate(() => {
+  state.queue = [{ name: 'X', categoria: 'base' }]; render();
+  return { filaView, lista: !!document.querySelector('#queueList .cat-section-label'),
+           pressed: document.querySelector('#filaViewToggle [data-view="categoria"]').getAttribute('aria-pressed') };
+});
+if (lembrada.filaView !== 'categoria' || !lembrada.lista || lembrada.pressed !== 'true') fails.push(`visão não foi lembrada ao recarregar: ${JSON.stringify(lembrada)}`);
 
 await b.close();
 server.close();

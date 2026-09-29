@@ -1880,6 +1880,7 @@ body.view-only .membro-check {
   margin-left: -6px;
 }
 .queue-drag-handle:active{ cursor: grabbing; color: #999; }
+.queue-drag-handle:focus-visible{ outline: 2px solid var(--primary-lit); outline-offset: -2px; border-radius: 6px; color: var(--ink-soft); }
 .queue-item-dragging{
   position: relative; z-index: 5;
   box-shadow: 0 10px 24px rgba(0,0,0,.18);
@@ -2229,9 +2230,9 @@ body.view-only .membro-check {
 
     <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
       <div class="fila-meta" id="queueMeta"></div>
-      <div class="fila-view-toggle" id="filaViewToggle">
-        <button class="filter-chip active" data-view="ordem">Ordem de chegada</button>
-        <button class="filter-chip" data-view="categoria">Por categoria</button>
+      <div class="fila-view-toggle" id="filaViewToggle" role="group" aria-label="Visão da fila">
+        <button type="button" class="filter-chip active" data-view="ordem" aria-pressed="true">Ordem de chegada</button>
+        <button type="button" class="filter-chip" data-view="categoria" aria-pressed="false">Por categoria</button>
       </div>
       <div class="nudge top" id="filaGapNudge" style="display:none">
         <span class="nudge-dot"></span><span id="filaGapNudgeText"></span> <span class="go" id="filaGapNudgeGo">Adicionar à fila →</span>
@@ -2420,7 +2421,7 @@ window._fbListen = (cb)   => onValue(stateRef, snap => { const v = snap.val(); i
 // Versão exibida em Configurações — bump manual a cada mudança visível
 // pro usuário (semver simplificado: MAJOR.MINOR.PATCH), pra dar pra
 // conferir se o app abriu na versão esperada depois de uma atualização.
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.9.0';
 
 /* ═══════════════════════════════════════════
    ESTADO & FIREBASE
@@ -3050,9 +3051,36 @@ function confirmRemoveFromQueue(i){
 // entra no cálculo de arrasto, então nunca sai do próprio bloco). `commit`
 // recebe a nova ordem do bloco e decide como aplicar em state.queue.
 let _queueDrag = null;
+// Jogador movido pelo teclado: depois do redesenho o foco volta pra alça dele.
+let _focarNaFila = null;
 function attachQueueDragHandlers(li, sectionPlayers, commit){
   const handle = li.querySelector('.queue-drag-handle');
   if(!handle) return;
+  const list = document.getElementById('queueList');
+  const itensDaSecao = () => {
+    const allItems = [...list.querySelectorAll('.queue-item')];
+    return filaView === 'categoria'
+      ? allItems.filter(el => el.dataset.cat === li.dataset.cat)
+      : allItems;
+  };
+
+  // Mesma reordenação pelo teclado: setas movem uma posição dentro do bloco.
+  handle.addEventListener('keydown', (e) => {
+    if(e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    if(!isAdmin()){
+      abrirLoginAdmin('Essa ação exige modo admin. Entre com o PIN do grupo pra continuar.');
+      return;
+    }
+    const i = itensDaSecao().indexOf(li);
+    const j = i + (e.key === 'ArrowUp' ? -1 : 1);
+    if(i === -1 || j < 0 || j >= sectionPlayers.length) return;
+    const newOrder = [...sectionPlayers];
+    const [moved] = newOrder.splice(i, 1);
+    newOrder.splice(j, 0, moved);
+    _focarNaFila = moved;
+    commit(newOrder);
+  });
 
   handle.addEventListener('pointerdown', (e) => {
     if(!isAdmin()){
@@ -3060,11 +3088,7 @@ function attachQueueDragHandlers(li, sectionPlayers, commit){
       return;
     }
     e.preventDefault();
-    const list = document.getElementById('queueList');
-    const allItems = [...list.querySelectorAll('.queue-item')];
-    const items = filaView === 'categoria'
-      ? allItems.filter(el => el.dataset.cat === li.dataset.cat)
-      : allItems;
+    const items = itensDaSecao();
     const startIndex = items.indexOf(li);
     if(startIndex === -1) return;
     try { handle.setPointerCapture(e.pointerId); } catch(_) {}
@@ -3862,9 +3886,14 @@ function abrirProximoTime(){
   });
 }
 
-// Qual visão da fila está ativa agora — preferência só da sessão (não
-// salva no Firebase, não afeta quem mais está olhando a fila).
-let filaView = 'ordem';
+// Qual visão da fila está ativa — preferência só deste aparelho (não vai
+// pro Firebase, não afeta quem mais está olhando a fila). O localStorage
+// pode falhar (navegação privada, site bloqueado): aí fica na visão Ordem.
+const FILA_VIEW_KEY = 'pf_fila_view';
+let filaView = (() => {
+  try { return localStorage.getItem(FILA_VIEW_KEY) === 'categoria' ? 'categoria' : 'ordem'; }
+  catch(_) { return 'ordem'; }
+})();
 
 // Rótulo "Próximo time" acima da lista — as linhas que entram ganham
 // destaque em renderQueue (mesmos objetos que proximoTime() devolve). Só
@@ -3899,6 +3928,11 @@ function queueItemHtml(player, pos, isNext, porCategoria, espera){
     ${porCategoria ? '' : `<span class="cat-badge ${player.categoria}">${player.categoria==='veterano'?'VETERANO':player.categoria==='extra'?'EXTRA':'BASE'}</span>`}
     ${player.guest?'<button class="guest-badge" title="Salvar no grupo">CONVIDADO ☆</button>':''}
     <button class="remove-btn" title="Remover"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>`;
+  const handle = li.querySelector('.queue-drag-handle');
+  handle.tabIndex = 0;
+  handle.setAttribute('role', 'button');
+  handle.setAttribute('aria-label', `Mover ${player.name}, posição ${pos}. Use as setas para cima e para baixo.`);
+  li.querySelector('.remove-btn').setAttribute('aria-label', `Remover ${player.name} da fila`);
   const guestBtn = li.querySelector('.guest-badge');
   if(guestBtn) guestBtn.addEventListener('click', (e) => { e.stopPropagation(); promoverConvidado(player); });
   return li;
@@ -3934,6 +3968,7 @@ function renderOrdem(list, next){
     li.querySelector('.remove-btn').addEventListener('click',()=>confirmRemoveFromQueue(i));
     attachQueueDragHandlers(li, state.queue, commitOrdem);
     list.appendChild(li);
+    if(player === _focarNaFila) li.querySelector('.queue-drag-handle').focus();
   });
 }
 
@@ -3981,6 +4016,7 @@ function renderCategoria(list, next){
       li.querySelector('.remove-btn').addEventListener('click',()=>confirmRemoveFromQueue(realIndex));
       attachQueueDragHandlers(li, players, (newOrder) => commitCategoria(cat, newOrder));
       list.appendChild(li);
+      if(player === _focarNaFila) li.querySelector('.queue-drag-handle').focus();
     });
   });
 }
@@ -3988,13 +4024,24 @@ function renderCategoria(list, next){
 function renderQueue(ts){
   const list=document.getElementById('queueList');
   const meta=document.getElementById('queueMeta');
+  // Redesenhar troca todas as linhas: um arraste em andamento (ex: chegou
+  // atualização de outro aparelho) morreu junto. Encerra aqui, senão ele
+  // ficaria preso com a lista marcada como "arrastando" — e, se o soltar
+  // chegasse na linha antiga, gravaria a ordem de antes por cima da nova.
+  if(_queueDrag){ _queueDrag = null; list.classList.remove('dragging'); }
   list.innerHTML='';
   const next = proximoTime();
   renderQueueGroup(next);
   const vazia = state.queue.length === 0;
   list.style.display = vazia ? 'none' : '';
   document.getElementById('filaEmpty').style.display = vazia ? 'flex' : '';
-  document.getElementById('filaViewToggle').style.display = vazia ? 'none' : 'flex';
+  const toggle = document.getElementById('filaViewToggle');
+  toggle.style.display = vazia ? 'none' : 'flex';
+  toggle.querySelectorAll('.filter-chip').forEach(b => {
+    const ativa = b.dataset.view === filaView;
+    b.classList.toggle('active', ativa);
+    b.setAttribute('aria-pressed', ativa);
+  });
   const fab = document.getElementById('addFilaBtn');
   fab.style.display = vazia ? 'none' : '';
   fab.classList.remove('mini');
@@ -4026,6 +4073,7 @@ function renderQueue(ts){
 
   if(filaView === 'categoria') renderCategoria(list, next);
   else renderOrdem(list, next);
+  _focarNaFila = null;
 }
 
 // Convidado avulso vira membro permanente com um toque — some a etiqueta
@@ -4683,7 +4731,7 @@ document.getElementById('addFilaCloseBtn').addEventListener('click', closeAddFil
 document.querySelectorAll('#filaViewToggle .filter-chip').forEach(btn => {
   btn.addEventListener('click', () => {
     filaView = btn.dataset.view;
-    document.querySelectorAll('#filaViewToggle .filter-chip').forEach(b => b.classList.toggle('active', b === btn));
+    try { localStorage.setItem(FILA_VIEW_KEY, filaView); } catch(_) {}
     renderQueue(teamSize());
   });
 });
